@@ -8,7 +8,6 @@ This guide provides step-by-step instructions for setting up and using the **Log
 - Download and install the `.mez` connector file
 - Enable custom connector support
 - Authenticate using your Login Enterprise API token
-- Build a sample report to visualize data such as Test Runs, Metrics, and Events
 
 This connector helps you transform Login Enterprise performance data into actionable insights in Power BI.
 
