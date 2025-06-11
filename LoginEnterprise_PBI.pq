@@ -533,7 +533,7 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                 & List.Distinct(propertyFields[propertyId])
         ),
         finalCols = Table.SelectColumns(pivoted, allCols),
-        // Cast to correct types
+        // Cast types
         typed = Table.TransformColumnTypes(finalCols, {{"timestamp", type datetime}, {"duration", type number}})
     in
         typed;
@@ -591,55 +591,52 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
     let
         // Buffer testRunsTable so the .Column("id") call is cheap
         testRunsBuffered = Table.Buffer(testRunsTable),
+
         // Build from/to strings
         fromParam = DateTime.ToText(DateTime.From(StartDate), "yyyy-MM-ddTHH:mm:ssZ"),
         toParam = DateTime.ToText(DateTime.From(EndDate), "yyyy-MM-ddTHH:mm:ssZ"),
-        // Fetch-and-expand each run/day into a little sub-table
+
+        // Fetch and expand each run/day into a little sub-table
         rawList = List.Transform(
             Table.Column(testRunsBuffered, "id"),
             each
                 try
                     let
-                        endpoint = "test-runs/"
-                            & _
+                        endpoint = "test-runs/" & _
                             & "/user-sessions?direction=asc"
                             & "&includeTotalCount=false"
-                            & "&from="
-                            & fromParam
-                            & "&to="
-                            & toParam,
+                            & "&from=" & fromParam
+                            & "&to=" & toParam,
+
                         response = PagedApiRequest(endpoint, FQDN, ApiToken),
                         base = Table.FromList(response, Splitter.SplitByNothing(), {"UserSession"}),
+
+                        // Filter rows that actually contain the 'created' field
+                        filtered = Table.SelectRows(base, each Record.HasFields([UserSession], "created")),
+
+                        // Expand only after verifying structure
                         expanded = Table.ExpandRecordColumn(
-                            base,
+                            filtered,
                             "UserSession",
                             {
-                                "id",
-                                "testId",
-                                "testRunId",
-                                "created",
-                                "loginState",
-                                "sessionState",
-                                "stateLastModified",
-                                "testType",
-                                "accountId",
-                                "launcherName",
-                                "loginStartTime",
-                                "loginEndTime",
-                                "sessionEndTime",
-                                "sessionMetricEnabled",
-                                "properties"
+                                "id", "testId", "testRunId", "created", "loginState", "sessionState",
+                                "stateLastModified", "testType", "accountId", "launcherName",
+                                "loginStartTime", "loginEndTime", "sessionEndTime",
+                                "sessionMetricEnabled", "properties"
                             }
                         )
                     in
                         expanded
                     otherwise null
         ),
+
         // Combine all those small tables into one big table
         combined = Table.Combine(List.RemoveNulls(rawList)),
-        // BUFFER here so Power BI “knows” the full row count before proceeding
+
+        // Buffer
         bufferedTable = Table.Buffer(combined),
-        // Now do your final type‐casts (or any additional transforms)
+
+        // Cast types
         typed = Table.TransformColumnTypes(
             bufferedTable,
             {
@@ -662,7 +659,7 @@ GetUserSessionMetrics = (
     EndDate as date
 ) as table =>
     let
-        // Convert StartDate/EndDate to ISO‐8601 strings
+        // Convert StartDate/EndDate
         dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
         fromParam = dateToIso(StartDate),
         toParam   = dateToIso(EndDate),
@@ -736,7 +733,7 @@ GetUserSessionMetrics = (
         // Combine both lists into a single flat list of records
         allAggregatedRows = List.Combine({ loadAggregated, continuousAggregated }),
 
-        // Convert that flat list into a one‐column table of JSON records
+        // Convert that flat list into a one column table of JSON records
         tableRaw  = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
 
         // Buffer that table to materialize all rows at once
@@ -757,7 +754,7 @@ GetUserSessionMetrics = (
                        }
                      ),
 
-        // Cast types: timestamp→datetime, metricId & count → Int64, measurement → number, testRunId → text
+        // Cast types
         typed = Table.TransformColumnTypes(
                   expanded,
                   {
