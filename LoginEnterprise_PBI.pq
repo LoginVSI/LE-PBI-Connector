@@ -480,6 +480,7 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                                         & fromParam
                                         & "&to="
                                         & toParam
+                                        & "&include=all"
                                         & "&count=1000"
                                         & "&offset=0",
                                     rawResp = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
