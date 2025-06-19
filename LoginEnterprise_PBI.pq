@@ -40,6 +40,7 @@ LoginEnterpriseImpl = (
         testsTable = GetTests(FQDN, ApiToken),
         testRunsTable = GetTestRuns(FQDN, ApiToken),
         workloadStepsTable = GetWorkloadSteps(testRunsTable),
+        applicationsTable = GetApplications(FQDN, ApiToken),
         allMeasurements = GetMeasurements(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
         aggregatedEUXResultsTable = GetAggregatedEUXResults(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
         allEvents = GetEvents(FQDN, ApiToken, StartDate, EndDate),
@@ -72,6 +73,13 @@ LoginEnterpriseImpl = (
                 Data = aggregatedEUXResultsTable,
                 ItemKind = "Table",
                 ItemName = "AggregatedEUXResults",
+                IsLeaf = true
+            ],
+            [
+                Name = "Applications",
+                Data = applicationsTable,
+                ItemKind = "Table",
+                ItemName = "Applications",
                 IsLeaf = true
             ],
             [
@@ -374,6 +382,7 @@ GetWorkloadSteps = (testRunsTable as table) as table =>
     in
         table;
 
+// Function to retrieve aggregated EUX results for test runs
 GetAggregatedEUXResults = (
     testRunsTable as table,
     FQDN as text,
@@ -437,6 +446,33 @@ GetAggregatedEUXResults = (
     in
         typed;
 
+// Function to retrieve applications from the Login Enterprise API
+GetApplications = (FQDN as text, ApiToken as text) as table =>
+    let
+        endpoint = "applications?orderBy=name&direction=asc&count=1000&offset=0&includeTotalCount=false&include=none",
+        rawList = PagedApiRequest(endpoint, FQDN, ApiToken),
+        tableRaw = Table.FromList(rawList, Splitter.SplitByNothing(), {"Application"}),
+        expanded = Table.ExpandRecordColumn(
+            tableRaw,
+            "Application",
+            {
+                "id", "name", "description", "type", "username", "commandLine",
+                "workingDirectory", "mainWindowTitle", "mainProcessName", "created",
+                "lastModified", "takeScreenshots", "hasPassword"
+            }
+        ),
+        typed = Table.TransformColumnTypes(
+            expanded,
+            {
+                {"created", type datetime},
+                {"lastModified", type datetime},
+                {"takeScreenshots", type logical},
+                {"hasPassword", type logical}
+            }
+        )
+    in
+        typed;
+
 // Function to retrieve measurements for test runs
 GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
     let
@@ -457,9 +493,11 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
         ),
         runsToFetch = Table.Combine({continuousRuns, otherFiltered}),
         runsBuffered = Table.Buffer(runsToFetch),
+
         // Prepare the one-day boundaries
         daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
         dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
+
         // Fetch all measurement JSON objects into one big list
         allRawRecords = List.Combine(
             List.Transform(
@@ -495,10 +533,13 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                     )
             )
         ),
+
         // Build a single table from that combined list
         tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
+
         // Buffer once before expanding/pivoting
         bufferedTable = Table.Buffer(tableRaw),
+
         // Expand record & pivot properties in one shot
         expandedMeas = Table.ExpandRecordColumn(
             bufferedTable,
@@ -534,6 +575,7 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                 & List.Distinct(propertyFields[propertyId])
         ),
         finalCols = Table.SelectColumns(pivoted, allCols),
+
         // Cast types
         typed = Table.TransformColumnTypes(finalCols, {{"timestamp", type datetime}, {"duration", type number}})
     in
@@ -544,8 +586,10 @@ GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date)
     let
         // Build a list of 1-day boundaries from StartDate to EndDate
         daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
+
         // Helper functions to convert a date to ISO-8601 strings
         dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
+
         // For each day, pull only the first 1000 events (count=1000, offset=0)
         sampledRowsPerDay = List.Combine(
             List.Transform(
@@ -572,16 +616,20 @@ GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date)
                         items
             )
         ),
+
         // Convert the combined list into a table
         tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
+
         // Buffer once (so further steps aren’t re-querying)
         bufferedTable = Table.Buffer(tableRaw),
+
         // Expand only the core fields (skip the full 'properties' for perf)
         expanded = Table.ExpandRecordColumn(
             bufferedTable,
             "Event",
             {"id", "eventType", "timestamp", "title", "testId", "testRunId", "userSessionId", "applicationId"}
         ),
+
         // Cast types
         typed = Table.TransformColumnTypes(expanded, {{"timestamp", type datetime}})
     in
