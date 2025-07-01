@@ -80,10 +80,17 @@ Understanding table relationships helps you build effective reports. Here's a si
 
 | From Table              | Field      | To Table              | Field | Relationship  |
 |------------------------|------------|------------------------|-------|---------------|
-| Test Runs              | `testId`   | Tests                 | `id`  | Many-to-One   |
-| Measurements           | `testRunId`| Test Runs             | `id`  | Many-to-One   |
-| Events                 | `testRunId`| Test Runs             | `id`  | Many-to-One   |
-| User Sessions          | `testRunId`| Test Runs             | `id`  | Many-to-One   |
-| User Session Metrics   | `testRunId`| Test Runs             | `id`  | Many-to-One   |
-| Workload Steps         | `testRunId`| Test Runs             | `id`  | Many-to-One   |
-| Aggregated EUX Results | `testRunId`| Test Runs             | `id`  | Many-to-One   |
+| Test Runs              | `testId`   | Tests              | `id`  | Many-to-One   |
+| Measurements           | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| Events                 | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| User Sessions          | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| User Session Metrics   | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| Workload Steps         | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| Aggregated EUX Results | `testRunId`| Test Runs          | `id`  | Many-to-One   |
+| Applications           | `id`       | Measurements       | `applicationId`  | Many-to-One   |
+
+## On-Premise Data Gateway
+
+If you choose to publish the Power BI report to the Power BI Service and enable incremental data refresh, you will need to set up an [on-premise data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem) to allow secure communication between the Power BI Service and your Login Enterprise virtual appliance. This requirement exists because the connector is currently a custom (non-certified) connector, which the Power BI Service cannot access directly without a gateway.
+
+You can find step-by-step instructions for downloading, installing, and configuring the on-premises data gateway [HERE](https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-install).
