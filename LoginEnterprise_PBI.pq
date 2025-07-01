@@ -132,20 +132,6 @@ LoginEnterpriseType = type function (
             Documentation.SampleValues = {"eyJhbGciOi..."}
         ]
     )
-    // optional StartDate as (
-    //     type nullable date meta [
-    //         Documentation.FieldCaption = "Start Date",
-    //         Documentation.FieldDescription = "Pick a start date (optional). Defaults to 30 days ago if blank.",
-    //         Documentation.SampleValues = {#date(2025, 6, 1)}
-    //     ]
-    // ),
-    // optional EndDate as (
-    //     type nullable date meta [
-    //         Documentation.FieldCaption = "End Date",
-    //         Documentation.FieldDescription = "Pick an end date (optional). Defaults to today if blank.",
-    //         Documentation.SampleValues = {#date(2025, 6, 4)}
-    //     ]
-    // )
 ) as table;
 
 // Function to handle paginated API requests
@@ -819,16 +805,19 @@ GetUserSessionMetrics = (
     in
         typed;
 
+// Test connection function for the Login Enterprise data source
+LoginEnterprise_PBI.TestConnection = (FQDN as text, ApiToken as text) =>
+    { "LoginEnterprise_PBI.Contents", { FQDN, ApiToken } };
+
 // Metadata for the Login Enterprise data source
 LoginEnterprise_PBI = [
-    Authentication = [
-        Anonymous = []
-    ]
+    Authentication = [ Anonymous = [] ],
+    TestConnection = LoginEnterprise_PBI.TestConnection
 ];
 
 // Publish metadata for the Login Enterprise data source
 LoginEnterprise_PBI.Publish = [
-    Beta = false,
+    Beta = true,
     Category = "Other",
     ButtonText = {Extension.LoadString("ButtonTitle"), Extension.LoadString("ButtonHelp")},
     LearnMoreUrl = "https://www.loginvsi.com/",
