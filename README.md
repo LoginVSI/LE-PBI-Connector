@@ -88,6 +88,9 @@ Understanding table relationships helps you build effective reports. Here's a si
 | Workload Steps         | `testRunId`| Test Runs          | `id`  | Many-to-One   |
 | Aggregated EUX Results | `testRunId`| Test Runs          | `id`  | Many-to-One   |
 | Applications           | `id`       | Measurements       | `applicationId`  | Many-to-One   |
+| Measurements           | `applicationId`       | Applications       | `id`  | Many-to-One   |
+| Events           | `applicationId`       | Applications       | `id`  | Many-to-One   |
+| Workload Steps           | `appId`       | Applications       | `id`  | Many-to-One   |
 
 ## On-Premise Data Gateway
 
