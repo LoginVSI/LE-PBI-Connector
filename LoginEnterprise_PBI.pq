@@ -280,9 +280,14 @@ GetTestRuns = (FQDN as text, ApiToken as text) as table =>
                         "vsiMax_maxSessions",
                         each try Record.Field([vsiMax], "maxSessions") otherwise null
                     ),
-                    removedRawFields = Table.RemoveColumns(addVSIMax, {"vsiMax"})
+                    removedRawFields = Table.RemoveColumns(addVSIMax, {"vsiMax"}),
+                    expConfigSnapshot = Table.AddColumn(
+                        removedRawFields,
+                        "testRunConfigurationSnapshot_name",
+                        each try Record.Field([testRunConfigurationSnapshot], "name") otherwise null
+                    )
                 in
-                    removedRawFields
+                    expConfigSnapshot
         ),
         combined = Table.Combine(allTestRunsRaw),
         typed = Table.TransformColumnTypes(
@@ -585,19 +590,13 @@ GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date)
                         dayEnd = Date.AddDays(dayStart, 1),
                         fromParam = dateToIso(dayStart),
                         toParam = dateToIso(dayEnd),
-                        // Construct endpoint: fetch only the first page (count=1000, offset=0)
-                        endpointDay = "events"
+                        endpointDay =
+                            "events"
                             & "?direction=asc"
                             & "&include=none"
-                            & "&from="
-                            & fromParam
-                            & "&to="
-                            & toParam
-                            & "&count=1000"
-                            & "&offset=0",
-                        // Call the API directly (returns a record with [items])
-                        response = try GetLoginEnterpriseData(endpointDay, FQDN, ApiToken) otherwise null,
-                        items = if response <> null and Record.HasFields(response, "items") then response[items] else {}
+                            & "&from=" & fromParam
+                            & "&to=" & toParam,
+                        items = PagedApiRequest(endpointDay, FQDN, ApiToken)
                     in
                         items
             )
