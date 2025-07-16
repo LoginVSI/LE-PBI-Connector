@@ -25,7 +25,7 @@ Ensure the following before starting:
 
 ## Step 1: Download the Connector
 
-1. Download the `.mez` file from /bin/AnyCPU/Debug : **[LoginEnterprise_PBI.mez](#)**  
+1. Download the `.mez` file from /bin/AnyCPU/Debug : **[LoginEnterprise_PBI.mez](https://github.com/LoginVSI/LE-PBI-Connector/blob/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez)**  
 2. Save the file somewhere accessible (e.g., `Downloads`)
 
 ---
