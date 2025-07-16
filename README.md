@@ -25,7 +25,7 @@ Ensure the following before starting:
 
 ## Step 1: Download the Connector
 
-1. Download the `.mez` file: **[LoginEnterprise_PBI.mez](#)**  
+1. Download the `.mez` file from /bin/AnyCPU/Debug : **[LoginEnterprise_PBI.mez](#)**  
 2. Save the file somewhere accessible (e.g., `Downloads`)
 
 ---
@@ -59,16 +59,21 @@ Power BI requires custom connectors to be stored in a specific folder.
 ## Step 4: Connect to Login Enterprise
 
 1. In Power BI Desktop, click **Get Data > More...**
+![Get Data](images/readme_1.png)
 2. Search for **Login Enterprise**
 3. Select it and click **Connect**
+![Connect](images/readme_2.png)
 4. When prompted:
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
-   - Enter your **Login Enterprise API Token**
+   - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
+   ![FQDN and API Token](images/readme_3.png)
 5. Click **OK**
 6. When the authentication prompt appears, click **Connect**
+![Auth Connect](images/readme_4.png)
 7. In the Navigator:
    - Select the tables you want to load (e.g., Test Runs, Events, Measurements)
    - Click **Load**
+   ![Load Tables](images/readme_5.png)
 
 > ⏳ Data may take 2–3 minutes to load depending on volume
 
@@ -76,7 +81,7 @@ Power BI requires custom connectors to be stored in a specific folder.
 
 ## Data Model Overview
 
-Understanding table relationships helps you build effective reports. Here's a simplified model of how Login Enterprise tables connect:
+Understanding how the Login Enterprise tables relate to each other is key to building accurate and insightful Power BI reports. This section provides a simple overview of the core relationships between tables and how you can connect them in Power BI:
 
 | From Table              | Field      | To Table              | Field | Relationship  |
 |------------------------|------------|------------------------|-------|---------------|
@@ -97,3 +102,4 @@ Understanding table relationships helps you build effective reports. Here's a si
 If you choose to publish the Power BI report to the Power BI Service and enable incremental data refresh, you will need to set up an [on-premise data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem) to allow secure communication between the Power BI Service and your Login Enterprise virtual appliance. This requirement exists because the connector is currently a custom (non-certified) connector, which the Power BI Service cannot access directly without a gateway.
 
 You can find step-by-step instructions for downloading, installing, and configuring the on-premises data gateway [HERE](https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-install).
+![On Premise Data Gateway](images/readme_6.png)
