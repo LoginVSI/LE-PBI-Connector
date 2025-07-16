@@ -140,7 +140,7 @@ Below is a summary of the pagea and their contents of the Login Enterprise templ
 - Tracks average EUX scores, logon time, latency, and resource usage (CPU and memory) by day
 - Highlights failures and threshold violations such as login errors, latency spikes, or application crashes
 - Helps detect gradual performance regressions, recurring issues, and environmental drift in persistent environments
-- Learn more about Login Enterprise [Continuous Test](https://support.loginvsi.com/hc/en-us/articles/360001310480-Manage-Tests-Continuous-Testing)
+- Learn more about Login Enterprise [Continuous Testing](https://support.loginvsi.com/hc/en-us/articles/360001310480-Manage-Tests-Continuous-Testing)
 
 ![Continuous Test](images/readme_8.png)
 
@@ -149,7 +149,7 @@ Below is a summary of the pagea and their contents of the Login Enterprise templ
 - Visualizes session activity over time for CPU, memory, disk queue length, page faults, and other key system metrics
 - Tracks application-level performance and failures by measurement type (e.g., app start, document open)
 - Highlights average profile load, display protocol responsiveness, and group policy processing to assess user experience under load
-- Learn more about Login Enterprise [Load Test](https://support.loginvsi.com/hc/en-us/articles/360011050640-Manage-Tests-Load-Testing)
+- Learn more about Login Enterprise [Load Testing](https://support.loginvsi.com/hc/en-us/articles/360011050640-Manage-Tests-Load-Testing)
 
 ![Load Tests](images/readme_9.png)
 
