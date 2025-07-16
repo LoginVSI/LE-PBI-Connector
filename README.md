@@ -61,19 +61,23 @@ Power BI requires custom connectors to be stored in a specific folder.
 1. In Power BI Desktop, click **Get Data > More...**
 
 ![Get Data](images/readme_1.png)
+
 2. Search for **Login Enterprise**
 3. Select it and click **Connect**
 
 ![Connect](images/readme_2.png)
+
 4. When prompted:
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
    - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
 
 ![FQDN and API Token](images/readme_3.png)
+
 5. Click **OK**
 6. When the authentication prompt appears, click **Connect**
 
 ![Auth Connect](images/readme_4.png)
+
 7. In the Navigator:
    - Select the tables you want to load (e.g., Test Runs, Events, Measurements)
    - Click **Load**
