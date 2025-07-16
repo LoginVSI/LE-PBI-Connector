@@ -203,4 +203,4 @@ The template report is fully customizable, allowing customers to tailor it to th
 - Learn more about [publishing reports from Power BI Desktop](https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-upload-desktop-files)
 - Learn how to establish [scheduled data refreshes on the semantic model](https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh)
 
-> NOTE: As mentioned previously, the On-premise data gateway will need to be stablished in order for the published template report to run on its scheduled refresh
+> NOTE: As mentioned previously, the on-premise data gateway will need to be established in order for the published template report to run on its scheduled refresh
