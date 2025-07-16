@@ -124,7 +124,7 @@ When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.
 
 > NOTE: The connector will need to be placed in the Custom Connectors folder of your Power BI Desktop install previously to opening the `.pbit` file as shown above
 
-Below is a summary of the pagea and their contents of the Login Enterprise template report:
+Below is a summary of the pages and their contents of the Login Enterprise template report:
 
 ### Summary
 - Overview of total test runs and user sessions
