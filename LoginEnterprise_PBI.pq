@@ -646,10 +646,8 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                         base = Table.FromList(response, Splitter.SplitByNothing(), {"UserSession"}),
 
                         // Filter rows that actually contain the 'created' field
-                        filtered = Table.SelectRows(base, each Record.HasFields([UserSession], "created")),
-
-                        // Expand only after verifying structure
-                        expanded = Table.ExpandRecordColumn(
+                        filtered = Table.SelectRows(base, each [UserSession] <> null and Record.HasFields([UserSession], "created")),
+                        expanded = try Table.ExpandRecordColumn(
                             filtered,
                             "UserSession",
                             {
@@ -658,7 +656,10 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                                 "loginStartTime", "loginEndTime", "sessionEndTime",
                                 "sessionMetricEnabled", "properties"
                             }
-                        )
+                        ) otherwise Table.FromRows({}, {"id", "testId", "testRunId", "created", "loginState", "sessionState",
+                                "stateLastModified", "testType", "accountId", "launcherName",
+                                "loginStartTime", "loginEndTime", "sessionEndTime",
+                                "sessionMetricEnabled", "properties"})
                     in
                         expanded
                     otherwise null
