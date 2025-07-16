@@ -124,81 +124,83 @@ When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.
 
 > NOTE: The connector will need to be placed in the Custom Connectors folder of your Power BI Desktop install previously to opening the `.pbit` file as shown above
 
+Below is a summary of the pagea and their contents of the Login Enterprise template report:
+
 ### Summary
--Overview of total test runs and user sessions
--Success rate and average logon time across all tests
--Average EUX score trends by day
--Test run distribution by type (continuous, load, application)
--Daily user session counts broken down by login state (e.g., succeeded, failed, aborted)
+- Overview of total test runs and user sessions
+- Success rate and average logon time across all tests
+- Average EUX score trends by day
+- Test run distribution by type (continuous, load, application)
+- Daily user session counts broken down by login state (e.g., succeeded, failed, aborted)
 
 ![Summary](images/readme_7.png)
 
 ### Continuous Testing
--Displays long-term test results to monitor system health, stability, and user experience trends over time
--Tracks average EUX scores, logon time, latency, and resource usage (CPU and memory) by day
--Highlights failures and threshold violations such as login errors, latency spikes, or application crashes
--Helps detect gradual performance regressions, recurring issues, and environmental drift in persistent environments
--Learn more about Login Enterprise [Continuous Test](https://support.loginvsi.com/hc/en-us/articles/360001310480-Manage-Tests-Continuous-Testing)
+- Displays long-term test results to monitor system health, stability, and user experience trends over time
+- Tracks average EUX scores, logon time, latency, and resource usage (CPU and memory) by day
+- Highlights failures and threshold violations such as login errors, latency spikes, or application crashes
+- Helps detect gradual performance regressions, recurring issues, and environmental drift in persistent environments
+- Learn more about Login Enterprise [Continuous Test](https://support.loginvsi.com/hc/en-us/articles/360001310480-Manage-Tests-Continuous-Testing)
 
 ![Continuous Test](images/readme_8.png)
 
 ### Load Testing
--Displays detailed performance metrics from synthetic load tests, including logon time, EUX score, and VSI Max
--Visualizes session activity over time for CPU, memory, disk queue length, page faults, and other key system metrics
--Tracks application-level performance and failures by measurement type (e.g., app start, document open)
--Highlights average profile load, display protocol responsiveness, and group policy processing to assess user experience under load
--Learn more about Login Enterprise [Load Test](https://support.loginvsi.com/hc/en-us/articles/360011050640-Manage-Tests-Load-Testing)
+- Displays detailed performance metrics from synthetic load tests, including logon time, EUX score, and VSI Max
+- Visualizes session activity over time for CPU, memory, disk queue length, page faults, and other key system metrics
+- Tracks application-level performance and failures by measurement type (e.g., app start, document open)
+- Highlights average profile load, display protocol responsiveness, and group policy processing to assess user experience under load
+- Learn more about Login Enterprise [Load Test](https://support.loginvsi.com/hc/en-us/articles/360011050640-Manage-Tests-Load-Testing)
 
 ![Load Tests](images/readme_9.png)
 
 ### Application Testing
--Displays pre-production image and application validation results across a range of test steps and actions
--Enables detailed analysis of individual app behaviors, including start time, document open time, and browser launch
--Highlights application failures with descriptive error types and affected app names for quick troubleshooting
--Supports change control and post-deployment QA by measuring logon time, latency, and step duration across all tested applications
--Learn more about Login Enterprise [Application Testing](https://support.loginvsi.com/hc/en-us/articles/360012843980-Manage-Tests-Application-Testing)
+- Displays pre-production image and application validation results across a range of test steps and actions
+- Enables detailed analysis of individual app behaviors, including start time, document open time, and browser launch
+- Highlights application failures with descriptive error types and affected app names for quick troubleshooting
+- Supports change control and post-deployment QA by measuring logon time, latency, and step duration across all tested applications
+- Learn more about Login Enterprise [Application Testing](https://support.loginvsi.com/hc/en-us/articles/360012843980-Manage-Tests-Application-Testing)
 
 ![Application Testing](images/readme_10.png)
 
 ### Session Metrics Overview
--Compare average CPU and memory usage between two test runs (A and B) across days and time intervals
--Visualize trends over time with daily averages and timestamp-level granularity
--Track min, avg, and max values for both CPU and memory usage to assess consistency and performance stability
--Useful for evaluating performance impact of infrastructure, image, or configuration changes across environments
--Learn more about Login Enterprise [Session Metrics](https://support.loginvsi.com/hc/en-us/articles/9776492249884-Session-Metrics)
+- Compare average CPU and memory usage between two test runs (A and B) across days and time intervals
+- Visualize trends over time with daily averages and timestamp-level granularity
+- Track min, avg, and max values for both CPU and memory usage to assess consistency and performance stability
+- Useful for evaluating performance impact of infrastructure, image, or configuration changes across environments
+- Learn more about Login Enterprise [Session Metrics](https://support.loginvsi.com/hc/en-us/articles/9776492249884-Session-Metrics)
 
 ![Session Metrics](images/readme_11.png)
 
 ### Apps Overview
--Side-by-side comparison of application performance between two selected test runs (A vs. B)
--Visualizes average duration for key application measurements (e.g., app start time, document open) across days
--Bar charts and donut charts show breakdowns by measurement type and app type
--Ideal for A/B testing scenarios such as comparing golden images, application versions, or infrastructure changes
--Learn more about Login Enterprise [Applications](https://support.loginvsi.com/hc/en-us/articles/360001341979-Applications)
+- Side-by-side comparison of application performance between two selected test runs (A vs. B)
+- Visualizes average duration for key application measurements (e.g., app start time, document open) across days
+- Bar charts and donut charts show breakdowns by measurement type and app type
+- Ideal for A/B testing scenarios such as comparing golden images, application versions, or infrastructure changes
+- Learn more about Login Enterprise [Applications](https://support.loginvsi.com/hc/en-us/articles/360001341979-Applications)
 
 ![Apps Overview](images/readme_12.png)
 
 ### EUX Overview
--Provides a side-by-side comparison of EUX (End User Experience) scores between two selected test runs or environments
--Displays minimum, average, and maximum EUX scores for each test to help evaluate overall user experience quality
--Charts EUX score fluctuations over time to identify degradation, instability, or performance improvements
--Ideal for comparing image optimizations, infrastructure changes, or platform transitions (e.g., on-prem vs. AVD)
--Learn more about Login Enterprise [EUX Score](https://support.loginvsi.com/hc/en-us/articles/4408717958162-Login-Enterprise-EUX-score-and-VSImax)
+- Provides a side-by-side comparison of EUX (End User Experience) scores between two selected test runs or environments
+- Displays minimum, average, and maximum EUX scores for each test to help evaluate overall user experience quality
+- Charts EUX score fluctuations over time to identify degradation, instability, or performance improvements
+- Ideal for comparing image optimizations, infrastructure changes, or platform transitions (e.g., on-prem vs. AVD)
+- Learn more about Login Enterprise [EUX Score](https://support.loginvsi.com/hc/en-us/articles/4408717958162-Login-Enterprise-EUX-score-and-VSImax)
 
 ![EUX Score](images/readme_13.png)
 
 ### Login Metrics
--Compares total logon time performance between two selected test runs across user accounts and time intervals
--Breaks down contributing factors such as display connection time, group policy processing, and profile load
--Visualizes minimum, average, and maximum total logon times, along with trends by timestamp and user
--Identifies slow or failed user sessions to support root cause analysis and image optimization
+- Compares total logon time performance between two selected test runs across user accounts and time intervals
+- Breaks down contributing factors such as display connection time, group policy processing, and profile load
+- Visualizes minimum, average, and maximum total logon times, along with trends by timestamp and user
+- Identifies slow or failed user sessions to support root cause analysis and image optimization
 
 ![Login Metrics](images/readme_14.png)
 
 ## Customzing the Login Enterprise Template Report
 The template report is fully customizable, allowing customers to tailor it to their unique environment and reporting needs. Users can modify visuals, add custom measures, or integrate additional data sources to align with internal KPIs or business goals. Once finalized, the report can be published to the Power BI Service for automated refreshes, collaboration, and sharing across teams or departments.
 
--Learn more about [publishing reports from Power BI Desktop](https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-upload-desktop-files)
--Learn how to establish [scheduled data refreshes on the semantic model](https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh)
+- Learn more about [publishing reports from Power BI Desktop](https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-upload-desktop-files)
+- Learn how to establish [scheduled data refreshes on the semantic model](https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh)
 
-> As mentioned previously, the On-premise data gateway will need to be stablished in order for the published template report to run on its scheduled refresh
+> NOTE: As mentioned previously, the On-premise data gateway will need to be stablished in order for the published template report to run on its scheduled refresh
