@@ -20,6 +20,14 @@ Ensure the following before starting:
 - [Power BI Desktop](https://powerbi.microsoft.com/desktop) is installed
 - A valid Login Enterprise API Token
 - Your Login Enterprise FQDN (e.g., `demolab.loginvsi.com`)
+- To successfully extract data from the Login Enterprise API, the SSL certificate used by the Login Enterprise web interface must be trusted by the machine performing the extraction.
+If you are using the default self-signed certificate, you can manually trust the root certificate provided by Login Enterprise.
+
+You can download the root certificate from the following URL:
+
+`https://<appliance>/contentDelivery/content/CA.crt`
+
+Be sure to replace <appliance> with the actual FQDN of your Login Enterprise appliance. Once downloaded, install the certificate into the Trusted Root Certification Authorities store on the machine running Power BI and/or the on-prem data gateway machine if performing scheduled refreshes.
 
 
 ## Step 1: Download the Connector
