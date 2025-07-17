@@ -127,7 +127,7 @@ You can find step-by-step instructions for downloading, installing, and configur
 
 This Power BI template enables Login Enterprise users to effortlessly visualize and analyze key performance metrics across continuous, load, and application testing. It connects directly to the Login Enterprise API through the custom Power BI connector and delivers ready-to-use dashboards for executive summaries, operational monitoring, and troubleshooting. The report comes fully pre-built with a structured data model, defined schema, and a comprehensive set of interactive visualizations whichc eliminates the need for manual setup. The `.pbit` file can be found in the [/template](https://github.com/LoginVSI/LE-PBI-Connector/tree/main/template) folder
 
-When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.loginvsi.com) and API (e.g., Xg0yWyQLAz...) of the Login Enterprise virtual appliance.
+When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.loginvsi.com), API Token (e.g., Xg0yWyQLAz...) of the Login Enterprise virtual appliance, and the amount of days back to retrieve data.
 
 ![Template Prompt](images/readme_15.png)
 
