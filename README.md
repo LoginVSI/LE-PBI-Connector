@@ -74,6 +74,7 @@ Power BI requires custom connectors to be stored in a specific folder.
 4. When prompted:
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
    - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
+   - Select the **Days Back** from the choices (1, 3, 7, 30, 60, 90). This determines how back data is retrieved by the connector. For example, if selecting 30 days, data will be retrieved going back 30 days to the current date
 
 ![FQDN and API Token](images/readme_3.png)
 

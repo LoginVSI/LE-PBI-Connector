@@ -29,11 +29,11 @@ Table.ToNavigationTable = (
 shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
 
 LoginEnterpriseImpl = (
-    FQDN as text, ApiToken as text
+    FQDN as text, ApiToken as text, DaysBack as number
 ) as table =>
     let
-        // Default StartDate and EndDate if not provided
-        StartDate = Date.AddDays(DateTime.Date(DateTime.LocalNow()), -30),
+        // Set StartDate based on user-selected DaysBack
+        StartDate = Date.AddDays(DateTime.Date(DateTime.LocalNow()), -DaysBack),
         EndDate   = DateTime.Date(DateTime.LocalNow()),
 
         // Table functions that receive the date range
@@ -130,6 +130,14 @@ LoginEnterpriseType = type function (
             Documentation.FieldCaption = "API Token",
             Documentation.FieldDescription = "Your Login Enterprise API token",
             Documentation.SampleValues = {"eyJhbGciOi..."}
+        ]
+    ),
+        DaysBack as (
+        type number meta [
+            Documentation.FieldCaption = "Days Back",
+            Documentation.FieldDescription = "Select how many days of data to retrieve",
+            Documentation.AllowedValues = {1, 7, 30, 60, 90},
+            Documentation.SampleValues = {30}
         ]
     )
 ) as table;
