@@ -11,6 +11,8 @@ This guide provides step-by-step instructions for setting up and using the **Log
 
 This connector helps you transform Login Enterprise performance data into actionable insights in Power BI.
 
+> NOTE: The connector is currently setup to use the v7-preview Public API. This API resolves to the same v7 endpoints which is currently the LoginVSI recommended Public API version.
+
 ---
 
 ## Prerequisites
