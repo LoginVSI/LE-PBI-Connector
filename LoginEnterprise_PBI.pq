@@ -173,7 +173,7 @@ GetLoginEnterpriseData = (endpoint as text, FQDN as text, ApiToken as text) as a
             try Json.Document(
                 Web.Contents(
                     "https://" & FQDN, [
-                        RelativePath = "publicApi/v7/" & endpoint,
+                        RelativePath = "publicApi/v7-preview/" & endpoint,
                         Headers = [
                             #"accept" = "application/json",
                             #"Authorization" = "Bearer " & ApiToken
