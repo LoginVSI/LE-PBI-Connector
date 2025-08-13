@@ -135,6 +135,12 @@ When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.
 
 > NOTE: The connector will need to be placed in the Custom Connectors folder of your Power BI Desktop install previously to opening the `.pbit` file as shown above
 
+### Test Name Slicer Behaviour
+
+By default, the Test Name slicer will display "All", but selecting "All" will not aggregate data across all tests. To view results, you must select a specific test from the list. This setup is intentional and helps prevent orphaned or inactive test names from appearing in the visuals and slicers throughout the report.
+
+![Slicer Test Name](images/readme_16.png)
+
 Below is a summary of the pages and their contents of the Login Enterprise template report:
 
 ### Summary
