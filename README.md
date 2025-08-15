@@ -77,8 +77,13 @@ Power BI requires custom connectors to be stored in a specific folder.
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
    - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
    - Select the **Days Back** from the choices (1, 3, 7, 30, 60, 90). This determines how back data is retrieved by the connector. For example, if selecting 30 days, data will be retrieved going back 30 days to the current date
+   - **Use Date Range** – Select TRUE if you want to ignore Days Back and instead use a custom date range.
+   - **Start Date** – The beginning date of your custom range (only used if Use Date Range is TRUE).
+   - **End Date** – The ending date of your custom range (only used if Use Date Range is TRUE).
 
-![FQDN and API Token](images/readme_3.png)
+   > Note: Either Days Back or Use Date Range must be specified. If both are left blank or set incorrectly, the connector defaults to 30 days.
+
+![FQDN and API Token](images/readme_18.png)
 
 5. Click **OK**
 6. When the authentication prompt appears, click **Connect**
@@ -129,11 +134,17 @@ You can find step-by-step instructions for downloading, installing, and configur
 
 This Power BI template enables Login Enterprise users to effortlessly visualize and analyze key performance metrics across continuous, load, and application testing. It connects directly to the Login Enterprise API through the custom Power BI connector and delivers ready-to-use dashboards for executive summaries, operational monitoring, and troubleshooting. The report comes fully pre-built with a structured data model, defined schema, and a comprehensive set of interactive visualizations whichc eliminates the need for manual setup. The `.pbit` file can be found in the [/template](https://github.com/LoginVSI/LE-PBI-Connector/tree/main/template) folder
 
-When opening the `.pbit` file, you will be prompted for the FQDN (e.g., demolab.loginvsi.com), API Token (e.g., Xg0yWyQLAz...) of the Login Enterprise virtual appliance, and the amount of days back to retrieve data.
+When opening the `.pbit` file, you will be prompted to enter the FQDN (e.g., demolab.loginvsi.com) of the Login Enterprise virtual appliance, an API Token (e.g., Xg0yWyQLAz...) generated from the appliance, and either a Days Back value to retrieve data from a set number of days ago up to the current date, or enable Use Date Range and provide both a Start Date and End Date for a specific time period.
 
-![Template Prompt](images/readme_15.png)
+![Template Prompt](images/readme_17.png)
 
 > NOTE: The connector will need to be placed in the Custom Connectors folder of your Power BI Desktop install previously to opening the `.pbit` file as shown above
+
+### Test Name Slicer Behavior
+
+By default, the Test Name slicer will display "All", but selecting "All" will not aggregate data across all tests. To view results, you must select a specific test from the list. This setup is intentional and helps prevent orphaned or inactive test names from appearing in the visuals and slicers throughout the report.
+
+![Slicer Test Name](images/readme_16.png)
 
 Below is a summary of the pages and their contents of the Login Enterprise template report:
 

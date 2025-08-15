@@ -29,12 +29,42 @@ Table.ToNavigationTable = (
 shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
 
 LoginEnterpriseImpl = (
-    FQDN as text, ApiToken as text, DaysBack as number
+    FQDN as text,
+    ApiToken as text,
+    optional DaysBack as number,
+    optional UseDateRange as any,
+    optional StartDateParam as nullable date,
+    optional EndDateParam as nullable date
 ) as table =>
+
     let
-        // Set StartDate based on user-selected DaysBack
-        StartDate = Date.AddDays(DateTime.Date(DateTime.LocalNow()), -DaysBack),
-        EndDate   = DateTime.Date(DateTime.LocalNow()),
+        // Want date range?
+        UseDateRangeValid = UseDateRange <> null and UseDateRange = true,
+
+        // Both dates provided?
+        HasValidDates = UseDateRangeValid and StartDateParam <> null and EndDateParam <> null,
+
+        // Fallback for DaysBack
+        EffectiveDaysBack = if DaysBack <> null then DaysBack else 30,
+
+        Today = DateTime.Date(DateTime.LocalNow()),
+
+        // If dates provided -> use them
+        // Else if UseDateRange was chosen but dates missing -> force last 30 days
+        // Else use DaysBack (or 30 if blank)
+        StartDate =
+            if HasValidDates then
+                StartDateParam
+            else if UseDateRangeValid then
+                Date.AddDays(Today, -30)
+            else
+                Date.AddDays(Today, -EffectiveDaysBack),
+
+        EndDate =
+            if HasValidDates then
+                EndDateParam
+            else
+                Today,
 
         // Table functions that receive the date range
         testsTable = GetTests(FQDN, ApiToken),
@@ -132,12 +162,33 @@ LoginEnterpriseType = type function (
             Documentation.SampleValues = {"eyJhbGciOi..."}
         ]
     ),
-        DaysBack as (
+    optional DaysBack as (
         type number meta [
             Documentation.FieldCaption = "Days Back",
             Documentation.FieldDescription = "Select how many days of data to retrieve",
             Documentation.AllowedValues = {1, 7, 30, 60, 90},
             Documentation.SampleValues = {30}
+        ]
+    ),
+    optional UseDateRange as (
+        type logical meta [
+            Documentation.FieldCaption = "Use Date Range",
+            Documentation.FieldDescription = "Enable this to use the Start/End Date inputs instead of Days Back.",
+            Documentation.SampleValues = {false}
+        ]
+    ),
+    optional StartDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "Start Date",
+            Documentation.FieldDescription = "Used if 'Use Date Range' is enabled. Defaults to 30 days ago if blank.",
+            Documentation.SampleValues = { Date.AddDays(DateTime.Date(DateTime.LocalNow()), -30) }
+        ]
+    ),
+    optional EndDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "End Date",
+            Documentation.FieldDescription = "Used if 'Use Date Range' is enabled. Defaults to today if blank.",
+            Documentation.SampleValues = { DateTime.Date(DateTime.LocalNow()) }
         ]
     )
 ) as table;
