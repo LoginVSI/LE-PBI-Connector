@@ -1,12 +1,12 @@
-# Login Enterprise Power BI Custom Connector
+# Login Enterprise Power BI Custom Report Connector
 
 ## Summary
 
-This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom connector** and also details on the Power BI Template file that is available to leverage dor your Login Enterprise data. You’ll learn how to:
+This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom report connector** and also details on the Power BI Template file that is available to leverage dor your Login Enterprise data. You’ll learn how to:
 
 - Install and configure Power BI Desktop
 - Download and install the `.mez` connector file
-- Enable custom connector support
+- Enable custom report connector support
 - Authenticate using your Login Enterprise API token
 
 This connector helps you transform Login Enterprise performance data into actionable insights in Power BI.
@@ -40,7 +40,7 @@ If you are using the default self-signed certificate, you can manually trust the
 
 ## Step 2: Move `.mez` to the Power BI Custom Connectors Folder
 
-Power BI requires custom connectors to be stored in a specific folder.
+Power BI requires custom report connectors to be stored in a specific folder.
 
 1. Open File Explorer
 2. Navigate to:
