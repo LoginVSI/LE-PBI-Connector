@@ -24,6 +24,43 @@ Table.ToNavigationTable = (
     in
         navigationTable;
 
+RequiredMeasurementPropertyColumns = {
+    "Locale",
+    "CPU_Usage",
+    "Memory_UsedMB",
+    "Network_Latency",
+    "AppLaunch_Duration",
+    "Logon_Duration",
+    "FrameRate",
+    "GPU_Usage",
+    "Disk_Latency",
+    "EUX_Score"
+};
+
+// Ensure a set of columns exists; add as null if missing, and optionally set types
+EnsureColumns = (tbl as table, cols as list, optional types as nullable list) as table =>
+    let
+        added =
+            List.Accumulate(
+                cols,
+                tbl,
+                (state, c) => if Table.HasColumns(state, {c}) then state else Table.AddColumn(state, c, each null)
+            ),
+        typed =
+            if types <> null and List.Count(types) = List.Count(cols)
+            then Table.TransformColumnTypes(added, List.Zip({cols, types}))
+            else added
+    in  typed;
+
+// Safely expand a record column (treats null as empty record, then guarantees all requested fields exist)
+ExpandRecordSafe = (tbl as table, col as text, fields as list, optional types as nullable list) as table =>
+    let
+        normalized = Table.TransformColumns(tbl, {{col, each if _ is null then [] else _}}),
+        expanded   = try Table.ExpandRecordColumn(normalized, col, fields, fields) otherwise normalized,
+        ensured    = EnsureColumns(expanded, fields, types)
+    in
+        ensured;
+
 // Main function to retrieve data from Login Enterprise API
 [DataSource.Kind = "LoginEnterprise_PBI", Publish = "LoginEnterprise_PBI.Publish"]
 shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
@@ -239,43 +276,43 @@ GetLoginEnterpriseData = (endpoint as text, FQDN as text, ApiToken as text) as a
 GetTests = (FQDN as text, ApiToken as text) as table =>
     let
         TestsList = PagedApiRequest("tests?orderBy=name&direction=asc&includeTotalCount=false", FQDN, ApiToken),
-        TableRaw = Table.FromList(TestsList, Splitter.SplitByNothing(), {"Test"}),
-        Expanded = Table.ExpandRecordColumn(
-            TableRaw,
-            "Test",
-            {
-                "id",
-                "name",
-                "description",
-                "type",
-                "created",
-                "state",
-                "numberOfSessions",
-                "rampUpDurationInMinutes",
-                "testDurationInMinutes",
-                "rampDownDurationInMinutes",
-                "euxEnabled",
-                "euxWorkFolders",
-                "sessionMetricsEnabled",
-                "sessionMetricScheduleRate",
-                "sessionMetricGroupKey",
-                "environmentKey",
-                "connectionResources",
-                "workload",
-                "logonTimeTrackingProcess",
-                "engineStartTimeout",
-                "applicationDebugModeEnabled"
-            }
+        TableRaw  = Table.FromList(TestsList, Splitter.SplitByNothing(), {"Test"}),
+
+        // Safely expand the main Test record
+        Expanded  = ExpandRecordSafe(
+            TableRaw, "Test",
+            {"id","name","description","type","created","state","numberOfSessions",
+            "rampUpDurationInMinutes","testDurationInMinutes","rampDownDurationInMinutes",
+            "euxEnabled","euxWorkFolders","sessionMetricsEnabled","sessionMetricScheduleRate",
+            "sessionMetricGroupKey","environmentKey","connectionResources","workload",
+            "logonTimeTrackingProcess","engineStartTimeout","applicationDebugModeEnabled"},
+            {type text,type text,type text,type text,type datetime,type text,Int64.Type,
+            Int64.Type,Int64.Type,Int64.Type,type logical,type any,type logical,Int64.Type,
+            type text,type any,type any,type text,Int64.Type,type logical}
         ),
-        // Remove unwanted columns
-        Removed = Table.RemoveColumns(Expanded, {"euxWorkFolders", "applicationDebugModeEnabled"}),
-        ExpandedConnRes = Table.ExpandRecordColumn(Removed, "connectionResources", {"connector"}),
-        ExpandedConnector = Table.ExpandRecordColumn(
-            ExpandedConnRes,
-            "connector",
-            {"type", "serverUrl", "resource", "commandLine"},
-            {"connector_type", "connector_serverUrl", "connector_resource", "connector_commandLine"}
-        )
+
+        // Be lenient if these optional columns don't exist
+        Removed   = try Table.RemoveColumns(Expanded, {"euxWorkFolders","applicationDebugModeEnabled"}) otherwise Expanded,
+
+        // Get the connector record
+        ExpandedConnRes = ExpandRecordSafe(Removed, "connectionResources", {"connector"}),
+
+        // Explicitly expand connector into connector_* columns (no name collision with Tests[type])
+        ExpandedConnector =
+            try
+                Table.ExpandRecordColumn(
+                    ExpandedConnRes,
+                    "connector",
+                    {"type","serverUrl","resource","commandLine"},
+                    {"connector_type","connector_serverUrl","connector_resource","connector_commandLine"}
+                )
+            otherwise
+                // If connector is missing, still guarantee the columns exist
+                EnsureColumns(
+                    ExpandedConnRes,
+                    {"connector_type","connector_serverUrl","connector_resource","connector_commandLine"},
+                    {type text,type text,type text,type text}
+                )
     in
         ExpandedConnector;
 
@@ -290,49 +327,51 @@ GetTestRuns = (FQDN as text, ApiToken as text) as table =>
                     baseEndpoint = "tests/test-runs?testType=" & _ & "&orderBy=testName&direction=asc&include=testRunConfigurationSnapshot",
                     rows = PagedApiRequest(baseEndpoint, FQDN, ApiToken),
                     base = Table.FromList(rows, Splitter.SplitByNothing(), {"TestRun"}),
-                    expanded = Table.ExpandRecordColumn(
-                        base,
-                        "TestRun",
+                    expanded = ExpandRecordSafe(
+                        base, "TestRun",
                         {
-                            "id",
-                            "testId",
-                            "type",
-                            "state",
-                            "result",
-                            "rampUpCompleted",
-                            "activeSessionCount",
-                            "statisticsReady",
-                            "productVersion",
-                            "created",
-                            "started",
-                            "finished",
-                            "counter",
-                            "numberOfEvents",
-                            "comment",
-                            "loginCounts",
-                            "engineCounts",
-                            "appExecutionCounts",
-                            "vsiMax",
-                            "testRunConfigurationSnapshot"
+                            "id","testId","type","state","result","rampUpCompleted",
+                            "activeSessionCount","statisticsReady","productVersion",
+                            "created","started","finished","counter","numberOfEvents",
+                            "comment","loginCounts","engineCounts","appExecutionCounts",
+                            "vsiMax","testRunConfigurationSnapshot"
                         }
                     ),
-                    exp1 = Table.ExpandRecordColumn(
+                    exp1Raw = ExpandRecordSafe(
                         expanded,
                         "loginCounts",
-                        {"successCount", "totalCount"},
-                        {"login_successCount", "login_totalCount"}
+                        {"successCount", "totalCount"}
                     ),
-                    exp2 = Table.ExpandRecordColumn(
+                    exp1 = Table.RenameColumns(
+                        exp1Raw,
+                        {
+                            {"successCount", "login_successCount"},
+                            {"totalCount",   "login_totalCount"}
+                        }
+                    ),
+                    exp2Raw = ExpandRecordSafe(
                         exp1,
                         "engineCounts",
-                        {"successCount", "totalCount"},
-                        {"engine_successCount", "engine_totalCount"}
+                        {"successCount", "totalCount"}
                     ),
-                    exp3 = Table.ExpandRecordColumn(
+                    exp2 = Table.RenameColumns(
+                        exp2Raw,
+                        {
+                            {"successCount", "engine_successCount"},
+                            {"totalCount",   "engine_totalCount"}
+                        }
+                    ),
+                    exp3Raw = ExpandRecordSafe(
                         exp2,
                         "appExecutionCounts",
-                        {"successCount", "totalCount"},
-                        {"app_successCount", "app_totalCount"}
+                        {"successCount", "totalCount"}
+                    ),
+                    exp3 = Table.RenameColumns(
+                        exp3Raw,
+                        {
+                            {"successCount", "app_successCount"},
+                            {"totalCount",   "app_totalCount"}
+                        }
                     ),
                     addVSIMax = Table.AddColumn(
                         exp3,
@@ -428,7 +467,18 @@ GetWorkloadSteps = (testRunsTable as table) as table =>
                 in
                     flattened
         ),
-        table = Table.Combine(List.Transform(workloadRecords, each Table.FromRecords(List.RemoveNulls(_))))
+        cleanedRecords = List.Transform(workloadRecords, each List.RemoveNulls(_)),
+        allRecords = List.Combine(cleanedRecords),
+        
+        // Handle empty result
+        table = if List.Count(allRecords) > 0 then
+                    Table.FromRecords(allRecords)
+                else
+                    #table(
+                        {"testRunId", "isGroupStep", "stepType", "appId", "applicationName", 
+                         "runOnce", "leaveRunning", "delayInSeconds", "groupName"},
+                        {}
+                    )
     in
         table;
 
@@ -473,28 +523,34 @@ GetAggregatedEUXResults = (
             )
         ),
 
-        // Convert into table
-        tableRaw = Table.FromList(aggregatedEUXResults, Splitter.SplitByNothing(), {"EUX"}),
-
-        // Expand fields
-        expanded = Table.ExpandRecordColumn(
-            tableRaw,
-            "EUX",
-            {"timestamp", "score", "count", "testRunId"}
-        ),
-
-        // Cast types
-        typed = Table.TransformColumnTypes(
-            expanded,
-            {
-                {"timestamp", type datetime},
-                {"score", type number},
-                {"count", Int64.Type},
-                {"testRunId", type text}
-            }
-        )
+        // Convert into table with schema protection
+        result = if List.Count(aggregatedEUXResults) > 0 then
+                     let
+                         tableRaw = Table.FromList(aggregatedEUXResults, Splitter.SplitByNothing(), {"EUX"}),
+                         expanded = Table.ExpandRecordColumn(
+                             tableRaw,
+                             "EUX",
+                             {"timestamp", "score", "count", "testRunId"}
+                         ),
+                         expandedFixed = Table.SelectColumns(expanded, {"timestamp","score","count","testRunId"}, MissingField.UseNull),
+                         typed = Table.TransformColumnTypes(
+                             expandedFixed,
+                             {
+                                 {"timestamp", type datetime},
+                                 {"score", type number},
+                                 {"count", Int64.Type},
+                                 {"testRunId", type text}
+                             }
+                         )
+                     in
+                         typed
+                 else
+                     #table(
+                         type table [timestamp = datetime, score = number, count = Int64.Type, testRunId = text],
+                         {}
+                     )
     in
-        typed;
+        result;
 
 // Function to retrieve applications from the Login Enterprise API
 GetApplications = (FQDN as text, ApiToken as text) as table =>
@@ -502,14 +558,12 @@ GetApplications = (FQDN as text, ApiToken as text) as table =>
         endpoint = "applications?orderBy=name&direction=asc&count=1000&offset=0&includeTotalCount=false&include=none",
         rawList = PagedApiRequest(endpoint, FQDN, ApiToken),
         tableRaw = Table.FromList(rawList, Splitter.SplitByNothing(), {"Application"}),
-        expanded = Table.ExpandRecordColumn(
-            tableRaw,
-            "Application",
-            {
-                "id", "name", "description", "type", "username", "commandLine",
-                "workingDirectory", "mainWindowTitle", "mainProcessName", "created",
-                "lastModified", "takeScreenshots", "hasPassword"
-            }
+        expanded = ExpandRecordSafe(
+            tableRaw, "Application",
+            {"id","name","description","type","username","commandLine","workingDirectory",
+            "mainWindowTitle","mainProcessName","created","lastModified","takeScreenshots","hasPassword"},
+            {type text,type text,type text,type text,type text,type text,type text,
+            type text,type text,type datetime,type datetime,type logical,type logical}
         ),
         typed = Table.TransformColumnTypes(
             expanded,
@@ -584,52 +638,55 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
             )
         ),
 
-        // Build a single table from that combined list
-        tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
+        // Core columns expected by the template
+        requiredBase = {
+            "measurementId","appExecutionId","applicationId","launcherName",
+            "accountId","testRunId","userSessionId","duration","timestamp"
+        },
 
-        // Buffer once before expanding/pivoting
-        bufferedTable = Table.Buffer(tableRaw),
+        // Union with required template columns
+        propListStable = List.Distinct(requiredBase & RequiredMeasurementPropertyColumns),
 
-        // Expand record & pivot properties in one shot
-        expandedMeas = Table.ExpandRecordColumn(
-            bufferedTable,
-            "Measurement",
-            {
-                "measurementId",
-                "appExecutionId",
-                "applicationId",
-                "launcherName",
-                "accountId",
-                "testRunId",
-                "userSessionId",
-                "duration",
-                "timestamp",
-                "properties"
-            }
-        ),
-        propertiesExp = Table.ExpandListColumn(expandedMeas, "properties"),
-        propertyFields = Table.ExpandRecordColumn(propertiesExp, "properties", {"propertyId", "value"}),
-        pivoted = Table.Pivot(propertyFields, List.Distinct(propertyFields[propertyId]), "propertyId", "value"),
-        allCols = List.Distinct(
-            {
-                "measurementId",
-                "appExecutionId",
-                "applicationId",
-                "launcherName",
-                "accountId",
-                "testRunId",
-                "userSessionId",
-                "duration",
-                "timestamp"
-            }
-                & List.Distinct(propertyFields[propertyId])
-        ),
-        finalCols = Table.SelectColumns(pivoted, allCols),
-
-        // Cast types
-        typed = Table.TransformColumnTypes(finalCols, {{"timestamp", type datetime}, {"duration", type number}})
+        // Handle empty result with proper schema
+        result = if List.Count(allRawRecords) > 0 then
+                     let
+                         tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
+                         bufferedTable = Table.Buffer(tableRaw),
+                         expandedMeas = Table.ExpandRecordColumn(
+                             bufferedTable,
+                             "Measurement",
+                             {
+                                 "measurementId",
+                                 "appExecutionId",
+                                 "applicationId",
+                                 "launcherName",
+                                 "accountId",
+                                 "testRunId",
+                                 "userSessionId",
+                                 "duration",
+                                 "timestamp",
+                                 "properties"
+                             }
+                         ),
+                         propertiesExp = Table.ExpandListColumn(expandedMeas, "properties"),
+                         propertyFields = Table.ExpandRecordColumn(propertiesExp, "properties", {"propertyId", "value"}),
+                         propList = List.Distinct(propertyFields[propertyId]),
+                         propListMerged = List.Distinct(propList & RequiredMeasurementPropertyColumns),
+                         pivoted = Table.Pivot(propertyFields, propListMerged, "propertyId", "value"),
+                         allColsStable = List.Distinct(requiredBase & propListMerged),
+                         finalCols = Table.SelectColumns(pivoted, allColsStable, MissingField.UseNull),
+                         typed = Table.TransformColumnTypes(finalCols, {{"timestamp", type datetime}, {"duration", type number}})
+                     in
+                         typed
+                 else
+                     // Create empty table with stable schema
+                     let
+                         emptyTable = #table(propListStable, {}),
+                         typed = Table.TransformColumnTypes(emptyTable, {{"timestamp", type datetime}, {"duration", type number}})
+                     in
+                         typed
     in
-        typed;
+        result;
 
 // Function to retrieve events for test runs
 GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
@@ -661,25 +718,34 @@ GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date)
             )
         ),
 
-        // Convert the combined list into a table
-        tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
-
-        // Buffer once (so further steps aren’t re-querying)
-        bufferedTable = Table.Buffer(tableRaw),
-
-        // Expand only the core fields (skip the full 'properties' for perf)
-        expanded = Table.ExpandRecordColumn(
-            bufferedTable,
-            "Event",
-            {"id", "eventType", "timestamp", "title", "testId", "testRunId", "userSessionId", "applicationId"}
-        ),
-
-        // Cast types
-        typed = Table.TransformColumnTypes(expanded, {{"timestamp", type datetime}})
+        // Handle empty result with proper schema
+        result = if List.Count(sampledRowsPerDay) > 0 then
+                     let
+                         tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
+                         bufferedTable = Table.Buffer(tableRaw),
+                         expanded = ExpandRecordSafe(
+                             bufferedTable,
+                             "Event",
+                             {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"}
+                         ),
+                         fixed = Table.SelectColumns(
+                             expanded,
+                             {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"},
+                             MissingField.UseNull
+                         ),
+                         typed = Table.TransformColumnTypes(fixed, {{"timestamp", type datetime}})
+                     in
+                         typed
+                 else
+                     #table(
+                         type table [id = text, eventType = text, timestamp = datetime, title = text, 
+                                     testId = text, testRunId = text, userSessionId = text, applicationId = text],
+                         {}
+                     )
     in
-        typed;
+        result;
 
-// Function to retrieve user session metrics for test runs
+// Function to retrieve user sessions for test runs
 GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
     let
         // Buffer testRunsTable so the .Column("id") call is cheap
@@ -704,10 +770,9 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                         response = PagedApiRequest(endpoint, FQDN, ApiToken),
                         base = Table.FromList(response, Splitter.SplitByNothing(), {"UserSession"}),
 
-                        // Filter rows that actually contain the 'created' field
-                        filtered = Table.SelectRows(base, each [UserSession] <> null and Record.HasFields([UserSession], "created")),
+                        // Expand with error handling for missing fields
                         expanded = try Table.ExpandRecordColumn(
-                            filtered,
+                            base,
                             "UserSession",
                             {
                                 "id", "testId", "testRunId", "created", "loginState", "sessionState",
@@ -715,24 +780,70 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                                 "loginStartTime", "loginEndTime", "sessionEndTime",
                                 "sessionMetricEnabled", "properties"
                             }
-                        ) otherwise Table.FromRows({}, {"id", "testId", "testRunId", "created", "loginState", "sessionState",
-                                "stateLastModified", "testType", "accountId", "launcherName",
-                                "loginStartTime", "loginEndTime", "sessionEndTime",
-                                "sessionMetricEnabled", "properties"})
+                        ) otherwise #table(
+                            {"id", "testId", "testRunId", "created", "loginState", "sessionState",
+                             "stateLastModified", "testType", "accountId", "launcherName",
+                             "loginStartTime", "loginEndTime", "sessionEndTime",
+                             "sessionMetricEnabled", "properties"},
+                            {}
+                        )
                     in
                         expanded
-                    otherwise null
+                    otherwise #table(
+                        {"id", "testId", "testRunId", "created", "loginState", "sessionState",
+                         "stateLastModified", "testType", "accountId", "launcherName",
+                         "loginStartTime", "loginEndTime", "sessionEndTime",
+                         "sessionMetricEnabled", "properties"},
+                        {}
+                    )
         ),
 
-        // Combine all those small tables into one big table
-        combined = Table.Combine(List.RemoveNulls(rawList)),
-
-        // Buffer
+        // Combine with empty data protection
+        cleanedList = List.RemoveNulls(rawList),
+        combined = if List.Count(cleanedList) > 0 then 
+                       Table.Combine(cleanedList)
+                   else
+                       #table(
+                           {"id", "testId", "testRunId", "created", "loginState", "sessionState",
+                            "stateLastModified", "testType", "accountId", "launcherName",
+                            "loginStartTime", "loginEndTime", "sessionEndTime",
+                            "sessionMetricEnabled", "properties"},
+                           {}
+                       ),
         bufferedTable = Table.Buffer(combined),
 
-        // Cast types
+        // Guarantee schema even if some fields are missing this refresh
+        expectedCols = {
+            "id","testId","testRunId","created","loginState","sessionState",
+            "stateLastModified","testType","accountId","launcherName",
+            "loginStartTime","loginEndTime","sessionEndTime",
+            "sessionMetricEnabled","properties"
+        },
+        // Guarantee schema even if some fields are missing this refresh
+        fixed =
+            EnsureColumns(
+                Table.SelectColumns(bufferedTable, expectedCols, MissingField.UseNull),
+                expectedCols,
+                {
+                    type text,          // id
+                    type text,          // testId
+                    type text,          // testRunId
+                    type datetime,      // created
+                    type text,          // loginState
+                    type text,          // sessionState
+                    type datetime,      // stateLastModified
+                    type text,          // testType
+                    type text,          // accountId
+                    type text,          // launcherName
+                    type datetime,      // loginStartTime
+                    type datetime,      // loginEndTime
+                    type datetime,      // sessionEndTime
+                    type logical,       // sessionMetricEnabled
+                    type any            // properties
+                }
+            ),
         typed = Table.TransformColumnTypes(
-            bufferedTable,
+            fixed,
             {
                 {"created", type datetime},
                 {"stateLastModified", type datetime},
@@ -827,42 +938,51 @@ GetUserSessionMetrics = (
         // Combine both lists into a single flat list of records
         allAggregatedRows = List.Combine({ loadAggregated, continuousAggregated }),
 
-        // Convert that flat list into a one column table of JSON records
-        tableRaw  = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
-
-        // Buffer that table to materialize all rows at once
-        buffered   = Table.Buffer(tableRaw),
-
-        // Expand the six fields plus testRunId
-        expanded   = Table.ExpandRecordColumn(
-                       buffered,
-                       "Metric",
-                       {
-                         "timestamp",
-                         "metricId",
-                         "measurement",
-                         "count",
-                         "displayName",
-                         "unit",
-                         "testRunId"
-                       }
-                     ),
-
-        // Cast types
-        typed = Table.TransformColumnTypes(
-                  expanded,
-                  {
-                    {"timestamp",   type datetime},
-                    {"metricId",    Int64.Type},
-                    {"measurement", type number},
-                    {"count",       Int64.Type},
-                    {"displayName", type text},
-                    {"unit",        type text},
-                    {"testRunId",   type text}
-                  }
-               )
+        // Handle empty result with proper schema
+        result = if List.Count(allAggregatedRows) > 0 then
+                     let
+                         tableRaw  = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
+                         buffered   = Table.Buffer(tableRaw),
+                         expanded   = ExpandRecordSafe(
+                                        buffered,
+                                        "Metric",
+                                        {
+                                          "timestamp",
+                                          "metricId",
+                                          "measurement",
+                                          "count",
+                                          "displayName",
+                                          "unit",
+                                          "testRunId"
+                                        }
+                                      ),
+                         expandedFixed = Table.SelectColumns(
+                             expanded,
+                             {"timestamp","metricId","measurement","count","displayName","unit","testRunId"},
+                             MissingField.UseNull
+                         ),
+                         typed = Table.TransformColumnTypes(
+                             expandedFixed,
+                             {
+                                 {"timestamp", type datetime},
+                                 {"metricId", Int64.Type},
+                                 {"measurement", type number},
+                                 {"count", Int64.Type},
+                                 {"displayName", type text},
+                                 {"unit", type text},
+                                 {"testRunId", type text}
+                             }
+                         )
+                     in
+                         typed
+                 else
+                     #table(
+                         type table [timestamp = datetime, metricId = Int64.Type, measurement = number, 
+                                     count = Int64.Type, displayName = text, unit = text, testRunId = text],
+                         {}
+                     )
     in
-        typed;
+        result;
 
 // Test connection function for the Login Enterprise data source
 LoginEnterprise_PBI.TestConnection = (FQDN as text, ApiToken as text) =>
