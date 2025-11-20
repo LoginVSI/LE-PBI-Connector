@@ -24,19 +24,6 @@ Table.ToNavigationTable = (
     in
         navigationTable;
 
-RequiredMeasurementPropertyColumns = {
-    "Locale",
-    "CPU_Usage",
-    "Memory_UsedMB",
-    "Network_Latency",
-    "AppLaunch_Duration",
-    "Logon_Duration",
-    "FrameRate",
-    "GPU_Usage",
-    "Disk_Latency",
-    "EUX_Score"
-};
-
 // Ensure a set of columns exists; add as null if missing, and optionally set types
 EnsureColumns = (tbl as table, cols as list, optional types as nullable list) as table =>
     let
@@ -233,7 +220,7 @@ LoginEnterpriseType = type function (
 // Function to handle paginated API requests
 PagedApiRequest = (baseEndpoint as text, FQDN as text, ApiToken as text, optional pageSize as number) as list =>
     let
-        pageSizeVal = if (pageSize <> null) then pageSize else 1000,
+        pageSizeVal = if (pageSize <> null) then pageSize else 5000,
         // Increased default page size
         PageFn = (offset as number) as list =>
             let
@@ -577,10 +564,10 @@ GetApplications = (FQDN as text, ApiToken as text) as table =>
     in
         typed;
 
-// Function to retrieve measurements for test runs
+// Function to retrieve measurements - OPTIMIZED (Metadata + Context Columns + Parallel)
 GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
     let
-        // Filter runs exactly like GetUserSessionMetrics
+        // 1. Filter runs
         continuousRuns = Table.SelectRows(testRunsTable, each [type] = "continuousTest"),
         otherRuns = Table.SelectRows(testRunsTable, each [type] <> "continuousTest"),
         otherFiltered = Table.SelectRows(
@@ -598,150 +585,181 @@ GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, Start
         runsToFetch = Table.Combine({continuousRuns, otherFiltered}),
         runsBuffered = Table.Buffer(runsToFetch),
 
-        // Prepare the one-day boundaries
+        // 2. Prepare Date Ranges
         daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
         dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
 
-        // Fetch all measurement JSON objects into one big list
-        allRawRecords = List.Combine(
-            List.Transform(
-                Table.Column(runsBuffered, "id"),
-                (runId) =>
-                    List.Combine(
-                        List.Transform(
-                            daysList,
-                            (dayStart) =>
-                                let
-                                    dayEnd = Date.AddDays(dayStart, 1),
-                                    fromParam = dateToIso(dayStart),
-                                    toParam = dateToIso(dayEnd),
-                                    endpoint = "test-runs/"
-                                        & runId
-                                        & "/measurements"
-                                        & "?from="
-                                        & fromParam
-                                        & "&to="
-                                        & toParam
-                                        & "&include=all"
-                                        & "&count=1000"
-                                        & "&offset=0",
-                                    rawResp = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-                                    itemsList =
-                                        if rawResp <> null and Record.HasFields(rawResp, "items") then
-                                            rawResp[items]
-                                        else
-                                            {}
-                                in
-                                    itemsList
-                        )
-                    )
-            )
+        // 3. PARALLEL FETCHING SETUP
+        RunIdList = Table.Column(runsBuffered, "id"),
+        CrossJoin = List.TransformMany(
+            RunIdList,
+            each daysList, 
+            (runId, day) => [RunId = runId, DayStart = day]
         ),
+        ToDoTable = Table.FromRecords(CrossJoin),
 
-        // Core columns expected by the template
-        requiredBase = {
-            "measurementId","appExecutionId","applicationId","launcherName",
-            "accountId","testRunId","userSessionId","duration","timestamp"
-        },
+        // B. Define the Fetch Function
+        FetchDayData = (runId as text, dayStart as date) =>
+            let
+                dayEnd = Date.AddDays(dayStart, 1),
+                fromParam = dateToIso(dayStart),
+                toParam = dateToIso(dayEnd),
+                endpoint = "test-runs/"
+                    & runId
+                    & "/measurements"
+                    & "?from=" & fromParam
+                    & "&to=" & toParam
+                    & "&include=all"  // REQUIRED: Ensures AccountName/Protocol are included
+                    & "&count=1000" 
+                    & "&offset=0",
+                
+                rawResp = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null
+            in
+                if rawResp <> null and Record.HasFields(rawResp, "items") then rawResp[items] else {},
 
-        // Union with required template columns
-        propListStable = List.Distinct(requiredBase & RequiredMeasurementPropertyColumns),
+        // C. Trigger Parallel Execution
+        AddedData = Table.AddColumn(ToDoTable, "Data", each FetchDayData([RunId], [DayStart])),
 
-        // Handle empty result with proper schema
+        // D. Combine Results
+        ExpandedList = Table.ExpandListColumn(AddedData, "Data"),
+        allRawRecords = ExpandedList[Data],
+
+        // 4. Process Results
         result = if List.Count(allRawRecords) > 0 then
-                     let
-                         tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
-                         bufferedTable = Table.Buffer(tableRaw),
-                         expandedMeas = Table.ExpandRecordColumn(
-                             bufferedTable,
-                             "Measurement",
-                             {
-                                 "measurementId",
-                                 "appExecutionId",
-                                 "applicationId",
-                                 "launcherName",
-                                 "accountId",
-                                 "testRunId",
-                                 "userSessionId",
-                                 "duration",
-                                 "timestamp",
-                                 "properties"
-                             }
-                         ),
-                         propertiesExp = Table.ExpandListColumn(expandedMeas, "properties"),
-                         propertyFields = Table.ExpandRecordColumn(propertiesExp, "properties", {"propertyId", "value"}),
-                         propList = List.Distinct(propertyFields[propertyId]),
-                         propListMerged = List.Distinct(propList & RequiredMeasurementPropertyColumns),
-                         pivoted = Table.Pivot(propertyFields, propListMerged, "propertyId", "value"),
-                         allColsStable = List.Distinct(requiredBase & propListMerged),
-                         finalCols = Table.SelectColumns(pivoted, allColsStable, MissingField.UseNull),
-                         typed = Table.TransformColumnTypes(finalCols, {{"timestamp", type datetime}, {"duration", type number}})
-                     in
-                         typed
-                 else
-                     // Create empty table with stable schema
-                     let
-                         emptyTable = #table(propListStable, {}),
-                         typed = Table.TransformColumnTypes(emptyTable, {{"timestamp", type datetime}, {"duration", type number}})
-                     in
-                         typed
+             let
+                 tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
+                 
+                 // Step 4a: Expand Metadata AND Properties List
+                 expandedMeas = Table.ExpandRecordColumn(
+                     tableRaw,
+                     "Measurement",
+                     {
+                         "measurementId", "appExecutionId", "applicationId", "launcherName",
+                         "accountId", "testRunId", "userSessionId", "duration", "timestamp",
+                         "properties" // We grab properties temporarily
+                     }
+                 ),
+
+                 // Step 4b: Extract ONLY AccountName and RemotingProtocol
+                 // We transform the properties list {[propertyId="AccountName", value="User1"], ...} 
+                 // into a Record [AccountName="User1", ...] so we can expand it easily.
+                 ExtractContext = Table.AddColumn(
+                     expandedMeas, 
+                     "ContextProps", 
+                     each 
+                        try 
+                            Record.FromList(
+                                List.Transform([properties], each [value]), 
+                                List.Transform([properties], each [propertyId])
+                            )
+                        otherwise []
+                 ),
+
+                 // Step 4c: Expand the new custom record
+                 // We use ExpandRecordSafe just in case some rows are missing these fields
+                 ExpandedContext = ExpandRecordSafe(
+                     ExtractContext, 
+                     "ContextProps", 
+                     {"AccountName", "RemotingProtocol"}, 
+                     {type text, type text}
+                 ),
+
+                 // Step 4d: Select Final Columns (Dropping the heavy 'properties' list)
+                 finalCols = Table.SelectColumns(
+                     ExpandedContext, 
+                     {
+                        "measurementId", "appExecutionId", "applicationId", "launcherName", 
+                        "accountId", "testRunId", "userSessionId", "duration", "timestamp",
+                        "AccountName", "RemotingProtocol"
+                     }, 
+                     MissingField.UseNull
+                 ),
+
+                 typed = Table.TransformColumnTypes(
+                     finalCols, 
+                     {
+                         {"timestamp", type datetime}, 
+                         {"duration", type number},
+                         {"AccountName", type text},
+                         {"RemotingProtocol", type text}
+                     }
+                 )
+             in
+                 typed
+         else
+             #table(
+                 type table [
+                     measurementId = text, appExecutionId = text, applicationId = text, launcherName = text,
+                     accountId = text, testRunId = text, userSessionId = text, duration = number,
+                     timestamp = datetime, AccountName = text, RemotingProtocol = text
+                 ],
+                 {}
+             )
     in
         result;
 
-// Function to retrieve events for test runs
+// Function to retrieve events for test runs - OPTIMIZED (Parallel + No Buffer)
 GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
     let
-        // Build a list of 1-day boundaries from StartDate to EndDate
+        // 1. Prepare Date Ranges
         daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
-
-        // Helper functions to convert a date to ISO-8601 strings
         dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
 
-        // For each day, pull only the first 1000 events (count=1000, offset=0)
-        sampledRowsPerDay = List.Combine(
-            List.Transform(
-                daysList,
-                (dayStart) =>
-                    let
-                        dayEnd = Date.AddDays(dayStart, 1),
-                        fromParam = dateToIso(dayStart),
-                        toParam = dateToIso(dayEnd),
-                        endpointDay =
-                            "events"
-                            & "?direction=asc"
-                            & "&include=none"
-                            & "&from=" & fromParam
-                            & "&to=" & toParam,
-                        items = PagedApiRequest(endpointDay, FQDN, ApiToken)
-                    in
-                        items
-            )
-        ),
+        // 2. PARALLEL FETCHING SETUP
+        // Events are global (not per test run), so we just iterate over Days
+        ToDoTable = Table.FromList(daysList, Splitter.SplitByNothing(), {"DayStart"}),
+        
+        // Define the fetch function
+        FetchEventData = (dayStart as date) =>
+            let
+                dayEnd = Date.AddDays(dayStart, 1),
+                fromParam = dateToIso(dayStart),
+                toParam = dateToIso(dayEnd),
+                endpointDay =
+                    "events"
+                    & "?direction=asc"
+                    & "&include=none"
+                    & "&from=" & fromParam
+                    & "&to=" & toParam,
+                
+                // Use PagedApiRequest here as events might exceed 1000 per day
+                items = PagedApiRequest(endpointDay, FQDN, ApiToken)
+            in
+                items,
 
-        // Handle empty result with proper schema
+        // 3. Trigger Parallel Execution
+        AddedData = Table.AddColumn(ToDoTable, "Data", each FetchEventData([DayStart])),
+
+        // 4. Combine Results
+        ExpandedList = Table.ExpandListColumn(AddedData, "Data"),
+        sampledRowsPerDay = ExpandedList[Data],
+
+        // 5. Process Results
         result = if List.Count(sampledRowsPerDay) > 0 then
-                     let
-                         tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
-                         bufferedTable = Table.Buffer(tableRaw),
-                         expanded = ExpandRecordSafe(
-                             bufferedTable,
-                             "Event",
-                             {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"}
-                         ),
-                         fixed = Table.SelectColumns(
-                             expanded,
-                             {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"},
-                             MissingField.UseNull
-                         ),
-                         typed = Table.TransformColumnTypes(fixed, {{"timestamp", type datetime}})
-                     in
-                         typed
-                 else
-                     #table(
-                         type table [id = text, eventType = text, timestamp = datetime, title = text, 
-                                     testId = text, testRunId = text, userSessionId = text, applicationId = text],
-                         {}
-                     )
+             let
+                 tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
+                 
+                 // REMOVED: Table.Buffer(tableRaw) - Stream the data directly
+                 
+                 expanded = ExpandRecordSafe(
+                     tableRaw,
+                     "Event",
+                     {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"}
+                 ),
+                 fixed = Table.SelectColumns(
+                     expanded,
+                     {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"},
+                     MissingField.UseNull
+                 ),
+                 typed = Table.TransformColumnTypes(fixed, {{"timestamp", type datetime}})
+             in
+                 typed
+         else
+             #table(
+                 type table [id = text, eventType = text, timestamp = datetime, title = text, 
+                             testId = text, testRunId = text, userSessionId = text, applicationId = text],
+                 {}
+             )
     in
         result;
 
@@ -810,7 +828,6 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
                             "sessionMetricEnabled", "properties"},
                            {}
                        ),
-        bufferedTable = Table.Buffer(combined),
 
         // Guarantee schema even if some fields are missing this refresh
         expectedCols = {
@@ -822,7 +839,7 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
         // Guarantee schema even if some fields are missing this refresh
         fixed =
             EnsureColumns(
-                Table.SelectColumns(bufferedTable, expectedCols, MissingField.UseNull),
+                Table.SelectColumns(combined, expectedCols, MissingField.UseNull),
                 expectedCols,
                 {
                     type text,          // id
@@ -942,9 +959,8 @@ GetUserSessionMetrics = (
         result = if List.Count(allAggregatedRows) > 0 then
                      let
                          tableRaw  = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
-                         buffered   = Table.Buffer(tableRaw),
                          expanded   = ExpandRecordSafe(
-                                        buffered,
+                                        tableRaw,
                                         "Metric",
                                         {
                                           "timestamp",
