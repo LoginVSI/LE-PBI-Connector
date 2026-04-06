@@ -96,7 +96,7 @@ Power BI requires custom report connectors to be stored in a specific folder.
 
 ![Load Tables](images/readme_5.png)
 
-> ⏳ Data may take 2–3 minutes to load depending on volume
+> ⏳ Data may take between 5-10 minutes to load depending on volume
 
 ---
 
@@ -117,6 +117,8 @@ Understanding how the Login Enterprise tables relate to each other is key to bui
 | Measurements           | `applicationId`       | Applications       | `id`  | Many-to-One   |
 | Events           | `applicationId`       | Applications       | `id`  | Many-to-One   |
 | Workload Steps           | `appId`       | Applications       | `id`  | Many-to-One   |
+| Environments           | `id`       | Tests       | `environmentKey`  | Many-to-One   |
+| Platform Metrics          | `environmentKey`       | Environments       | `id`  | Many-to-One   |
 
 ---
 
@@ -218,6 +220,17 @@ Below is a summary of the pages and their contents of the Login Enterprise templ
 - Identifies slow or failed user sessions to support root cause analysis and image optimization
 
 ![Login Metrics](images/readme_14.png)
+
+### Platform Metrics Overview
+- Provides a dedicated view of platform telemetry for a selected Login Enterprise environment, making it easier to understand, analyze, and compare infrastructure behavior
+- Supports environment-based filtering with a friendly environment selector, while still allowing users to search by Environment ID when needed
+- Enforces single-unit analysis so only one metric unit is displayed at a time, preventing mixed-unit charts and improving readability
+- Charts platform metric trends over time across the selected reporting window, including signals such as latency, bandwidth, IOPS, CPU, memory, storage, and other available platform metrics
+- Supports instance-aware analysis for scenarios where the same metric is collected from multiple sources, such as multiple launcher hostnames during a load test
+- Displays associated Login Enterprise tests for the selected environment to help connect infrastructure behavior back to test activity
+- Extends the existing Login Enterprise template with a pre-built, no-modeling-required experience for platform-level telemetry analysis
+
+![Platform Metrics](images/readme_19.png)
 
 ## Customzing the Login Enterprise Template Report
 The template report is fully customizable, allowing customers to tailor it to their unique environment and reporting needs. Users can modify visuals, add custom measures, or integrate additional data sources to align with internal KPIs or business goals. Once finalized, the report can be published to the Power BI Service for automated refreshes, collaboration, and sharing across teams or departments.

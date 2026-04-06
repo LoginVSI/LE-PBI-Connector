@@ -1,4 +1,4 @@
-[Version = "1.0.0"]
+[Version = "1.1.0"]
 section LoginEnterprise_PBI;
 
 // Converts a table to a navigation table with specified key columns and metadata
@@ -48,10 +48,18 @@ ExpandRecordSafe = (tbl as table, col as text, fields as list, optional types as
     in
         ensured;
 
+// Convert a record to JSON text, handling nulls gracefully
+RecordToJsonText = (value as any) as nullable text =>
+    if value = null then
+        null
+    else
+        try Text.FromBinary(Json.FromValue(value), TextEncoding.Utf8) otherwise null;
+
 // Main function to retrieve data from Login Enterprise API
 [DataSource.Kind = "LoginEnterprise_PBI", Publish = "LoginEnterprise_PBI.Publish"]
 shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
 
+// Implementation of the main function
 LoginEnterpriseImpl = (
     FQDN as text,
     ApiToken as text,
@@ -73,9 +81,6 @@ LoginEnterpriseImpl = (
 
         Today = DateTime.Date(DateTime.LocalNow()),
 
-        // If dates provided -> use them
-        // Else if UseDateRange was chosen but dates missing -> force last 30 days
-        // Else use DaysBack (or 30 if blank)
         StartDate =
             if HasValidDates then
                 StartDateParam
@@ -90,8 +95,9 @@ LoginEnterpriseImpl = (
             else
                 Today,
 
-        // Table functions that receive the date range
+        // Core tables
         testsTable = GetTests(FQDN, ApiToken),
+        environmentsTable = GetEnvironments(FQDN, ApiToken, testsTable),
         testRunsTable = GetTestRuns(FQDN, ApiToken),
         workloadStepsTable = GetWorkloadSteps(testRunsTable),
         applicationsTable = GetApplications(FQDN, ApiToken),
@@ -100,7 +106,32 @@ LoginEnterpriseImpl = (
         allEvents = GetEvents(FQDN, ApiToken, StartDate, EndDate),
         userSessionsTable = GetUserSessions(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
         userSessionMetricsTable = GetUserSessionMetrics(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
+
+        // Platform Metrics
+        platformMetricsTable =
+            GetPlatformMetrics(
+                Table.Column(environmentsTable, "id"),
+                FQDN,
+                ApiToken,
+                StartDate,
+                EndDate
+            ),
+
         entities = {
+            [
+                Name = "Environments",
+                Data = environmentsTable,
+                ItemKind = "Table",
+                ItemName = "Environments",
+                IsLeaf = true
+            ],
+            [
+                Name = "Platform Metrics",
+                Data = platformMetricsTable,
+                ItemKind = "Table",
+                ItemName = "PlatformMetrics",
+                IsLeaf = true
+            ],
             [
                 Name = "Tests",
                 Data = testsTable,
@@ -997,6 +1028,385 @@ GetUserSessionMetrics = (
                                      count = Int64.Type, displayName = text, unit = text, testRunId = text],
                          {}
                      )
+    in
+        result;
+
+// Function to retrieve environments from the Login Enterprise API, with optional filtering based on test data
+GetEnvironments = (FQDN as text, ApiToken as text, testsTable as table) as table =>
+    let
+        rawResp =
+            try
+                GetLoginEnterpriseData(
+                    "environments?orderBy=name&count=1000&offset=0&includeTotalCount=false&include=none",
+                    FQDN,
+                    ApiToken
+                )
+            otherwise
+                null,
+
+        rawList =
+            if rawResp <> null and Value.Is(rawResp, type record) and Record.HasFields(rawResp, "items") then
+                rawResp[items]
+            else
+                {},
+
+        tableRaw =
+            Table.FromList(rawList, Splitter.SplitByNothing(), {"Environment"}),
+
+        expanded =
+            ExpandRecordSafe(
+                tableRaw,
+                "Environment",
+                {
+                    "id",
+                    "name",
+                    "description",
+                    "enableEnvironmentDataCollection",
+                    "enableCostCalculation",
+                    "environmentCost",
+                    "environmentAttributes",
+                    "provider"
+                },
+                {
+                    type text,
+                    type text,
+                    type text,
+                    type logical,
+                    type logical,
+                    type any,
+                    type any,
+                    type any
+                }
+            ),
+
+        expandedAttrs =
+            ExpandRecordSafe(
+                expanded,
+                "environmentAttributes",
+                {"resourceGroup", "hostPool"},
+                {type text, type text}
+            ),
+
+        expandedCost =
+            ExpandRecordSafe(
+                expandedAttrs,
+                "environmentCost",
+                {
+                    "currency",
+                    "expectedUserAmount",
+                    "actualUserAmount",
+                    "capitalExpenditures",
+                    "operationalExpenditures"
+                },
+                {
+                    type text,
+                    type number,
+                    type number,
+                    type number,
+                    type number
+                }
+            ),
+
+        providerType =
+            Table.AddColumn(
+                expandedCost,
+                "providerType",
+                each try Record.FieldOrDefault([provider], "type", null) otherwise null,
+                type text
+            ),
+
+        providerId =
+            Table.AddColumn(
+                providerType,
+                "providerId",
+                each try Record.FieldOrDefault([provider], "id", null) otherwise null,
+                type text
+            ),
+
+        providerName =
+            Table.AddColumn(
+                providerId,
+                "providerName",
+                each try Record.FieldOrDefault([provider], "name", null) otherwise null,
+                type text
+            ),
+
+        providerDescription =
+            Table.AddColumn(
+                providerName,
+                "providerDescription",
+                each try Record.FieldOrDefault([provider], "description", null) otherwise null,
+                type text
+            ),
+
+        providerTenantId =
+            Table.AddColumn(
+                providerDescription,
+                "providerTenantId",
+                each try Record.FieldOrDefault([provider], "tenantId", null) otherwise null,
+                type text
+            ),
+
+        providerApplicationId =
+            Table.AddColumn(
+                providerTenantId,
+                "providerApplicationId",
+                each try Record.FieldOrDefault([provider], "applicationId", null) otherwise null,
+                type text
+            ),
+
+        providerRemoved =
+            try Table.RemoveColumns(providerApplicationId, {"provider"}) otherwise providerApplicationId,
+
+        testCountTable =
+            Table.Group(
+                Table.SelectRows(
+                    Table.SelectColumns(testsTable, {"environmentKey"}),
+                    each [environmentKey] <> null
+                ),
+                {"environmentKey"},
+                {{"mappedTestCount", each Table.RowCount(_), Int64.Type}}
+            ),
+
+        mergedTestCounts =
+            Table.NestedJoin(
+                providerRemoved,
+                {"id"},
+                testCountTable,
+                {"environmentKey"},
+                "TestCounts",
+                JoinKind.LeftOuter
+            ),
+
+        expandedTestCounts =
+            Table.ExpandTableColumn(
+                mergedTestCounts,
+                "TestCounts",
+                {"mappedTestCount"},
+                {"mappedTestCount"}
+            ),
+
+        finalTyped =
+            Table.TransformColumnTypes(
+                EnsureColumns(
+                    expandedTestCounts,
+                    {"mappedTestCount"},
+                    {Int64.Type}
+                ),
+                {
+                    {"enableEnvironmentDataCollection", type logical},
+                    {"enableCostCalculation", type logical},
+                    {"expectedUserAmount", type number},
+                    {"actualUserAmount", type number},
+                    {"capitalExpenditures", type number},
+                    {"operationalExpenditures", type number},
+                    {"mappedTestCount", Int64.Type}
+                }
+            )
+    in
+        finalTyped;
+
+// Function to retrieve platform metrics for specified environments and date range
+GetPlatformMetrics = (
+    environmentIds as list,
+    FQDN as text,
+    ApiToken as text,
+    StartDate as date,
+    EndDate as date
+) as table =>
+    let
+        // Convert a date to a full ISO 8601 UTC timestamp string
+        dateToIsoUtc = (d as date) as text =>
+            DateTime.ToText(
+                DateTimeZone.RemoveZone(
+                    DateTimeZone.SwitchZone(
+                        DateTimeZone.From(DateTime.From(d)),
+                        0
+                    )
+                ),
+                "yyyy-MM-ddTHH:mm:ss"
+            ) & "Z",
+
+        // StartDate / EndDate already reflect either DaysBack or manual range
+        fromParam = dateToIsoUtc(StartDate),
+
+        // Add 1 day so the selected End Date is fully included
+        toParam = dateToIsoUtc(Date.AddDays(EndDate, 1)),
+
+        envIds =
+            List.Buffer(
+                List.Distinct(
+                    List.RemoveNulls(environmentIds)
+                )
+            ),
+
+        EmptyTable =
+            #table(
+                type table [
+                    metricId = text,
+                    environmentKey = text,
+                    displayName = text,
+                    unit = text,
+                    instance = text,
+                    group = text,
+                    componentType = text,
+                    customTagsJson = text,
+                    customTag_cluster_name = text,
+                    customTag_cluster_uuid = text,
+                    timestamp = datetime,
+                    value = number
+                ],
+                {}
+            ),
+
+        allMetricSeries =
+            if List.Count(envIds) = 0 then
+                {}
+            else
+                List.Combine(
+                    List.Transform(
+                        envIds,
+                        (envId) =>
+                            let
+                                endpoint =
+                                    "platform-metrics"
+                                    & "?from=" & Uri.EscapeDataString(fromParam)
+                                    & "&to=" & Uri.EscapeDataString(toParam)
+                                    & "&environmentIds=" & Uri.EscapeDataString(Text.From(envId)),
+
+                                rawResp =
+                                    try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
+
+                                metricList =
+                                    if rawResp <> null and Value.Is(rawResp, type list) then
+                                        rawResp
+                                    else
+                                        {}
+                            in
+                                metricList
+                    )
+                ),
+
+        result =
+            if List.Count(allMetricSeries) > 0 then
+                let
+                    tableRaw =
+                        Table.FromList(allMetricSeries, Splitter.SplitByNothing(), {"PlatformMetric"}),
+
+                    expandedMetric =
+                        Table.ExpandRecordColumn(
+                            tableRaw,
+                            "PlatformMetric",
+                            {
+                                "metricId",
+                                "environmentKey",
+                                "displayName",
+                                "unit",
+                                "instance",
+                                "group",
+                                "componentType",
+                                "customTags",
+                                "dataPoints"
+                            },
+                            {
+                                "metricId",
+                                "environmentKey",
+                                "displayName",
+                                "unit",
+                                "instance",
+                                "group",
+                                "componentType",
+                                "customTags",
+                                "dataPoints"
+                            }
+                        ),
+
+                    normalized =
+                        Table.TransformColumns(
+                            expandedMetric,
+                            {
+                                {"customTags", each if _ is null then [] else _, type record},
+                                {"dataPoints", each if _ is null then {} else _, type list}
+                            }
+                        ),
+
+                    withCustomTagsJson =
+                        Table.AddColumn(
+                            normalized,
+                            "customTagsJson",
+                            each RecordToJsonText([customTags]),
+                            type text
+                        ),
+
+                    withClusterName =
+                        Table.AddColumn(
+                            withCustomTagsJson,
+                            "customTag_cluster_name",
+                            each try Text.From(Record.FieldOrDefault([customTags], "cluster_name", null)) otherwise null,
+                            type text
+                        ),
+
+                    withClusterUuid =
+                        Table.AddColumn(
+                            withClusterName,
+                            "customTag_cluster_uuid",
+                            each try Text.From(Record.FieldOrDefault([customTags], "cluster_uuid", null)) otherwise null,
+                            type text
+                        ),
+
+                    expandedDataPointsList =
+                        Table.ExpandListColumn(withClusterUuid, "dataPoints"),
+
+                    expandedDataPoints =
+                        Table.ExpandRecordColumn(
+                            expandedDataPointsList,
+                            "dataPoints",
+                            {"timestamp", "value"},
+                            {"timestamp", "value"}
+                        ),
+
+                    selected =
+                        Table.SelectColumns(
+                            expandedDataPoints,
+                            {
+                                "metricId",
+                                "environmentKey",
+                                "displayName",
+                                "unit",
+                                "instance",
+                                "group",
+                                "componentType",
+                                "customTagsJson",
+                                "customTag_cluster_name",
+                                "customTag_cluster_uuid",
+                                "timestamp",
+                                "value"
+                            },
+                            MissingField.UseNull
+                        ),
+
+                    typed =
+                        Table.TransformColumnTypes(
+                            selected,
+                            {
+                                {"metricId", type text},
+                                {"environmentKey", type text},
+                                {"displayName", type text},
+                                {"unit", type text},
+                                {"instance", type text},
+                                {"group", type text},
+                                {"componentType", type text},
+                                {"customTagsJson", type text},
+                                {"customTag_cluster_name", type text},
+                                {"customTag_cluster_uuid", type text},
+                                {"timestamp", type datetime},
+                                {"value", type number}
+                            }
+                        )
+                in
+                    typed
+            else
+                EmptyTable
     in
         result;
 
