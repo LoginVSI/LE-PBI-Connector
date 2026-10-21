@@ -278,7 +278,7 @@ Point observations use this UTC-day policy; run/session tables have interval sem
 - **Fixed (Use Date Range on):** Start and End are both required, Start must not be after End, and the span is limited to 366 days.
 - Rolling Days Back is 1..365 (plus today); fixed ranges are at most 366 days. Invalid input is an error, never silently widened or swapped. Omitted Days Back defaults to 30.
 - The window does not depend on the refreshing machine's time zone or daylight saving. **However**, Power Query converts the API's UTC timestamps to the *local time of the machine that refreshes* when it types `datetime` columns (verified on the Power Query engine). Desktop on a UTC-7 laptop and the Service (UTC) therefore show the same instants as different clock times, and a report's "today" in DAX is local. Keep that in mind when reconciling with the Login Enterprise UI.
-- Test Runs is an unfiltered compatibility table; the template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
+- Test Runs retains an unfiltered metadata catalog. Configuration snapshots and derived workload steps are retrieved only for overlapping Application/Load runs; out-of-window catalog rows have null snapshots. A selected snapshot retrieval failure fails refresh. the template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
 
 ## What the connector now does differently (1.1.0.2)
 
@@ -313,3 +313,7 @@ To rebuild the package from source (PowerShell 7): `pwsh build/Build-Mez.ps1`; t
 ## Template changes in 1.1.0.2
 
 The original `template/Login Enterprise.pbit` is unchanged. A candidate with measure fixes is at `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` and is **not yet opened or validated in Power BI Desktop**. What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
+
+### First-load snapshot failure
+
+On the acceptance appliance, expanding some older stored run snapshots returns HTTP 500 even for count 1. The candidate now enumerates run metadata without expansion and retrieves snapshots for overlapping Application/Load runs through the verified v7-preview single-run route. This preserves workload steps for the selected window while avoiding expansion of unrelated broken history. Selected-run failures remain errors. See [the failed Desktop attempt and verified workaround](docs/DESKTOP-LOAD-FAILURE.md). Desktop acceptance is still pending a successful retry; there is no accepted full refresh yet.

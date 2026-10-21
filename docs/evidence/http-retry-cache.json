@@ -1,0 +1,16 @@
+{
+  "realPowerQueryExecution": true,
+  "productionCacheOptionsUsed": true,
+  "contextDifference": "Extension-only ManualCredentials omitted from standalone query Web.Contents; production cache flags and retry orchestration are unchanged.",
+  "loopbackOnly": true,
+  "syntheticCredentialsOnly": true,
+  "status": "passed",
+  "httpRequestCounts": {
+    "cache-control": 1,
+    "cache-bypass": 2,
+    "transient": 2
+  },
+  "pqtestExit": 0,
+  "credentialSetupExit": 0,
+  "errors": []
+}

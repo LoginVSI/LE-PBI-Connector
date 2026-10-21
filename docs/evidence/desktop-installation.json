@@ -1,0 +1,16 @@
+{
+  "dateUtc": "2026-10-21T20:46:06.2362443Z",
+  "connectorFolder": "C:\\Users\\j.kennedy\\Documents\\Power BI Desktop\\Custom Connectors",
+  "desktopVersion": "2.159.883.0",
+  "utcOffset": "-07:00:00",
+  "candidateVersion": "1.1.0.2",
+  "candidateSha256": "2E40132F078EF8E7D1BD76175D380DEF3AFA0CD1869ACF632858162247F752D7",
+  "installedBeforeVersion": "1.1.0",
+  "installedBeforeSha256": "E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338",
+  "toolkitBeforeSha256": "91DC405A3D94AA072A5BE1C24B81BFEEEC14012EB50FA4CD92D723CCA6AA93E7",
+  "desktopProcessesBefore": 0,
+  "installed": true,
+  "backupPath": "C:\\Repos\\LE-PBI-Connector\\.cache\\desktop-acceptance-20261021\\backup\\LE-PBI-Connector.original.mez",
+  "backupSha256": "E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338",
+  "toolkitAfterSha256": "91DC405A3D94AA072A5BE1C24B81BFEEEC14012EB50FA4CD92D723CCA6AA93E7"
+}

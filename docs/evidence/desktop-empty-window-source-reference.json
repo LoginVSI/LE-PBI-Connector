@@ -1,0 +1,18 @@
+{
+  "dateUtc": "2026-10-21T20:49:14.012114Z",
+  "windowStartUtc": "2026-10-14T00:00:00Z",
+  "windowEndExclusiveUtc": "2026-10-22T00:00:00Z",
+  "daysBack": 7,
+  "requests": 4,
+  "status": "source-read-complete",
+  "representatives": [],
+  "allRunCount": 1608,
+  "overlappingRunCounts": {
+    "applicationtest": 0,
+    "loadtest": 0,
+    "continuoustest": 29
+  },
+  "finishedDenominator": 0,
+  "successfulCount": 0,
+  "successRate": null
+}

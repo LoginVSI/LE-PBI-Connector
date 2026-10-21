@@ -1,6 +1,6 @@
 # Desktop acceptance checklist (run when the shared Power BI host is released)
 
-**READY-FOR-DESKTOP.** Nothing here has been run. Do not call the candidate accepted from parsing or PQTest results.
+**IN PROGRESS, 2026-10-21.** Installation/backup preparation is complete; the first Load failed with thirteen queries blocked by the shared run-catalog HTTP 500. No load, visual or DAX acceptance is claimed. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md). Do not call the candidate accepted from preparation or synthetic results.
 
 Preconditions (owner actions, in order):
 1. Confirm the Results Toolkit session has released Power BI Desktop and the shared connector folder.

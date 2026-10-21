@@ -22,3 +22,11 @@
 Independent findings, baseline reproduction, sanitized live evidence and exact limitations: [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md). Final fixture counts are in [evidence/m-tests.txt](evidence/m-tests.txt). The initial independent 11-check fixture failed all 11 at f503293; the expanded final file covers additional hardening. The deliberate failure evidence is expected to show FAIL.
 
 Swagger gives default count 100 and no maximum. Production 1000 was accepted on sampled routes. Large stable multi-page reads, tied ordering, populated aggregate boundaries, Continuous aggregates and platform collection remain live acceptance dependencies. Swagger describes aggregate count only as Count; this does not establish observation weighting. Application aggregated session metrics have no reviewed endpoint. Raw extrema cannot be inferred from bucket means.
+
+## Failed first Desktop Load, current repair
+
+The owner-reported first Load failed with thirteen blocked queries; no Desktop/DAX acceptance is recorded. The snapshot-expansion trigger, minimal sanitized reproduction, parameter-isolation matrix, selected-window verification and remaining limitations are in [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md).
+
+`09_snapshot_acquisition.pq` executes the catalog/detail separation on M, retains old metadata, preserves selected workload steps and propagates selected failures. The complete suite passes 121 checks in ten files. `tests/support/http_retry_probe.py` executes real Web.Contents cache behavior with production cache flags and retry orchestration: normal cache reuse=1 request, cache bypass=2, transient retry=2. The loopback-only test is included in CI. The standalone test excludes the extension-only ManualCredentials flag; no Desktop packet trace is claimed.
+
+Snapshot/name/workload values are now scoped to overlapping Application/Load runs; all run metadata remains in the compatibility catalog. The appliance defect still blocks a selected window containing an affected old snapshot. This is not silent empty-data recovery.

@@ -31,6 +31,11 @@ jobs:
           & pwsh -NoProfile -File ./tests/Run-Tests.ps1 -ProbeFailure
           if ($LASTEXITCODE -ne 1) { throw 'Deliberate M failure was not detected.' }
           $global:LASTEXITCODE = 0
+      - name: Real Web.Contents cache and retry probe (loopback only)
+        shell: pwsh
+        run: |
+          ./build/Build-Mez.ps1 -Test -Output "$env:RUNNER_TEMP/http-retry.test.mez"
+          python ./tests/support/http_retry_probe.py --pqtest ./.cache/sdktools/tools/PQTest.exe --mez "$env:RUNNER_TEMP/http-retry.test.mez" --output "$env:RUNNER_TEMP/http-retry-cache.json"
       - name: Template candidate builds and passes static checks
         shell: pwsh
         run: |

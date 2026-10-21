@@ -46,6 +46,26 @@ if ($lost.Count -eq 0) { Ok "all $($measO.Count) original measure identifiers re
 $dupes = @($measC.Keys | Group-Object { ($_ -split '\.', 2)[1] } | Where-Object Count -gt 1)
 if ($dupes.Count -eq 0) { Ok 'measure names unique across tables' } else { Fail "duplicate measure names: $($dupes.Name -join ', ')" }
 
+# --- parameter compatibility and canonical help --------------------------------
+foreach ($name in @('StartDateParam', 'EndDateParam')) {
+    $before = @($mo['model']['expressions'] | Where-Object { [string]$_['name'] -ceq $name })
+    $after = @($mc['model']['expressions'] | Where-Object { [string]$_['name'] -ceq $name })
+    if ($before.Count -ne 1 -or $after.Count -ne 1) { Fail "date parameter missing/duplicated: $name"; continue }
+    $beforeIdentity = $before[0].DeepClone(); [void]$beforeIdentity.Remove('description')
+    $afterIdentity = $after[0].DeepClone(); [void]$afterIdentity.Remove('description')
+    if ($beforeIdentity.ToJsonString() -ne $afterIdentity.ToJsonString()) { Fail "date parameter identity/type/default changed: $name" }
+    else { Ok "$name identifier, Date expression, defaults and metadata retained" }
+}
+$helpPath = Join-Path $PSScriptRoot 'source/parameter-descriptions.json'
+if (Test-Path -LiteralPath $helpPath) {
+    $help = [System.Text.Json.Nodes.JsonNode]::Parse([IO.File]::ReadAllText($helpPath))
+    foreach ($item in $help) {
+        $parameter = @($mc['model']['expressions'] | Where-Object { [string]$_['name'] -ceq $item.Key })
+        if ($parameter.Count -ne 1 -or $parameter[0]['description'].ToJsonString() -ne $item.Value.ToJsonString()) { Fail "date help differs from source: $($item.Key)" }
+        else { Ok "$($item.Key) help matches canonical source" }
+    }
+}
+
 # --- DAX static checks ---------------------------------------------------------
 $colSet = @{}; $measSet = @{}; $tabSet = @{}
 foreach ($t in $mc['model']['tables']) {

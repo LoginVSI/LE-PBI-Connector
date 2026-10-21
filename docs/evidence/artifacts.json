@@ -2,8 +2,8 @@
   "artifacts": [
     {
       "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
-      "bytes": 95740,
-      "sha256": "2E40132F078EF8E7D1BD76175D380DEF3AFA0CD1869ACF632858162247F752D7"
+      "bytes": 97100,
+      "sha256": "8B7EAC70A460A0EF03DEAAE650AF9DCF747849538B70EAA1CEA22E5F5F43D768"
     },
     {
       "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
@@ -26,5 +26,5 @@
     "APIToken",
     "FQDN"
   ],
-  "sourceSha256": "DB9CE36695AC7A1125881E2129C36FE4AC5F313C8E755F8E45DBB13AFF32F91F"
+  "sourceSha256": "A68EF80E23FF002B173F381649BF3168612265C073172376490C3DA1E6A13546"
 }

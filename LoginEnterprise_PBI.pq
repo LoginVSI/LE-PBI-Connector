@@ -266,21 +266,22 @@ Api.BodySnippet = (ctx as record, body as any) as text =>
         else if Text.Length(scrubbed) > 300 then Text.Start(scrubbed, 300) & "..."
         else scrubbed;
 
+// Shared with the real HTTP retry probe so it exercises the production Web.Contents options.
+Api.WebOptions = (token as text, route as text, query as record, attempt as number, timeoutSeconds as number) as record =>
+    [
+        RelativePath = ApiRoot & route,
+        Query = query,
+        Headers = [#"Accept" = "application/json", #"Authorization" = "Bearer " & token],
+        ManualStatusHandling = HandledStatuses,
+        ManualCredentials = true,
+        IsRetry = attempt > 0,
+        Timeout = #duration(0, 0, 0, timeoutSeconds)
+    ];
+
 Api.DefaultFetch = (fqdn as text, token as text, timeoutSeconds as number) =>
     (route as text, query as record, attempt as number) as record =>
         let
-            response = Web.Contents(
-                "https://" & fqdn,
-                [
-                    RelativePath = ApiRoot & route,
-                    Query = query,
-                    Headers = [#"Accept" = "application/json", #"Authorization" = "Bearer " & token],
-                    ManualStatusHandling = HandledStatuses,
-                    ManualCredentials = true,
-                    IsRetry = attempt > 0,
-                    Timeout = #duration(0, 0, 0, timeoutSeconds)
-                ]
-            ),
+            response = Web.Contents("https://" & fqdn, Api.WebOptions(token, route, query, attempt, timeoutSeconds)),
             status = Value.Metadata(response)[Response.Status],
             body = Binary.Buffer(response)
         in
@@ -517,20 +518,32 @@ GetTests = (ctx as record) as table =>
     in
         ExpandedConnector;
 
-// Raw test-run records (all three test types, de-duplicated by run id).
-GetTestRunsRaw = (ctx as record) as list =>
+// Enumerate all run metadata without snapshot expansion. The appliance can return HTTP 500 while
+// expanding some old stored snapshots, even for count=1. Hydrate only overlapping Application/Load
+// runs through the verified single-run route. A selected-run failure still fails the refresh.
+GetTestRunsRaw = (ctx as record, optional window as nullable record) as list =>
     let
         testTypes = {"applicationTest", "loadTest", "continuousTest"},
         perType = List.Transform(
             testTypes,
-            (tt) => Api.GetAllItems(
-                ctx,
-                "tests/test-runs",
-                [testType = tt, orderBy = "created", direction = "asc", include = "testRunConfigurationSnapshot"]
-            )
-        )
+            (tt) => Api.GetAllItems(ctx, "tests/test-runs", [testType = tt, orderBy = "created", direction = "asc"])
+        ),
+        metadata = Records.DistinctBy(List.Combine(perType), "id"),
+        hydrate = (run as record) as record =>
+            if window = null or not List.Contains({"applicationtest", "loadtest"}, Run.TypeOf(run))
+                or not Run.Overlaps(run, window[From19], window[To19]) then run
+            else
+                let
+                    route = "test-runs/" & run[id],
+                    result = Api.Request(ctx, route, [include = "testRunConfigurationSnapshot"], false)[Json],
+                    valid = result is record and Record.FieldOrDefault(result, "id", null) = run[id],
+                    snapshot = if valid then Record.FieldOrDefault(result, "testRunConfigurationSnapshot", null)
+                        else Api.Fail("Unexpected test-run detail response from " & route & ".", [Route = route])
+                in
+                    if snapshot = null or snapshot is record then run & [testRunConfigurationSnapshot = snapshot]
+                    else Api.Fail("Invalid test-run configuration snapshot from " & route & ".", [Route = route])
     in
-        Records.DistinctBy(List.Combine(perType), "id");
+        List.Transform(metadata, hydrate);
 
 TestRunsToTable = (rawRuns as list) as table =>
     let
@@ -1173,7 +1186,7 @@ LoginEnterpriseCore = (ctx as record, window as record) as table =>
     let
         testsTable = GetTests(ctx),
         environmentsTable = GetEnvironments(ctx, testsTable),
-        testRunsRaw = GetTestRunsRaw(ctx),
+        testRunsRaw = GetTestRunsRaw(ctx, window),
         testRunsTable = TestRunsToTable(testRunsRaw),
         workloadStepsTable = GetWorkloadSteps(testRunsTable),
         applicationsTable = GetApplications(ctx),

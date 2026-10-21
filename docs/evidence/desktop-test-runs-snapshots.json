@@ -1,0 +1,249 @@
+{
+  "dateUtc": "2026-10-21T21:31:08.192329+00:00",
+  "route": "/publicApi/v7-preview/tests/test-runs",
+  "desktopFailure": {
+    "ownerReported": true,
+    "blockedQueries": 13,
+    "status": 500,
+    "attempts": 3,
+    "accepted": false
+  },
+  "dateParametersSentOnThisRoute": false,
+  "cases": [
+    {
+      "label": "snapshot-count1-desc-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "desc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=desc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 205,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "snapshot-count1-offset1-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "1",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1&offset=1&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "all-count1-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "all"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=all",
+      "status": 500
+    },
+    {
+      "label": "omit-include-content-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "status": 200,
+      "rows": 205,
+      "totalCount": 205,
+      "offset": 0
+    },
+    {
+      "label": "snapshot-count1-desc-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "desc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=desc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 1374,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "snapshot-count1-offset1-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "1",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=asc&count=1&offset=1&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "all-count1-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "all"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=all",
+      "status": 500
+    },
+    {
+      "label": "omit-include-content-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "status": 200,
+      "rows": 1000,
+      "totalCount": 1374,
+      "offset": 0
+    },
+    {
+      "label": "omit-include-content-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "1000",
+        "includeTotalCount": "true"
+      },
+      "status": 200,
+      "rows": 374,
+      "totalCount": 1374,
+      "offset": 1000
+    },
+    {
+      "label": "snapshot-count1-desc-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "desc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=desc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "snapshot-count1-offset1-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "1",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=asc&count=1&offset=1&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 29,
+      "offset": 1,
+      "snapshotPresent": false
+    },
+    {
+      "label": "all-count1-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "all"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=all",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "omit-include-content-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "status": 200,
+      "rows": 29,
+      "totalCount": 29,
+      "offset": 0
+    }
+  ],
+  "snapshotChecks": [
+    {
+      "testType": "applicationTest",
+      "rows": 205,
+      "distinctRunIds": 205,
+      "nonnullSnapshots": 0,
+      "snapshotFieldNames": [],
+      "workloadObjects": 0,
+      "workloadSteps": 0
+    },
+    {
+      "testType": "loadTest",
+      "rows": 1374,
+      "distinctRunIds": 1374,
+      "nonnullSnapshots": 0,
+      "snapshotFieldNames": [],
+      "workloadObjects": 0,
+      "workloadSteps": 0
+    },
+    {
+      "testType": "continuousTest",
+      "rows": 29,
+      "distinctRunIds": 29,
+      "nonnullSnapshots": 0,
+      "snapshotFieldNames": [],
+      "workloadObjects": 0,
+      "workloadSteps": 0
+    }
+  ]
+}

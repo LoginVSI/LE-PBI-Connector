@@ -79,7 +79,11 @@ Fake.Router = (data as record) =>
     (route as text, q as record, attempt as number) as record =>
         if route = "tests" then Fake.Ok(Fake.Page(data[tests], q))
         else if route = "tests/test-runs" then
-            Fake.Ok(Fake.Page(List.Select(data[runs], (r) => Text.Lower(r[type]) = Text.Lower(q[testType])), q))
+            Fake.Ok(Fake.Page(List.Transform(List.Select(data[runs], (r) => Text.Lower(r[type]) = Text.Lower(q[testType])),
+                (r) => if Record.FieldOrDefault(q, "include", "none") = "none" then r & [testRunConfigurationSnapshot = null] else r), q))
+        else if Text.StartsWith(route, "test-runs/") and List.Count(Text.Split(route, "/")) = 2 then
+            let hits = List.Select(data[runs], each _[id] = Text.Split(route, "/"){1})
+            in if List.IsEmpty(hits) then Fake.Raw(404, "not found") else Fake.Ok(hits{0})
         else if route = "applications" then Fake.Ok(Fake.Page(data[applications], q))
         else if route = "environments" then Fake.Ok(Fake.Page(data[environments], q))
         else if route = "events" then Fake.Ok(Fake.Page(Fake.Between(data[events], q), q))
@@ -115,7 +119,7 @@ Fake.EmptyData = [
 shared LoginEnterprise_PBI.TestExports = [
     Check = Test.Check, CheckError = Test.CheckError, Run = Test.Run,
     Ctx = Ctx.Create, Window = Window.Create, WindowDay = Window.Day, Core = LoginEnterpriseCore,
-    GetAllItems = Api.GetAllItems, GetList = Api.GetList, Request = Api.Request, Probe = Api.Probe,
+    GetAllItems = Api.GetAllItems, GetList = Api.GetList, Request = Api.Request, Probe = Api.Probe, WebOptions = Api.WebOptions, GetWorkloadSteps = GetWorkloadSteps, TestRunsToTable = TestRunsToTable,
     GetMeasurements = GetMeasurements, GetTests = GetTests, GetApplications = GetApplications, GetEnvironments = GetEnvironments,
     GetTestRunsRaw = GetTestRunsRaw, GetTestRuns = GetTestRuns, GetUserSessions = GetUserSessions, GetEvents = GetEvents,
     GetAggregatedEUXResults = GetAggregatedEUXResults, GetUserSessionMetrics = GetUserSessionMetrics,

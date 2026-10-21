@@ -24,3 +24,7 @@ Dispositions of findings should be recorded in this file under a "Findings" head
 
 ## Findings
 Independent Codex review completed. Material defects were reproduced against `f503293` and repaired on the same branch. See [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md) for severity, evidence, live-contract coverage and remaining acceptance limits. No Desktop, DAX, gateway or Service acceptance is claimed.
+
+## Desktop finding after the independent audit
+
+The first real Load failed. See [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md) for the independently reproduced old-snapshot expansion failure and verified window-scoped workaround. Earlier synthetic passes did not establish this acquisition behavior against old stored snapshots. Current report/parameters and failed evidence are preserved; acceptance is pending a real retry.

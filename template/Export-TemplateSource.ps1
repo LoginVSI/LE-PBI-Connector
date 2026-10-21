@@ -36,4 +36,13 @@ foreach ($t in $model['model']['tables']) {
         }
     }
 }
+# Export only date descriptions; never export parameter values or credentials here.
+$descriptions = [JsonObject]::new()
+foreach ($name in @('StartDateParam', 'EndDateParam')) {
+    $parameterMatches = @($model['model']['expressions'] | Where-Object { [string]$_['name'] -ceq $name })
+    if ($parameterMatches.Count -ne 1) { throw "Parameter not uniquely defined: $name" }
+    $descriptions.Add($name, $parameterMatches[0]['description'].DeepClone())
+}
+$opts = [System.Text.Json.JsonSerializerOptions]::new(); $opts.WriteIndented = $true
+Write-LfFile (Join-Path $OutDir 'parameter-descriptions.json') ($descriptions.ToJsonString($opts) + "`n")
 Write-Host "Exported to $OutDir"

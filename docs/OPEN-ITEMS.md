@@ -13,3 +13,7 @@ The elapsed guard is a 300-second cooperative request budget, not a hard overall
 Application-test aggregated session metrics remain unimplemented because no matching endpoint exists in the reviewed contract. Raw min/max cannot be inferred from aggregate buckets. Legacy CPU/Memory averages remain unweighted bucket means with legacy labels; Desktop acceptance should confirm units and label extrema as bucket extrema.
 
 The legacy token parameter remains in the template for compatibility and is stored in clear text. The additive Key path has isolated SDK evidence only. Gateway deployment, Service scheduled refresh, incremental ingestion and other optional integrations stay in the backlog.
+
+## Current acceptance gate
+
+The first Desktop Load failed with thirteen blocked queries. A verified snapshot-acquisition repair is staged, but it is not installed into the open Desktop session and has not passed a real refresh. See [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md). A selected window containing a broken historical snapshot remains an appliance-side dependency; no error is hidden as empty data. The date-tooltip change is pending explicit Desktop ISO-entry validation.

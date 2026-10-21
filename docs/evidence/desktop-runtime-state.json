@@ -1,0 +1,39 @@
+{
+  "dateUtc": "2026-10-21T20:52:26.967948+00:00",
+  "desktopVersion": "2.159.883.0",
+  "candidateLaunched": true,
+  "candidateWorkingPath": "C:\\Repos\\LE-PBI-Connector\\.cache\\desktop-acceptance-20261021\\LE-acceptance-candidate.pbit",
+  "legacyPbixSearch": {
+    "locations": [
+      "Documents",
+      "Downloads",
+      "Desktop"
+    ],
+    "found": 0,
+    "fallback": "working copy of original legacy PBIT"
+  },
+  "computerUse": {
+    "status": "unavailable",
+    "error": "Computer Use native pipe is unavailable: failed to connect native pipe: The system cannot find the file specified. (os error 2)",
+    "recovery": "Retried lightweight inventory, reset kernel, reinitialized, retried inventory; native pipe remained unavailable."
+  },
+  "desktopModelProbe": {
+    "desktopProcessPresent": true,
+    "analysisServicesProcessPresent": true,
+    "catalogCount": 0,
+    "daxExecuted": false,
+    "message": "Expected one Desktop catalog; no model queried.",
+    "phase": "before first Load"
+  },
+  "acceptance": "First Load failed; owner reports thirteen queries blocked by run-catalog HTTP 500 after three attempts. Not loaded or accepted.",
+  "firstLoad": {
+    "status": "failed",
+    "evidence": "owner-reported",
+    "blockedQueries": 13,
+    "route": "/publicApi/v7-preview/tests/test-runs",
+    "httpStatus": 500,
+    "attempts": 3,
+    "repairInstalled": false,
+    "currentReportAndParametersPreserved": true
+  }
+}

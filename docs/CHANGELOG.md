@@ -25,3 +25,7 @@ Template (candidate, see TEMPLATE-CHANGES.md)
 Correct capped/no-total paging, totals/offset validation, late-page and production subresource 404 handling, strict lower timestamp boundaries, session interval filtering and terminal startup failures. Add manual credential handling for the bearer header, stricter malformed-data errors, a cooperative elapsed budget and tighter request/retry/page limits.
 
 Repair loaded-window success and name-slicer context, require terminal timestamps, count account IDs and preserve zero versus missing values. Weighted statistics remain disabled until API count meaning is established. CI now checks the deliberate M failure probe and staged PBIT source parity. Independent evidence and all acceptance limits are in INDEPENDENT-AUDIT.md.
+
+## First Desktop Load repair (acceptance pending)
+
+Reproduced the run-catalog 500 caused by expansion of some older stored snapshots. Enumerate metadata without expansion and hydrate overlapping Application/Load snapshots through the independently verified v7-preview single-run route. Keep metadata and schemas; document that snapshot/workload values are now window-scoped. Preserve errors for selected-run failures. Add a real HTTP cache/retry probe and selected-window snapshot regression. The failed Desktop attempt remains failed until an actual retry succeeds.

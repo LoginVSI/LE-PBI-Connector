@@ -37,3 +37,11 @@ The old `LoginEnterprise_PBI.query.pq` in public history contained a credential-
 ## Independent audit completion
 
 The separate Codex audit reproduced material defects against f503293 and continued the existing repair branch. See [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md), [evidence](evidence/) and SHA256SUMS.txt for the current evidence, rather than the historical phase claims above. Bounded live GET checks reused the approved native vault/profile without modifying Toolkit or shared Desktop state. Weighted measures are deferred until count populations are established. Desktop/DAX/Service/gateway acceptance remains outstanding. Final delivery and CI are recorded in the draft PR description and the audit session response.
+
+## Desktop acceptance started, 2026-10-21
+
+The owner released the shared slot. Candidate hashes were verified, installed 1.1.0 was backed up and candidate 1.1.0.2 installed; Toolkit connector is unchanged. Working candidate and legacy templates are staged. Native computer-use pipe remains unavailable after recovery, and no model catalog existed before first Load. No Desktop/DAX acceptance is claimed. Read-only source expectations and the exact next dependency are in [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md).
+
+## First Desktop Load failed; shared acquisition repaired
+
+Owner reports thirteen queries blocked by HTTP 500 on tests/test-runs after three attempts. No successful load or acceptance. The trigger was reproduced and isolated to snapshot expansion of older records; all 20 selected-window snapshots succeeded on the independently tested single-run route. Real Web.Contents cache bypass and production retry orchestration passed a loopback test. See [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md). Current report/parameters remain untouched; save and close is required before installing the rebuilt candidate.

@@ -1,0 +1,24 @@
+{
+  "hostCulture": "en-US",
+  "hostShortDatePattern": "M/d/yyyy",
+  "templateCulture": "en-US",
+  "typedParameterExpressionUnchanged": true,
+  "mEngine": {
+    "testedInput": "2026-09-24",
+    "expectedDate": "2026-09-24",
+    "culturesPassed": [
+      "en-US",
+      "en-GB",
+      "de-DE",
+      "nl-NL"
+    ],
+    "legacyUsInputAccepted": "9/24/2026",
+    "endExclusiveUtc": "2026-09-25T00:00:00Z",
+    "checksPassed": 6
+  },
+  "desktopControlValidation": "pending owner response; native UI pipe unavailable",
+  "sourceMetadataRoundTrip": "passed",
+  "candidatePreflightStatic": "passed; descriptions still original pending Desktop validation",
+  "workingCopySha256": "AF98F740CBAC816080920BCE4C4E741BA67D1A03A73E532CD7A6BBAEF9399565",
+  "workingCopyModifiedByThisChange": false
+}

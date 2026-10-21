@@ -3,7 +3,7 @@
   Builds a CANDIDATE .pbit from the original binary plus the reviewed text source in template/source.
 .DESCRIPTION
   The original template/Login Enterprise.pbit is never modified. The candidate patches only:
-    * DataModelSchema: measure expressions/new measures from source/measures/**.dax and M partitions from source/partitions/*.m
+    * DataModelSchema: measure expressions/new measures from source/measures/**.dax M partitions from source/partitions/*.m, and date help from source/parameter-descriptions.json
     * Report/Layout: exact-string renames from source/layout-renames.json (counts asserted)
   Everything else (relationships, columns, pages, visual layout, resources, SecurityBindings, Settings, ...) is copied byte-for-byte.
   This is a structurally derived file, NOT a Desktop-validated one. Open it in Power BI Desktop, check, and re-save
@@ -60,6 +60,20 @@ foreach ($f in Get-ChildItem (Join-Path $SourceDir 'measures') -Recurse -Filter 
         if ($m['description']) { Set-JsonProp $o 'description' $m['description'] }
         Set-JsonProp $o 'lineageTag' (New-DeterministicGuid "$($m['table'])|$($m['name'])")
         [void]$t['measures'].Add([JsonNode]$o); $added++
+    }
+}
+
+# ---- date parameter help (metadata only; identities and Date expressions stay intact) ----
+$descriptionPath = Join-Path $SourceDir 'parameter-descriptions.json'
+if (Test-Path -LiteralPath $descriptionPath) {
+    $descriptions = [JsonNode]::Parse([IO.File]::ReadAllText($descriptionPath))
+    foreach ($item in $descriptions) {
+        if ($item.Key -cnotin @('StartDateParam', 'EndDateParam')) { throw "Unexpected parameter description: $($item.Key)" }
+        $parameterMatches = @($model['model']['expressions'] | Where-Object { [string]$_['name'] -ceq $item.Key })
+        if ($parameterMatches.Count -ne 1) { throw "Parameter not uniquely defined: $($item.Key)" }
+        if ($parameterMatches[0]['description'].ToJsonString() -ne $item.Value.ToJsonString()) {
+            Set-JsonProp $parameterMatches[0] 'description' $item.Value.DeepClone()
+        }
     }
 }
 

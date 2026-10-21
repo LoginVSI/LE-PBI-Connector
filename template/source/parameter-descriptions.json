@@ -1,0 +1,12 @@
+{
+  "StartDateParam": [
+    "The beginning date for your custom date range. Only used if Use Date Range is set to True.",
+    "",
+    "Example: 7/01/2025"
+  ],
+  "EndDateParam": [
+    "The ending date for your custom date range. Only used if Use Date Range is set to True.",
+    "",
+    "Example: 7/31/2025"
+  ]
+}
