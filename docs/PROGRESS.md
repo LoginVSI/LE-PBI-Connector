@@ -29,3 +29,7 @@ READY-FOR-DESKTOP: staged MEZ `bin/AnyCPU/Debug/LE-PBI-Connector.mez` + candidat
 
 ## Credential hygiene
 The old `LoginEnterprise_PBI.query.pq` in public history contained a credential-like literal. It was **not** printed, copied or tested. Replaced with placeholders. **Owner action: the credential's owner must revoke/rotate it; removing it from the current tree does not invalidate it, and history was not rewritten.**
+
+## Delivery state
+- Branch `fix/connector-repair-1.1.0.2`, draft PR #4 (not merged, nothing released/published). CI (`ci` workflow, windows-latest): green on commit `72ccf1b` (secret scan, MEZ source parity, 89 M test checks on PQTest, template static checks). First CI run failed on parity because a CRLF `resources.resx` had been packaged locally; fixed by LF-normalising and rebuilding.
+- Remaining owner actions: revoke/rotate the old credential-like literal; run `docs/ACCEPTANCE.md` when Power BI Desktop is released; separate Codex audit (`docs/AUDIT-HANDOFF.md`); licence/ownership decision; confirm API limits on a lab appliance.
