@@ -1,9 +1,9 @@
 -- table: Measurements
 -- name: Avg Measurement Gauge Values
--- format: 
--- description: 
+-- format:
+-- description: CHANGED 1.1.0.2. BLANK (empty gauge) instead of 0 when no single run is selected. A genuine 0 stays 0.
 IF(
     HASONEVALUE('Filtered Test Runs'[id]),
     AVERAGE(Measurements[duration_seconds]),
-    0
+    BLANK()
 )

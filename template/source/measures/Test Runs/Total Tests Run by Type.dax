@@ -1,11 +1,5 @@
 -- table: Test Runs
 -- name: Total Tests Run by Type
 -- format: 0
--- description: 
-CALCULATE(
-    COUNTROWS('Test Runs'),
-    FILTER(
-        'Test Runs',
-        'Test Runs'[id] IN DISTINCT('Measurements'[testRunId])
-    )
-)
+-- description: CHANGED 1.1.0.2. No longer requires Measurements; delegates to the Filtered Test Runs rule.
+[Total Tests Run by Type (Filtered Test Runs)]

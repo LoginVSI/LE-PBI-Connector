@@ -12,7 +12,7 @@ param([string]$PQTest, [string]$Filter = '*')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $SdkVersion = '2.155.2'
-$SdkSha256 = '__SDK_SHA256__'
+$SdkSha256 = '9A924EDAF369BC7FA8F4CE9477C19236E6AF2989EF4149920CD263511651F4FF'
 
 if (-not $PQTest) {
     $cache = Join-Path $root '.cache/sdktools'
@@ -22,7 +22,7 @@ if (-not $PQTest) {
         $pkg = Join-Path $cache 'pkg.zip'
         Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.powerquery.sdktools/$SdkVersion/microsoft.powerquery.sdktools.$SdkVersion.nupkg" -OutFile $pkg
         $actual = (Get-FileHash $pkg -Algorithm SHA256).Hash
-        if ($SdkSha256 -ne '__SDK_SHA256__' -and $actual -ne $SdkSha256) { throw "SDK tools package hash mismatch: $actual" }
+        if ($actual -ne $SdkSha256) { throw "SDK tools package hash mismatch: expected $SdkSha256 got $actual" }
         Expand-Archive $pkg $cache -Force
     }
 }
@@ -36,7 +36,16 @@ $mez = Join-Path $work 'LE-PBI-Connector.test.mez'
 $failed = 0; $total = 0
 foreach ($case in (Get-ChildItem (Join-Path $root 'tests/cases') -Filter "$Filter.pq" | Sort-Object Name)) {
     $total++
-    $json = & $PQTest run-test -e $mez -q $case.FullName 2>&1 | Out-String
+    # {{FILE:relative/path}} is replaced by an M text literal holding that repo file (lets tests evaluate shipped M source).
+    $src = [IO.File]::ReadAllText($case.FullName)
+    $src = [regex]::Replace($src, '\{\{FILE:([^}]+)\}\}', {
+        param($m)
+        $content = [IO.File]::ReadAllText((Join-Path $root $m.Groups[1].Value)) -replace "`r`n", "`n"
+        '"' + $content.Replace('"', '""') + '"'
+    })
+    $caseFile = Join-Path $work $case.Name
+    [IO.File]::WriteAllText($caseFile, $src)
+    $json = & $PQTest run-test -e $mez -q $caseFile 2>&1 | Out-String
     try { $res = ($json | ConvertFrom-Json)[0] } catch { $res = $null }
     if ($res -and $res.Status -eq 'Passed') {
         Write-Host ("PASS  {0}  {1}" -f $case.Name, (($res.Output | ForEach-Object { $_.Value }) -join ' '))

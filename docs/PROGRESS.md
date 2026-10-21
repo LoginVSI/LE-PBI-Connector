@@ -11,15 +11,16 @@ Resume point for an interrupted session. Updated as phases complete. Owner: Josh
 - Tooling here: no Python, no Power Query SDK installed; **PQTest.exe obtained from NuGet `Microsoft.PowerQuery.SdkTools` 2.155.2 into a scratch/cache folder (not installed globally)**. Power BI Desktop is installed but NOT touched (async boundary).
 
 ## Phase status
-| Phase | State | Notes |
+| Phase | State | Evidence |
 |---|---|---|
-| 1 Evidence/compat | DONE | see above + `docs/CHANGE-TEST-MATRIX.md` |
-| 2 Acquisition + time windows | DONE (fixture-tested on the real M engine); live API NOT exercised | contract limits unverified, see matrix "Unverified" |
-| 3 Template semantics | see `docs/TEMPLATE-CHANGES.md` | updated below as completed |
-| 4 Credentials/TestConnection/setup | PARTIAL | Key entry point implemented additively; Desktop/Service runtime acceptance pending |
-| 5 Build/tests/CI/review | PARTIAL | tests + deterministic build done; CI/review below |
-| 6 Acceptance/upgrade/blog prep | see `docs/ACCEPTANCE.md`, `docs/blog/` | |
+| 1 Evidence/compat | DONE | baseline above; `docs/CHANGE-TEST-MATRIX.md` |
+| 2 Acquisition + time windows | DONE on fixtures (real M engine); **live API not exercised** | tests 01-03; API limits unverified (matrix "Unverified") |
+| 3 Template semantics | DONE as *candidate*; **DAX not executed, Desktop not opened** | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
+| 4 Credentials/TestConnection/setup | PARTIAL | Key entry point + TestConnection done and run in PQTest; Desktop/Service/gateway **not run**; README rewritten |
+| 5 Build/tests/CI/review | DONE except independent review | reproducible MEZ, 6 test files (89 checks), CI workflow; **independent review deferred to a separate Codex session** (`docs/AUDIT-HANDOFF.md`) per session instructions |
+| 6 Acceptance/upgrade/blog prep | DONE (prep only) | `docs/ACCEPTANCE.md`, `docs/CHANGELOG.md`, `docs/blog/OUTLINE.md`, `docs/SHA256SUMS.txt` |
 
+READY-FOR-DESKTOP: staged MEZ `bin/AnyCPU/Debug/LE-PBI-Connector.mez` + candidate PBIT `template/candidate/…`. Nothing was installed in shared Power BI folders, no Desktop process was started/controlled, no shared settings/credentials changed, Toolkit checkout untouched. (A separate Analysis Services instance was considered for DAX execution and **not** started: the harness denied launching the Desktop-bundled engine as interfering with the shared host, which was respected.)
 ## Key decisions
 - Canonical package: `bin/AnyCPU/Debug/LE-PBI-Connector.mez`, version **1.1.0.2**, built by `build/Build-Mez.ps1` (byte-reproducible; stored ZIP, fixed timestamps, LF sources via `.gitattributes`). CI checks source == package.
 - Date policy: UTC calendar days, half-open `[start 00:00Z, end+1 00:00Z)`. Rolling `DaysBack=N` = today(UTC) + N previous days. Fixed range needs both dates. Invalid input errors; nothing silently widened.

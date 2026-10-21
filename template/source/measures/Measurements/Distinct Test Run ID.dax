@@ -1,12 +1,7 @@
 -- table: Measurements
 -- name: Distinct Test Run ID
--- format: 
--- description: 
-VAR DistinctRuns =
-    DISTINCTCOUNT('Measurements'[testRunId])
+-- format:
+-- description: CHANGED 1.1.0.2. Display text. Counts eligible runs from Filtered Test Runs (failed/no-measurement runs included) instead of runs that have Measurements. Name kept for compatibility; the Summary card is labelled Total Test Runs.
+VAR c = [Total Tests Run by Type (Filtered Test Runs)]
 RETURN
-    IF(
-        ISBLANK(DistinctRuns) || DistinctRuns = 0,
-        "No Data",
-        FORMAT(DistinctRuns, "0")
-    )
+    IF ( ISBLANK ( c ) || c = 0, "No Data", FORMAT ( c, "0" ) )

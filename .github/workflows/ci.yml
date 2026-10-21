@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'fix/**']
+
+permissions:
+  contents: read
+
+jobs:
+  connector:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Secret scan
+        shell: pwsh
+        run: ./tools/Test-NoSecrets.ps1
+      - name: Package equals source build (byte-for-byte)
+        shell: pwsh
+        run: ./build/Build-Mez.ps1 -Check
+      - name: M tests on the Power Query engine (PQTest, hash-pinned SDK tools)
+        shell: pwsh
+        run: ./tests/Run-Tests.ps1
+      - name: Template candidate builds and passes static checks
+        shell: pwsh
+        run: |
+          ./template/Build-Template.ps1 -Output "$env:RUNNER_TEMP/candidate.pbit"
+          ./template/Test-Template.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
+      - name: Print checksums
+        shell: pwsh
+        run: Get-FileHash bin/AnyCPU/Debug/LE-PBI-Connector.mez, "$env:RUNNER_TEMP/candidate.pbit" -Algorithm SHA256 | Format-Table -AutoSize

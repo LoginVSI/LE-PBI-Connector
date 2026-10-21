@@ -1,0 +1,8 @@
+[
+  { "note": "Replace the Measurements-only slicer rule so failed/no-measurement runs remain selectable.",
+    "old": "Show Hybrid Slicer Item (Measurements Only)", "new": "Show Hybrid Slicer Item (Run Evidence)", "expected": 16 },
+  { "note": "Card label: the measure was a distinct AccountName count, not active/concurrent sessions.",
+    "old": "\\\"displayName\\\":\\\"Active Sessions\\\"", "new": "\\\"displayName\\\":\\\"Distinct Accounts\\\"", "expected": 4 },
+  { "note": "Rebind the two Logon Metrics cards to the accurately named measure (old measure stays in the model as a deprecated alias).",
+    "old": "Active Sessions Count", "new": "Distinct Accounts (Measurements)", "expected": 10 }
+]

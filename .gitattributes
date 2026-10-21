@@ -10,3 +10,4 @@
 *.png     binary
 *.pbit    binary
 *.mez     binary
+*.m       text eol=lf

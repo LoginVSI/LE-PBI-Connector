@@ -1,21 +1,19 @@
 -- table: Measurements
 -- name: Failed User Sessions (Matching Test Runs) Display
--- format: 
--- description: 
+-- format:
+-- description: CHANGED 1.1.0.2. A selected run with sessions but zero failures now shows 0 (valid zero) instead of No Data; No Data only when the run has no sessions. Sessions are taken from the run selection (User Sessions relates to Filtered Test Runs).
+VAR TotalSessions = COALESCE ( COUNTROWS ( 'User Sessions' ), 0 )
 VAR FailedCount =
-    CALCULATE (
-        COUNTROWS ( 'User Sessions' ),
-        'User Sessions'[loginState] = "failed",
-        KEEPFILTERS (
-            TREATAS (
-                VALUES ( 'Measurements'[testRunId] ),
-                'User Sessions'[testRunId]
-            )
-        )
+    COALESCE (
+        CALCULATE (
+            COUNTROWS ( 'User Sessions' ),
+            KEEPFILTERS ( 'User Sessions'[loginState] = "failed" )
+        ),
+        0
     )
 RETURN
     IF (
-        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( FailedCount ) || FailedCount = 0,
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || TotalSessions = 0,
         "No Data",
         FORMAT ( FailedCount, "#,0" )
     )

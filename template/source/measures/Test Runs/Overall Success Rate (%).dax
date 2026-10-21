@@ -1,27 +1,22 @@
 -- table: Test Runs
 -- name: Overall Success Rate (%)
--- format: 
--- description: 
-VAR ValidTestRuns =
-    FILTER(
-        'Test Runs',
-        'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } &&
-        'Test Runs'[id] IN DISTINCT('Measurements'[testRunId])
+-- format:
+-- description: CHANGED 1.1.0.2. Display text over the unfiltered Test Runs table. Denominator = finished (result not blank) Application/Load runs, no longer limited to runs that have Measurements.
+VAR Denominator =
+    CALCULATE (
+        COUNTROWS ( 'Test Runs' ),
+        KEEPFILTERS ( 'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } ),
+        KEEPFILTERS ( 'Test Runs'[result] <> BLANK () )
     )
-
-VAR TotalRuns =
-    COUNTROWS(ValidTestRuns)
-
-VAR SuccessfulRuns =
-    CALCULATE(
-        COUNTROWS('Test Runs'),
-        ValidTestRuns,
-        'Test Runs'[result] IN { "successful", "completed" }
+VAR Successful =
+    CALCULATE (
+        COUNTROWS ( 'Test Runs' ),
+        KEEPFILTERS ( 'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } ),
+        KEEPFILTERS ( 'Test Runs'[result] IN { "successful", "completed" } )
     )
-
 RETURN
-IF(
-    TotalRuns = 0,
-    "No Data",
-    FORMAT(DIVIDE(SuccessfulRuns, TotalRuns, 0) * 100, "0.0")
-)
+    IF (
+        COALESCE ( Denominator, 0 ) = 0,
+        "No Data",
+        FORMAT ( DIVIDE ( COALESCE ( Successful, 0 ), Denominator ) * 100, "0.0" )
+    )

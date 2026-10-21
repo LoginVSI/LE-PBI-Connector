@@ -44,17 +44,30 @@ let
         then Table.SelectColumns(#"Aggregated EUX Results", {"testRunId"})
         else #table({"testRunId"}, {}),
 
+    // 1.1.0.2: runs whose start/finish overlaps the loaded window, as reported by connector >= 1.1.0.2.
+    // This keeps failed runs that produced no measurements/events/sessions in comparisons and denominators.
+    // Older connectors do not expose this item; fall back to data-presence only (previous behaviour).
+    ConnectorNav = LoginEnterprise_PBI.Contents(FQDN, APIToken, DaysBack, UseDateRange, StartDateParam, EndDateParam),
+    InWindowRuns =
+        if Table.Contains(ConnectorNav, [Name = "Test Runs In Window"])
+        then Table.RenameColumns(
+            Table.SelectColumns(ConnectorNav{[Name = "Test Runs In Window"]}[Data], {"id"}),
+            {{"id", "testRunId"}}
+        )
+        else #table({"testRunId"}, {}),
+
     CombinedRunIds = Table.Combine({
         MeasurementRuns,
         EventRuns,
         UserSessionRuns,
         UserSessionMetricRuns,
-        EUXRuns
+        EUXRuns,
+        InWindowRuns
     }),
 
     DistinctRunIds = Table.Distinct(CombinedRunIds),
 
-    // Keep only non-continuous runs that have in-range data
+    // Keep only non-continuous runs that have in-range data or overlap the loaded window
     FilteredNonContinuous = Table.NestedJoin(
         NonContinuousRuns,
         {"id"},

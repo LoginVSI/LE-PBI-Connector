@@ -21,8 +21,8 @@ function Join-Lines($expr) {
 }
 function Split-ToJsonArray([string]$text) {
     $arr = [JsonArray]::new()
-    foreach ($l in ($text.TrimEnd("`n") -split "`n")) { $arr.Add($l) }
-    return $arr
+    foreach ($l in ($text.TrimEnd("`n") -split "`n")) { $arr.Add([JsonNode][JsonValue]::Create([string]$l)) }
+    return ,$arr
 }
 function Write-LfFile([string]$path, [string]$text) {
     New-Item -ItemType Directory -Force (Split-Path -Parent $path) | Out-Null
@@ -40,4 +40,10 @@ function New-DeterministicGuid([string]$seed) {
     $md5 = [Security.Cryptography.MD5]::Create()
     $b = $md5.ComputeHash([Text.Encoding]::UTF8.GetBytes($seed))
     return ([guid]::new($b)).ToString()
+}
+# JsonObject property setter that works from PowerShell (string values are wrapped as JsonValue).
+function Set-JsonProp($obj, [string]$name, $value) {
+    if ($value -is [string]) { $value = [JsonValue]::Create([string]$value) }
+    [void]$obj.Remove($name)
+    $obj.Add($name, [JsonNode]$value)
 }

@@ -1,0 +1,21 @@
+-- table: User Session Metrics
+-- name: Avg CPU Weighted Value
+-- format: 0.00
+-- description: NEW 1.1.0.2. Numeric count-weighted mean of CPU aggregate rows. BLANK if the selected CPU rows carry more than one unit (units are never mixed). Legacy Avg CPU Display is an unweighted mean of aggregate rows; Min/Max CPU Display are the lowest/highest aggregate bucket average, not raw extrema.
+VAR Rows =
+    FILTER (
+        'User Session Metrics',
+        'User Session Metrics'[displayName] = "CPU"
+            && NOT ISBLANK ( 'User Session Metrics'[measurement] )
+            && 'User Session Metrics'[count] > 0
+    )
+VAR UnitCount = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( Rows, "u", 'User Session Metrics'[unit] ) ) )
+RETURN
+    IF (
+        UnitCount > 1,
+        BLANK (),
+        DIVIDE (
+            SUMX ( Rows, 'User Session Metrics'[measurement] * 'User Session Metrics'[count] ),
+            SUMX ( Rows, 'User Session Metrics'[count] )
+        )
+    )
