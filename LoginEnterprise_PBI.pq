@@ -1,6 +1,22 @@
-[Version = "1.1.0"]
+[Version = "1.1.0.2"]
 section LoginEnterprise_PBI;
 
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+// Login Enterprise public API route (v7-preview; unchanged from earlier releases).
+ApiRoot = "publicApi/v7-preview/";
+DefaultPageSize = 1000;
+DefaultMaxPages = 5000;
+MaxWindowDays = 366;
+// HTTP statuses retried (bounded) before failing.
+RetryStatuses = {408, 429, 500, 502, 503, 504};
+// Statuses handed back to our code instead of raising a raw Web.Contents exception.
+HandledStatuses = {400, 401, 403, 404, 405, 408, 409, 422, 429, 500, 502, 503, 504};
+
+// ---------------------------------------------------------------------------
+// Generic table helpers
+// ---------------------------------------------------------------------------
 // Converts a table to a navigation table with specified key columns and metadata
 Table.ToNavigationTable = (
     table as table,
@@ -55,246 +71,377 @@ RecordToJsonText = (value as any) as nullable text =>
     else
         try Text.FromBinary(Json.FromValue(value), TextEncoding.Utf8) otherwise null;
 
-// Main function to retrieve data from Login Enterprise API
-[DataSource.Kind = "LoginEnterprise_PBI", Publish = "LoginEnterprise_PBI.Publish"]
-shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
-
-// Implementation of the main function
-LoginEnterpriseImpl = (
-    FQDN as text,
-    ApiToken as text,
-    optional DaysBack as number,
-    optional UseDateRange as any,
-    optional StartDateParam as nullable date,
-    optional EndDateParam as nullable date
-) as table =>
-
+// Keep the first record per key value; rows without a key are kept (they cannot be de-duplicated).
+Records.DistinctBy = (records as list, field as text) as list =>
     let
-        // Want date range?
-        UseDateRangeValid = UseDateRange <> null and UseDateRange = true,
+        t = Table.FromList(records, Splitter.SplitByNothing(), {"r"}),
+        keyed = Table.AddColumn(t, "k", each Record.FieldOrDefault([r], field, null)),
+        withKey = Table.Distinct(Table.SelectRows(keyed, each [k] <> null), {"k"}),
+        noKey = Table.SelectRows(keyed, each [k] = null)
+    in
+        Table.Column(Table.Combine({withKey, noKey}), "r");
 
-        // Both dates provided?
-        HasValidDates = UseDateRangeValid and StartDateParam <> null and EndDateParam <> null,
+// ---------------------------------------------------------------------------
+// Request context (host, credential, fetch function, limits)
+// ---------------------------------------------------------------------------
+// Fails fast with an actionable message instead of building a bad URL.
+Ctx.NormalizeFqdn = (fqdn as nullable text) as text =>
+    let
+        t = if fqdn = null then "" else Text.Trim(fqdn),
+        noScheme = if Text.StartsWith(t, "https://", Comparer.OrdinalIgnoreCase) then Text.Range(t, 8) else t,
+        host = if Text.EndsWith(noScheme, "/") then Text.Start(noScheme, Text.Length(noScheme) - 1) else noScheme,
+        bad = host = "" or Text.Contains(host, "/") or Text.Contains(host, " ") or Text.Contains(host, "?")
+            or Text.StartsWith(host, "http:", Comparer.OrdinalIgnoreCase)
+    in
+        if bad then
+            error Error.Record(
+                "DataSource.Error",
+                "FQDN must be a host name such as demo.loginvsi.com (HTTPS only, no path or query). Received: " & (if fqdn = null then "(blank)" else fqdn)
+            )
+        else
+            host;
 
-        // Fallback for DaysBack
-        EffectiveDaysBack = if DaysBack <> null then DaysBack else 30,
-
-        Today = DateTime.Date(DateTime.LocalNow()),
-
-        StartDate =
-            if HasValidDates then
-                StartDateParam
-            else if UseDateRangeValid then
-                Date.AddDays(Today, -30)
+// fetch: optional (route, query, attempt) => [Status = number, Body = binary|text]; defaults to Web.Contents.
+// overrides: optional record of PageSize / MaxPages / RetryDelays (seconds) used by tests.
+Ctx.Create = (fqdn as nullable text, token as nullable text, optional fetch as nullable function, optional overrides as nullable record) as record =>
+    let
+        host = Ctx.NormalizeFqdn(fqdn),
+        tok =
+            if token = null or Text.Trim(token) = "" then
+                error Error.Record("DataSource.Error", "The Login Enterprise API token is blank. Provide a token generated in the appliance (Settings > Public API).")
             else
-                Date.AddDays(Today, -EffectiveDaysBack),
+                Text.Trim(token),
+        defaults = [PageSize = DefaultPageSize, MaxPages = DefaultMaxPages, RetryDelays = {1, 2, 4}],
+        merged = defaults & (if overrides = null then [] else overrides)
+    in
+        merged & [
+            Fqdn = host,
+            Token = tok,
+            Fetch = if fetch <> null then fetch else Api.DefaultFetch(host, tok)
+        ];
 
-        EndDate =
-            if HasValidDates then
-                EndDateParam
+// ---------------------------------------------------------------------------
+// Date policy
+//   * A "day" is a UTC calendar day. The query window is [StartDate 00:00Z, EndDate+1 00:00Z) (half-open),
+//     so the selected end day is fully included and a midnight observation belongs to exactly one day.
+//   * Rolling mode (UseDateRange not true): EndDate = today (UTC), StartDate = today - DaysBack.
+//     DaysBack = N therefore covers today plus the N previous UTC days.
+//   * Fixed mode (UseDateRange = true): StartDate and EndDate are both required, start <= end.
+//   * Nothing is silently widened, defaulted or swapped; invalid input raises an error.
+//   * Power Query converts the API's UTC timestamps to the refreshing machine's local time when typing
+//     datetime columns (verified); the windows themselves do not depend on the local time zone or DST.
+// ---------------------------------------------------------------------------
+Time.Iso = (dt as datetime) as text =>
+    DateTime.ToText(dt, [Format = "yyyy-MM-ddTHH:mm:ss", Culture = "en-US"]);
+
+// Normalises an API timestamp to a "yyyy-MM-ddTHH:mm:ss" UTC string for ordinal comparison. null when blank/unparseable.
+Time.TextToUtc19 = (t as nullable text) as nullable text =>
+    if t = null or Text.Length(t) < 19 then
+        null
+    else if Text.EndsWith(t, "Z") then
+        Text.Start(t, 19)
+    else if Text.PositionOfAny(Text.Range(t, 10), {"+", "-"}) = -1 then
+        // no zone designator: the API contract is UTC
+        Text.Start(t, 19)
+    else
+        let
+            parsed = try DateTimeZone.FromText(t) otherwise null
+        in
+            if parsed = null then null else Time.Iso(DateTimeZone.RemoveZone(DateTimeZone.SwitchZone(parsed, 0)));
+
+Window.Create = (
+    daysBack as nullable number,
+    useDateRange as nullable logical,
+    startDate as nullable date,
+    endDate as nullable date,
+    optional nowUtc as nullable datetimezone
+) as record =>
+    let
+        now = if nowUtc <> null then DateTimeZone.SwitchZone(nowUtc, 0) else DateTimeZone.UtcNow(),
+        today = DateTime.Date(DateTimeZone.RemoveZone(now)),
+        fixedMode = useDateRange = true,
+        days = if daysBack = null then 30 else daysBack,
+        daysValid = days >= 1 and days <= MaxWindowDays and days = Number.RoundDown(days),
+        s = if fixedMode then startDate else Date.AddDays(today, -days),
+        e = if fixedMode then endDate else today,
+        spanDays = if s = null or e = null then null else Duration.Days(e - s) + 1,
+        problem =
+            if fixedMode and (startDate = null or endDate = null) then
+                "Use Date Range is enabled but Start Date and End Date are not both set. Provide both dates, or turn Use Date Range off to use Days Back."
+            else if not fixedMode and not daysValid then
+                "Days Back must be a whole number between 1 and " & Text.From(MaxWindowDays, "en-US") & ". Received: " & Text.From(days, "en-US")
+            else if spanDays < 1 then
+                "Start Date (" & Date.ToText(s, [Format = "yyyy-MM-dd", Culture = "en-US"]) & ") is after End Date (" & Date.ToText(e, [Format = "yyyy-MM-dd", Culture = "en-US"]) & ")."
+            else if spanDays > MaxWindowDays then
+                "The selected range spans " & Text.From(spanDays, "en-US") & " days; the maximum is " & Text.From(MaxWindowDays, "en-US") & "."
             else
-                Today,
+                null,
+        fromDt = DateTime.From(s),
+        toDt = DateTime.From(Date.AddDays(e, 1))
+    in
+        if problem <> null then
+            error Error.Record("Expression.Error", problem)
+        else
+            [
+                Mode = if fixedMode then "FixedRange" else "Rolling",
+                StartDate = s,
+                EndDate = e,
+                DayCount = spanDays,
+                Days = List.Transform({0 .. spanDays - 1}, each Date.AddDays(s, _)),
+                From19 = Time.Iso(fromDt),
+                To19 = Time.Iso(toDt),
+                FromText = Time.Iso(fromDt) & "Z",
+                ToText = Time.Iso(toDt) & "Z"
+            ];
 
-        // Core tables
-        testsTable = GetTests(FQDN, ApiToken),
-        environmentsTable = GetEnvironments(FQDN, ApiToken, testsTable),
-        testRunsTable = GetTestRuns(FQDN, ApiToken),
-        workloadStepsTable = GetWorkloadSteps(testRunsTable),
-        applicationsTable = GetApplications(FQDN, ApiToken),
-        allMeasurements = GetMeasurements(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
-        aggregatedEUXResultsTable = GetAggregatedEUXResults(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
-        allEvents = GetEvents(FQDN, ApiToken, StartDate, EndDate),
-        userSessionsTable = GetUserSessions(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
-        userSessionMetricsTable = GetUserSessionMetrics(testRunsTable, FQDN, ApiToken, StartDate, EndDate),
+// Window of a single UTC day inside the overall window.
+Window.Day = (day as date) as record =>
+    [
+        From19 = Time.Iso(DateTime.From(day)),
+        To19 = Time.Iso(DateTime.From(Date.AddDays(day, 1))),
+        FromText = Time.Iso(DateTime.From(day)) & "Z",
+        ToText = Time.Iso(DateTime.From(Date.AddDays(day, 1))) & "Z"
+    ];
 
-        // Platform Metrics
-        platformMetricsTable =
-            GetPlatformMetrics(
-                Table.Column(environmentsTable, "id"),
-                FQDN,
-                ApiToken,
-                StartDate,
-                EndDate
+// True when the API timestamp lies in [From19, To19) in UTC. Blank/unparseable timestamps are excluded.
+Time.InRange = (timestamp as nullable text, from19 as text, to19 as text) as logical =>
+    let
+        t = Time.TextToUtc19(timestamp)
+    in
+        t <> null and t >= from19 and t < to19;
+
+// ---------------------------------------------------------------------------
+// Test-run selection (works on raw API run records)
+// ---------------------------------------------------------------------------
+Run.TypeOf = (run as record) as text =>
+    Text.Lower(Text.From(Record.FieldOrDefault(run, "type", "")));
+
+// A run overlaps [from19, to19) if it started before the end and has not finished before the start (finished = null: still running).
+// A run that never started has no data and is excluded.
+Run.Overlaps = (run as record, from19 as text, to19 as text) as logical =>
+    let
+        s = Time.TextToUtc19(Record.FieldOrDefault(run, "started", null)),
+        f = Time.TextToUtc19(Record.FieldOrDefault(run, "finished", null))
+    in
+        s <> null and s < to19 and (f = null or f >= from19);
+
+Runs.InWindow = (runs as list, window as record, types as nullable list) as list =>
+    List.Select(
+        runs,
+        (r) =>
+            (types = null or List.Contains(types, Run.TypeOf(r)))
+            and Run.Overlaps(r, window[From19], window[To19])
+    );
+
+// ---------------------------------------------------------------------------
+// HTTP / API layer
+// ---------------------------------------------------------------------------
+Api.Fail = (message as text, optional detail as nullable record) as any =>
+    error Error.Record("DataSource.Error", message, detail);
+
+Api.Scrub = (ctx as record, text as nullable text) as nullable text =>
+    if text = null then null
+    else Text.Replace(text, ctx[Token], "***");
+
+Api.BodySnippet = (ctx as record, body as any) as text =>
+    let
+        raw = try (if body is binary then Text.FromBinary(body) else Text.From(body)) otherwise "",
+        scrubbed = Api.Scrub(ctx, raw)
+    in
+        if scrubbed = null or scrubbed = "" then "(empty body)"
+        else if Text.Length(scrubbed) > 300 then Text.Start(scrubbed, 300) & "..."
+        else scrubbed;
+
+Api.DefaultFetch = (fqdn as text, token as text) =>
+    (route as text, query as record, attempt as number) as record =>
+        let
+            response = Web.Contents(
+                "https://" & fqdn,
+                [
+                    RelativePath = ApiRoot & route,
+                    Query = query,
+                    Headers = [#"Accept" = "application/json", #"Authorization" = "Bearer " & token],
+                    ManualStatusHandling = HandledStatuses,
+                    IsRetry = attempt > 0,
+                    Timeout = #duration(0, 0, 2, 0)
+                ]
             ),
+            status = Value.Metadata(response)[Response.Status],
+            body = Binary.Buffer(response)
+        in
+            [Status = status, Body = body];
 
-        entities = {
-            [
-                Name = "Environments",
-                Data = environmentsTable,
-                ItemKind = "Table",
-                ItemName = "Environments",
-                IsLeaf = true
-            ],
-            [
-                Name = "Platform Metrics",
-                Data = platformMetricsTable,
-                ItemKind = "Table",
-                ItemName = "PlatformMetrics",
-                IsLeaf = true
-            ],
-            [
-                Name = "Tests",
-                Data = testsTable,
-                ItemKind = "Table",
-                ItemName = "Tests",
-                IsLeaf = true
-            ],
-            [
-                Name = "Test Runs",
-                Data = testRunsTable,
-                ItemKind = "Table",
-                ItemName = "TestRuns",
-                IsLeaf = true
-            ],
-            [
-                Name = "Workload Steps",
-                Data = workloadStepsTable,
-                ItemKind = "Table",
-                ItemName = "WorkloadSteps",
-                IsLeaf = true
-            ],
-            [
-                Name = "Aggregated EUX Results",
-                Data = aggregatedEUXResultsTable,
-                ItemKind = "Table",
-                ItemName = "AggregatedEUXResults",
-                IsLeaf = true
-            ],
-            [
-                Name = "Applications",
-                Data = applicationsTable,
-                ItemKind = "Table",
-                ItemName = "Applications",
-                IsLeaf = true
-            ],
-            [
-                Name = "Measurements",
-                Data = allMeasurements,
-                ItemKind = "Table",
-                ItemName = "Measurements",
-                IsLeaf = true
-            ],
-            [
-                Name = "Events",
-                Data = allEvents,
-                ItemKind = "Table",
-                ItemName = "Events",
-                IsLeaf = true
-            ],
-            [
-                Name = "User Sessions",
-                Data = userSessionsTable,
-                ItemKind = "Table",
-                ItemName = "UserSessions",
-                IsLeaf = true
-            ],
-            [
-                Name = "User Session Metrics",
-                Data = userSessionMetricsTable,
-                ItemKind = "Table",
-                ItemName = "UserSessionMetrics",
-                IsLeaf = true
-            ]
-        },
-        navTable = Table.FromRecords(entities),
-        finalNav = Table.ToNavigationTable(navTable, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
-    in
-        finalNav;
+Api.TransportError = (ctx as record, route as text, err as record) as any =>
+    Api.Fail(
+        "Could not complete the request to https://" & ctx[Fqdn] & "/" & ApiRoot & route
+            & ". " & Api.Scrub(ctx, Text.From(Record.FieldOrDefault(err, "Message", "Unknown error")))
+            & " -- Check the FQDN, network reachability, and that the appliance TLS certificate is trusted by this machine "
+            & "(this connector never disables certificate validation). See README > Troubleshooting.",
+        [Route = route, Reason = Record.FieldOrDefault(err, "Reason", null)]
+    );
 
-// Define the type for the Login Enterprise function
-LoginEnterpriseType = type function (
-    FQDN as (
-        type text meta [
-            Documentation.FieldCaption = "FQDN",
-            Documentation.FieldDescription = "Fully qualified domain name (e.g., demo.loginvsi.com)",
-            Documentation.SampleValues = {"demo.loginvsi.com"}
-        ]
-    ),
-    ApiToken as (
-        type text meta [
-            Documentation.FieldCaption = "API Token",
-            Documentation.FieldDescription = "Your Login Enterprise API token",
-            Documentation.SampleValues = {"eyJhbGciOi..."}
-        ]
-    ),
-    optional DaysBack as (
-        type number meta [
-            Documentation.FieldCaption = "Days Back",
-            Documentation.FieldDescription = "Select how many days of data to retrieve",
-            Documentation.AllowedValues = {1, 7, 30, 60, 90},
-            Documentation.SampleValues = {30}
-        ]
-    ),
-    optional UseDateRange as (
-        type logical meta [
-            Documentation.FieldCaption = "Use Date Range",
-            Documentation.FieldDescription = "Enable this to use the Start/End Date inputs instead of Days Back.",
-            Documentation.SampleValues = {false}
-        ]
-    ),
-    optional StartDateParam as (
-        type nullable date meta [
-            Documentation.FieldCaption = "Start Date",
-            Documentation.FieldDescription = "Used if 'Use Date Range' is enabled. Defaults to 30 days ago if blank.",
-            Documentation.SampleValues = { Date.AddDays(DateTime.Date(DateTime.LocalNow()), -30) }
-        ]
-    ),
-    optional EndDateParam as (
-        type nullable date meta [
-            Documentation.FieldCaption = "End Date",
-            Documentation.FieldDescription = "Used if 'Use Date Range' is enabled. Defaults to today if blank.",
-            Documentation.SampleValues = { DateTime.Date(DateTime.LocalNow()) }
-        ]
-    )
-) as table;
-
-// Function to handle paginated API requests
-PagedApiRequest = (baseEndpoint as text, FQDN as text, ApiToken as text, optional pageSize as number) as list =>
+Api.StatusError = (ctx as record, route as text, status as number, body as any, attempts as number) as any =>
     let
-        pageSizeVal = if (pageSize <> null) then pageSize else 5000,
-        // Increased default page size
-        PageFn = (offset as number) as list =>
+        where = "https://" & ctx[Fqdn] & "/" & ApiRoot & route,
+        snippet = Api.BodySnippet(ctx, body),
+        hint =
+            if status = 401 then "Authentication failed: the API token is missing, expired or revoked. Generate a new token and update the connector credential/parameter."
+            else if status = 403 then "Access denied: the token's user lacks permission for this resource."
+            else if status = 404 then "Not found: check the FQDN and that this appliance version exposes API v7-preview."
+            else if status = 400 or status = 422 then "The appliance rejected the request parameters; this appliance's API contract may differ from the one this connector targets."
+            else if List.Contains(RetryStatuses, status) then "The appliance returned a transient error after " & Text.From(attempts, "en-US") & " attempt(s)."
+            else "Unexpected response."
+    in
+        Api.Fail(
+            "HTTP " & Text.From(status, "en-US") & " from " & where & ". " & hint & " Response: " & snippet,
+            [Route = route, Status = status]
+        );
+
+// Returns [Found = logical, Json = any]. 404 is returned as Found = false only when allowNotFound is true.
+Api.Request = (ctx as record, route as text, query as record, allowNotFound as logical) as record =>
+    let
+        delays = ctx[RetryDelays],
+        Attempt = (n as number) as record =>
             let
-                // Check if baseEndpoint already has query parameters
-                delimiter = if Text.Contains(baseEndpoint, "?") then "&" else "?",
-                // Construct endpoint with pagination parameters
-                endpoint = baseEndpoint & delimiter & "count=" & Text.From(pageSizeVal) & "&offset=" & Text.From(
-                    offset
-                ),
-                // Get response and handle nulls
-                response = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-                items = if response <> null and Record.HasFields(response, "items") then response[items] else {},
-                // Check if we need to get more pages
-                count = List.Count(items),
-                next = if count = pageSizeVal then @PageFn(offset + pageSizeVal) else {}
+                // Record/list fields are lazy: touch Status and Body inside the try so transport/TLS errors are caught here.
+                r = try (let x = ctx[Fetch](route, query, n), s = x[Status], b = x[Body] in if s = s and b = b then {s, b} else {s, b}),
+                resp = if r[HasError] then Api.TransportError(ctx, route, r[Error]) else [Status = r[Value]{0}, Body = r[Value]{1}],
+                status = resp[Status],
+                retry = List.Contains(RetryStatuses, status) and n < List.Count(delays)
             in
-                List.Combine({items, next})
+                if retry then
+                    Function.InvokeAfter(() => @Attempt(n + 1), #duration(0, 0, 0, delays{n}))
+                else
+                    Api.Interpret(ctx, route, resp, allowNotFound, n + 1),
+        result = Attempt(0)
     in
-        PageFn(0);
+        result;
 
-// Function to retrieve data from the Login Enterprise API
-GetLoginEnterpriseData = (endpoint as text, FQDN as text, ApiToken as text) as any =>
+Api.Interpret = (ctx as record, route as text, resp as record, allowNotFound as logical, attempts as number) as record =>
     let
-        Response = 
-            try Json.Document(
-                Web.Contents(
-                    "https://" & FQDN, [
-                        RelativePath = "publicApi/v7-preview/" & endpoint,
-                        Headers = [
-                            #"accept" = "application/json",
-                            #"Authorization" = "Bearer " & ApiToken
-                        ]
-                    ]
-                )
-            ) otherwise error "Failed to retrieve data from: " & endpoint
+        status = resp[Status]
     in
-        Response;
+        if status = 204 then
+            [Found = true, Json = null]
+        else if status >= 200 and status < 300 then
+            let
+                parsed = try Json.Document(resp[Body])
+            in
+                if parsed[HasError] then
+                    Api.Fail(
+                        "The response from " & ctx[Fqdn] & "/" & ApiRoot & route & " was not valid JSON ("
+                            & Api.Scrub(ctx, Text.From(parsed[Error][Message])) & "). First characters: " & Api.BodySnippet(ctx, resp[Body]),
+                        [Route = route, Status = status]
+                    )
+                else
+                    [Found = true, Json = parsed[Value]]
+        else if status = 404 and allowNotFound then
+            [Found = false, Json = null]
+        else
+            Api.StatusError(ctx, route, status, resp[Body], attempts);
 
-// Function to retrieve tests from the Login Enterprise API
-GetTests = (FQDN as text, ApiToken as text) as table =>
+// Parses a paged result set: { items: [...], totalCount?: n }.
+Api.ReadItems = (route as text, json as any) as record =>
+    if json = null then
+        [items = {}, total = null]
+    else if json is record and Record.HasFields(json, "items") and Record.Field(json, "items") is list then
+        [
+            items = Record.Field(json, "items"),
+            total = let t = Record.FieldOrDefault(json, "totalCount", null) in if t is number then t else null
+        ]
+    else
+        Api.Fail("Unexpected response shape from " & route & ": expected an object with an 'items' array.", [Route = route]);
+
+// Parses a non-paged list response (bare array, or an object with items).
+Api.ReadList = (route as text, json as any) as list =>
+    if json = null then {}
+    else if json is list then json
+    else if json is record and Record.HasFields(json, "items") and Record.Field(json, "items") is list then Record.Field(json, "items")
+    else Api.Fail("Unexpected response shape from " & route & ": expected an array.", [Route = route]);
+
+Api.PageFingerprint = (items as list) as text =>
+    if List.Count(items) = 0 then
+        ""
+    else
+        Text.From(List.Count(items), "en-US")
+            & "|" & Text.FromBinary(Json.FromValue(List.First(items)))
+            & "|" & Text.FromBinary(Json.FromValue(List.Last(items)));
+
+// Fetches every page with count/offset appended exactly once (any count/offset/includeTotalCount in `query` is replaced).
+// Stops on a short/empty page or when totalCount is reached; fails on non-progress, page-limit overrun, or fewer items than totalCount.
+Api.GetAllItems = (ctx as record, route as text, query as record, optional allowNotFound as nullable logical) as list =>
     let
-        TestsList = PagedApiRequest("tests?orderBy=name&direction=asc&includeTotalCount=false", FQDN, ApiToken),
-        TableRaw  = Table.FromList(TestsList, Splitter.SplitByNothing(), {"Test"}),
+        allow = allowNotFound = true,
+        pageSize = ctx[PageSize],
+        maxPages = ctx[MaxPages],
+        baseQuery = Record.RemoveFields(query, {"count", "offset", "includeTotalCount"}, MissingField.Ignore),
+        LoadPage = (offset as number, prevFp as nullable text, index as number, knownTotal as nullable number) as record =>
+            let
+                q = baseQuery
+                    & [count = Text.From(pageSize, "en-US"), offset = Text.From(offset, "en-US")]
+                    & (if offset = 0 then [includeTotalCount = "true"] else []),
+                resp = Api.Request(ctx, route, q, allow),
+                shaped = if resp[Found] then Api.ReadItems(route, resp[Json]) else [items = {}, total = null],
+                items = shaped[items],
+                count = List.Count(items),
+                fp = Api.PageFingerprint(items),
+                total = if knownTotal <> null then knownTotal else shaped[total],
+                nextOffset = offset + count
+            in
+                if index >= maxPages then
+                    Api.Fail("Stopped after " & Text.From(maxPages, "en-US") & " pages from " & route & "; the result is larger than this connector's safety limit. Narrow the date window.", [Route = route])
+                else if prevFp <> null and count > 0 and fp = prevFp then
+                    Api.Fail("Pagination made no progress for " & route & " at offset " & Text.From(offset, "en-US") & ": the appliance returned the same page again.", [Route = route, Offset = offset])
+                else
+                    [
+                        Items = items,
+                        NextOffset = nextOffset,
+                        Fingerprint = fp,
+                        Index = index,
+                        Total = total,
+                        More = count > 0 and (if total <> null then nextOffset < total else count >= pageSize)
+                    ],
+        states = List.Generate(
+            () => LoadPage(0, null, 0, null),
+            each _ <> null,
+            (s) => if s[More] then LoadPage(s[NextOffset], s[Fingerprint], s[Index] + 1, s[Total]) else null
+        ),
+        items = List.Combine(List.Transform(states, each [Items])),
+        finalTotal = List.Last(states)[Total]
+    in
+        if finalTotal <> null and List.Count(items) < finalTotal then
+            Api.Fail(
+                "Incomplete result from " & route & ": received " & Text.From(List.Count(items), "en-US") & " of " & Text.From(finalTotal, "en-US") & " items.",
+                [Route = route]
+            )
+        else
+            items;
+
+// Single non-paged list request (aggregated endpoints, platform metrics).
+Api.GetList = (ctx as record, route as text, query as record, optional allowNotFound as nullable logical) as list =>
+    let
+        resp = Api.Request(ctx, route, query, allowNotFound = true)
+    in
+        if resp[Found] then Api.ReadList(route, resp[Json]) else {};
+
+// Cheap eager request used so that setup, authentication and TLS problems surface immediately
+// (this is also what makes a gateway/Desktop TestConnection perform a real request).
+Api.Probe = (ctx as record) as logical =>
+    let
+        resp = Api.Request(ctx, "tests", [orderBy = "name", direction = "asc", count = "1", offset = "0", includeTotalCount = "false"], false),
+        shaped = Api.ReadItems("tests", resp[Json])
+    in
+        ctx[Fqdn] <> null and ctx[Token] <> null and List.Count(shaped[items]) >= 0;
+
+// ---------------------------------------------------------------------------
+// Data retrieval
+// ---------------------------------------------------------------------------
+
+// Tests
+GetTests = (ctx as record) as table =>
+    let
+        TestsList = Api.GetAllItems(ctx, "tests", [orderBy = "name", direction = "asc"]),
+        TableRaw  = Table.FromList(Records.DistinctBy(TestsList, "id"), Splitter.SplitByNothing(), {"Test"}),
 
         // Safely expand the main Test record
         Expanded  = ExpandRecordSafe(
@@ -334,80 +481,59 @@ GetTests = (FQDN as text, ApiToken as text) as table =>
     in
         ExpandedConnector;
 
-// Function to retrieve test runs from the Login Enterprise API
-GetTestRuns = (FQDN as text, ApiToken as text) as table =>
+// Raw test-run records (all three test types, de-duplicated by run id).
+GetTestRunsRaw = (ctx as record) as list =>
     let
         testTypes = {"applicationTest", "loadTest", "continuousTest"},
-        allTestRunsRaw = List.Transform(
+        perType = List.Transform(
             testTypes,
-            each
-                let
-                    baseEndpoint = "tests/test-runs?testType=" & _ & "&orderBy=testName&direction=asc&include=testRunConfigurationSnapshot",
-                    rows = PagedApiRequest(baseEndpoint, FQDN, ApiToken),
-                    base = Table.FromList(rows, Splitter.SplitByNothing(), {"TestRun"}),
-                    expanded = ExpandRecordSafe(
-                        base, "TestRun",
-                        {
-                            "id","testId","type","state","result","rampUpCompleted",
-                            "activeSessionCount","statisticsReady","productVersion",
-                            "created","started","finished","counter","numberOfEvents",
-                            "comment","loginCounts","engineCounts","appExecutionCounts",
-                            "vsiMax","testRunConfigurationSnapshot"
-                        }
-                    ),
-                    exp1Raw = ExpandRecordSafe(
-                        expanded,
-                        "loginCounts",
-                        {"successCount", "totalCount"}
-                    ),
-                    exp1 = Table.RenameColumns(
-                        exp1Raw,
-                        {
-                            {"successCount", "login_successCount"},
-                            {"totalCount",   "login_totalCount"}
-                        }
-                    ),
-                    exp2Raw = ExpandRecordSafe(
-                        exp1,
-                        "engineCounts",
-                        {"successCount", "totalCount"}
-                    ),
-                    exp2 = Table.RenameColumns(
-                        exp2Raw,
-                        {
-                            {"successCount", "engine_successCount"},
-                            {"totalCount",   "engine_totalCount"}
-                        }
-                    ),
-                    exp3Raw = ExpandRecordSafe(
-                        exp2,
-                        "appExecutionCounts",
-                        {"successCount", "totalCount"}
-                    ),
-                    exp3 = Table.RenameColumns(
-                        exp3Raw,
-                        {
-                            {"successCount", "app_successCount"},
-                            {"totalCount",   "app_totalCount"}
-                        }
-                    ),
-                    addVSIMax = Table.AddColumn(
-                        exp3,
-                        "vsiMax_maxSessions",
-                        each try Record.Field([vsiMax], "maxSessions") otherwise null
-                    ),
-                    removedRawFields = Table.RemoveColumns(addVSIMax, {"vsiMax"}),
-                    expConfigSnapshot = Table.AddColumn(
-                        removedRawFields,
-                        "testRunConfigurationSnapshot_name",
-                        each try Record.Field([testRunConfigurationSnapshot], "name") otherwise null
-                    )
-                in
-                    expConfigSnapshot
+            (tt) => Api.GetAllItems(
+                ctx,
+                "tests/test-runs",
+                [testType = tt, orderBy = "testName", direction = "asc", include = "testRunConfigurationSnapshot"]
+            )
+        )
+    in
+        Records.DistinctBy(List.Combine(perType), "id");
+
+TestRunsToTable = (rawRuns as list) as table =>
+    let
+        base = Table.FromList(rawRuns, Splitter.SplitByNothing(), {"TestRun"}),
+        expanded = ExpandRecordSafe(
+            base, "TestRun",
+            {
+                "id","testId","type","state","result","rampUpCompleted",
+                "activeSessionCount","statisticsReady","productVersion",
+                "created","started","finished","counter","numberOfEvents",
+                "comment","loginCounts","engineCounts","appExecutionCounts",
+                "vsiMax","testRunConfigurationSnapshot"
+            }
         ),
-        combined = Table.Combine(allTestRunsRaw),
+        exp1 = Table.RenameColumns(
+            ExpandRecordSafe(expanded, "loginCounts", {"successCount", "totalCount"}),
+            {{"successCount", "login_successCount"}, {"totalCount", "login_totalCount"}}
+        ),
+        exp2 = Table.RenameColumns(
+            ExpandRecordSafe(exp1, "engineCounts", {"successCount", "totalCount"}),
+            {{"successCount", "engine_successCount"}, {"totalCount", "engine_totalCount"}}
+        ),
+        exp3 = Table.RenameColumns(
+            ExpandRecordSafe(exp2, "appExecutionCounts", {"successCount", "totalCount"}),
+            {{"successCount", "app_successCount"}, {"totalCount", "app_totalCount"}}
+        ),
+        addVSIMax = Table.AddColumn(
+            exp3,
+            "vsiMax_maxSessions",
+            each try Record.Field([vsiMax], "maxSessions") otherwise null
+        ),
+        removedRawFields = Table.RemoveColumns(addVSIMax, {"vsiMax"}),
+        expConfigSnapshot = Table.AddColumn(
+            removedRawFields,
+            "testRunConfigurationSnapshot_name",
+            each try Record.Field([testRunConfigurationSnapshot], "name") otherwise null
+        ),
         typed = Table.TransformColumnTypes(
-            combined,
+            expConfigSnapshot,
             {
                 {"created", type datetime},
                 {"started", type datetime},
@@ -418,6 +544,10 @@ GetTestRuns = (FQDN as text, ApiToken as text) as table =>
     in
         typed;
 
+GetTestRuns = (ctx as record) as table =>
+    TestRunsToTable(GetTestRunsRaw(ctx));
+
+// Workload steps are derived from the already-retrieved run configuration snapshots.
 // Function to retrieve all measurements for test runs
 GetWorkloadSteps = (testRunsTable as table) as table =>
     let
@@ -500,82 +630,50 @@ GetWorkloadSteps = (testRunsTable as table) as table =>
     in
         table;
 
-// Function to retrieve aggregated EUX results for test runs
-GetAggregatedEUXResults = (
-    testRunsTable as table,
-    FQDN as text,
-    ApiToken as text,
-    StartDate as date,
-    EndDate as date
-) as table =>
+// Aggregated EUX scores. Applies to Load and Continuous runs only (Application tests have no aggregated EUX endpoint).
+GetAggregatedEUXResults = (ctx as record, runsRaw as list, window as record) as table =>
     let
-        // Format datetime range
-        dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
-        fromParam = dateToIso(StartDate),
-        toParam   = dateToIso(EndDate),
-
-        // Filter to only continuous and load test runs
-        runsFiltered = Table.SelectRows(
-            Table.Buffer(testRunsTable),
-            each [type] = "LoadTest" or [type] = "ContinuousTest"
-        ),
-
-        // Retrieve and append testRunId to each response item
-        aggregatedEUXResults = List.Combine(
+        runs = Runs.InWindow(runsRaw, window, {"loadtest", "continuoustest"}),
+        rows = List.Combine(
             List.Transform(
-                Table.Column(runsFiltered, "id"),
-                (runId) =>
+                runs,
+                (r) =>
                     let
-                        endpoint = 
-                            "test-runs/" & runId
-                            & "/aggregated-eux-results"
-                            & "?from=" & fromParam
-                            & "&to=" & toParam,
-
-                        rawResp = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-                        baseList =
-                            if rawResp <> null and Value.Is(rawResp, type list) then rawResp else {},
-                        itemsList = List.Transform(baseList, each Record.AddField(_, "testRunId", runId))
+                        runId = r[id],
+                        items = Api.GetList(
+                            ctx,
+                            "test-runs/" & runId & "/aggregated-eux-results",
+                            [from = window[FromText], to = window[ToText]],
+                            true
+                        )
                     in
-                        itemsList
+                        List.Transform(
+                            List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+                            (i) => i & [testRunId = runId]
+                        )
             )
         ),
-
-        // Convert into table with schema protection
-        result = if List.Count(aggregatedEUXResults) > 0 then
-                     let
-                         tableRaw = Table.FromList(aggregatedEUXResults, Splitter.SplitByNothing(), {"EUX"}),
-                         expanded = Table.ExpandRecordColumn(
-                             tableRaw,
-                             "EUX",
-                             {"timestamp", "score", "count", "testRunId"}
-                         ),
-                         expandedFixed = Table.SelectColumns(expanded, {"timestamp","score","count","testRunId"}, MissingField.UseNull),
-                         typed = Table.TransformColumnTypes(
-                             expandedFixed,
-                             {
-                                 {"timestamp", type datetime},
-                                 {"score", type number},
-                                 {"count", Int64.Type},
-                                 {"testRunId", type text}
-                             }
-                         )
-                     in
-                         typed
-                 else
-                     #table(
-                         type table [timestamp = datetime, score = number, count = Int64.Type, testRunId = text],
-                         {}
-                     )
+        result =
+            if List.Count(rows) > 0 then
+                let
+                    tableRaw = Table.FromList(rows, Splitter.SplitByNothing(), {"EUX"}),
+                    expanded = ExpandRecordSafe(tableRaw, "EUX", {"timestamp", "score", "count", "testRunId"}),
+                    expandedFixed = Table.SelectColumns(expanded, {"timestamp","score","count","testRunId"}, MissingField.UseNull)
+                in
+                    Table.TransformColumnTypes(
+                        expandedFixed,
+                        {{"timestamp", type datetime}, {"score", type number}, {"count", Int64.Type}, {"testRunId", type text}}
+                    )
+            else
+                #table(type table [timestamp = datetime, score = number, count = Int64.Type, testRunId = text], {})
     in
         result;
 
-// Function to retrieve applications from the Login Enterprise API
-GetApplications = (FQDN as text, ApiToken as text) as table =>
+// Applications
+GetApplications = (ctx as record) as table =>
     let
-        endpoint = "applications?orderBy=name&direction=asc&count=1000&offset=0&includeTotalCount=false&include=none",
-        rawList = PagedApiRequest(endpoint, FQDN, ApiToken),
-        tableRaw = Table.FromList(rawList, Splitter.SplitByNothing(), {"Application"}),
+        rawList = Api.GetAllItems(ctx, "applications", [orderBy = "name", direction = "asc", include = "none"]),
+        tableRaw = Table.FromList(Records.DistinctBy(rawList, "id"), Splitter.SplitByNothing(), {"Application"}),
         expanded = ExpandRecordSafe(
             tableRaw, "Application",
             {"id","name","description","type","username","commandLine","workingDirectory",
@@ -595,301 +693,162 @@ GetApplications = (FQDN as text, ApiToken as text) as table =>
     in
         typed;
 
-// Function to retrieve measurements - OPTIMIZED (Metadata + Context Columns + Parallel)
-GetMeasurements = (testRunsTable as table, FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
+// Reads one named property value from a measurement's properties list ([propertyId, value] items).
+Measurement.Prop = (props as any, id as text) as any =>
+    if not (props is list) then
+        null
+    else
+        let
+            hit = List.First(List.Select(props, (p) => p is record and Record.FieldOrDefault(p, "propertyId", null) = id), null)
+        in
+            if hit = null then null else Record.FieldOrDefault(hit, "value", null);
+
+// Measurements: per run, per UTC day the run overlaps. Each day is fully paged, then filtered to [day start, day end)
+// so an observation exactly on a midnight boundary is counted once regardless of the API's `to` inclusivity.
+GetMeasurements = (ctx as record, runsRaw as list, window as record) as table =>
     let
-        // 1. Filter runs
-        continuousRuns = Table.SelectRows(testRunsTable, each [type] = "continuousTest"),
-        otherRuns = Table.SelectRows(testRunsTable, each [type] <> "continuousTest"),
-        otherFiltered = Table.SelectRows(
-            otherRuns,
-            each
-                (Record.Field(_, "started") <= DateTime.From(EndDate) + #duration(1, 0, 0, 0))
-                and (
-                    (
-                        Record.Field(_, "finished") <> null
-                        and Record.Field(_, "finished") >= DateTime.From(StartDate)
+        runs = Runs.InWindow(runsRaw, window, null),
+        FetchDay = (runId as text, day as date) as list =>
+            let
+                dw = Window.Day(day),
+                items = Api.GetAllItems(
+                    ctx,
+                    "test-runs/" & runId & "/measurements",
+                    [from = dw[FromText], to = dw[ToText], include = "all", direction = "asc"],
+                    true
+                )
+            in
+                List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), dw[From19], dw[To19])),
+        perRun = List.Transform(
+            runs,
+            (r) =>
+                List.Combine(
+                    List.Transform(
+                        List.Select(window[Days], (d) => Run.Overlaps(r, Window.Day(d)[From19], Window.Day(d)[To19])),
+                        (d) => FetchDay(r[id], d)
                     )
-                    or (Record.Field(_, "finished") = null)
                 )
         ),
-        runsToFetch = Table.Combine({continuousRuns, otherFiltered}),
-        runsBuffered = Table.Buffer(runsToFetch),
-
-        // 2. Prepare Date Ranges
-        daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
-        dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
-
-        // 3. PARALLEL FETCHING SETUP
-        RunIdList = Table.Column(runsBuffered, "id"),
-        CrossJoin = List.TransformMany(
-            RunIdList,
-            each daysList, 
-            (runId, day) => [RunId = runId, DayStart = day]
-        ),
-        ToDoTable = Table.FromRecords(CrossJoin),
-
-        // B. Define the Fetch Function
-        FetchDayData = (runId as text, dayStart as date) =>
-            let
-                dayEnd = Date.AddDays(dayStart, 1),
-                fromParam = dateToIso(dayStart),
-                toParam = dateToIso(dayEnd),
-                endpoint = "test-runs/"
-                    & runId
-                    & "/measurements"
-                    & "?from=" & fromParam
-                    & "&to=" & toParam
-                    & "&include=all"  // REQUIRED: Ensures AccountName/Protocol are included
-                    & "&count=1000" 
-                    & "&offset=0",
-                
-                rawResp = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null
-            in
-                if rawResp <> null and Record.HasFields(rawResp, "items") then rawResp[items] else {},
-
-        // C. Trigger Parallel Execution
-        AddedData = Table.AddColumn(ToDoTable, "Data", each FetchDayData([RunId], [DayStart])),
-
-        // D. Combine Results
-        ExpandedList = Table.ExpandListColumn(AddedData, "Data"),
-        allRawRecords = ExpandedList[Data],
-
-        // 4. Process Results
-        result = if List.Count(allRawRecords) > 0 then
-             let
-                 tableRaw = Table.FromList(allRawRecords, Splitter.SplitByNothing(), {"Measurement"}),
-                 
-                 // Step 4a: Expand Metadata AND Properties List
-                 expandedMeas = Table.ExpandRecordColumn(
-                     tableRaw,
-                     "Measurement",
-                     {
-                         "measurementId", "appExecutionId", "applicationId", "launcherName",
-                         "accountId", "testRunId", "userSessionId", "duration", "timestamp",
-                         "properties" // We grab properties temporarily
-                     }
-                 ),
-
-                 // Step 4b: Extract ONLY AccountName and RemotingProtocol
-                 // We transform the properties list {[propertyId="AccountName", value="User1"], ...} 
-                 // into a Record [AccountName="User1", ...] so we can expand it easily.
-                 ExtractContext = Table.AddColumn(
-                     expandedMeas, 
-                     "ContextProps", 
-                     each 
-                        try 
-                            Record.FromList(
-                                List.Transform([properties], each [value]), 
-                                List.Transform([properties], each [propertyId])
+        allRawRecords = List.Combine(perRun),
+        result =
+            if List.Count(allRawRecords) > 0 then
+                let
+                    withContext = List.Transform(
+                        allRawRecords,
+                        (m) =>
+                            Record.SelectFields(
+                                m,
+                                {"measurementId", "appExecutionId", "applicationId", "launcherName", "accountId", "testRunId", "userSessionId", "duration", "timestamp"},
+                                MissingField.UseNull
                             )
-                        otherwise []
-                 ),
-
-                 // Step 4c: Expand the new custom record
-                 // We use ExpandRecordSafe just in case some rows are missing these fields
-                 ExpandedContext = ExpandRecordSafe(
-                     ExtractContext, 
-                     "ContextProps", 
-                     {"AccountName", "RemotingProtocol"}, 
-                     {type text, type text}
-                 ),
-
-                 // Step 4d: Select Final Columns (Dropping the heavy 'properties' list)
-                 finalCols = Table.SelectColumns(
-                     ExpandedContext, 
-                     {
-                        "measurementId", "appExecutionId", "applicationId", "launcherName", 
-                        "accountId", "testRunId", "userSessionId", "duration", "timestamp",
-                        "AccountName", "RemotingProtocol"
-                     }, 
-                     MissingField.UseNull
-                 ),
-
-                 typed = Table.TransformColumnTypes(
-                     finalCols, 
-                     {
-                         {"timestamp", type datetime}, 
-                         {"duration", type number},
-                         {"AccountName", type text},
-                         {"RemotingProtocol", type text}
-                     }
-                 )
-             in
-                 typed
-         else
-             #table(
-                 type table [
-                     measurementId = text, appExecutionId = text, applicationId = text, launcherName = text,
-                     accountId = text, testRunId = text, userSessionId = text, duration = number,
-                     timestamp = datetime, AccountName = text, RemotingProtocol = text
-                 ],
-                 {}
-             )
-    in
-        result;
-
-// Function to retrieve events for test runs - OPTIMIZED (Parallel + No Buffer)
-GetEvents = (FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
-    let
-        // 1. Prepare Date Ranges
-        daysList = List.Generate(() => StartDate, each _ <= EndDate, each Date.AddDays(_, 1)),
-        dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
-
-        // 2. PARALLEL FETCHING SETUP
-        // Events are global (not per test run), so we just iterate over Days
-        ToDoTable = Table.FromList(daysList, Splitter.SplitByNothing(), {"DayStart"}),
-        
-        // Define the fetch function
-        FetchEventData = (dayStart as date) =>
-            let
-                dayEnd = Date.AddDays(dayStart, 1),
-                fromParam = dateToIso(dayStart),
-                toParam = dateToIso(dayEnd),
-                endpointDay =
-                    "events"
-                    & "?direction=asc"
-                    & "&include=none"
-                    & "&from=" & fromParam
-                    & "&to=" & toParam,
-                
-                // Use PagedApiRequest here as events might exceed 1000 per day
-                items = PagedApiRequest(endpointDay, FQDN, ApiToken)
-            in
-                items,
-
-        // 3. Trigger Parallel Execution
-        AddedData = Table.AddColumn(ToDoTable, "Data", each FetchEventData([DayStart])),
-
-        // 4. Combine Results
-        ExpandedList = Table.ExpandListColumn(AddedData, "Data"),
-        sampledRowsPerDay = ExpandedList[Data],
-
-        // 5. Process Results
-        result = if List.Count(sampledRowsPerDay) > 0 then
-             let
-                 tableRaw = Table.FromList(sampledRowsPerDay, Splitter.SplitByNothing(), {"Event"}),
-                 
-                 // REMOVED: Table.Buffer(tableRaw) - Stream the data directly
-                 
-                 expanded = ExpandRecordSafe(
-                     tableRaw,
-                     "Event",
-                     {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"}
-                 ),
-                 fixed = Table.SelectColumns(
-                     expanded,
-                     {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"},
-                     MissingField.UseNull
-                 ),
-                 typed = Table.TransformColumnTypes(fixed, {{"timestamp", type datetime}})
-             in
-                 typed
-         else
-             #table(
-                 type table [id = text, eventType = text, timestamp = datetime, title = text, 
-                             testId = text, testRunId = text, userSessionId = text, applicationId = text],
-                 {}
-             )
-    in
-        result;
-
-// Function to retrieve user sessions for test runs
-GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, StartDate as date, EndDate as date) as table =>
-    let
-        // Buffer testRunsTable so the .Column("id") call is cheap
-        testRunsBuffered = Table.Buffer(testRunsTable),
-
-        // Build from/to strings
-        fromParam = DateTime.ToText(DateTime.From(StartDate), "yyyy-MM-ddTHH:mm:ssZ"),
-        toParam = DateTime.ToText(DateTime.From(EndDate), "yyyy-MM-ddTHH:mm:ssZ"),
-
-        // Fetch and expand each run/day into a little sub-table
-        rawList = List.Transform(
-            Table.Column(testRunsBuffered, "id"),
-            each
-                try
-                    let
-                        endpoint = "test-runs/" & _
-                            & "/user-sessions?direction=asc"
-                            & "&includeTotalCount=false"
-                            & "&from=" & fromParam
-                            & "&to=" & toParam,
-
-                        response = PagedApiRequest(endpoint, FQDN, ApiToken),
-                        base = Table.FromList(response, Splitter.SplitByNothing(), {"UserSession"}),
-
-                        // Expand with error handling for missing fields
-                        expanded = try Table.ExpandRecordColumn(
-                            base,
-                            "UserSession",
-                            {
-                                "id", "testId", "testRunId", "created", "loginState", "sessionState",
-                                "stateLastModified", "testType", "accountId", "launcherName",
-                                "loginStartTime", "loginEndTime", "sessionEndTime",
-                                "sessionMetricEnabled", "properties"
-                            }
-                        ) otherwise #table(
-                            {"id", "testId", "testRunId", "created", "loginState", "sessionState",
-                             "stateLastModified", "testType", "accountId", "launcherName",
-                             "loginStartTime", "loginEndTime", "sessionEndTime",
-                             "sessionMetricEnabled", "properties"},
-                            {}
-                        )
-                    in
-                        expanded
-                    otherwise #table(
-                        {"id", "testId", "testRunId", "created", "loginState", "sessionState",
-                         "stateLastModified", "testType", "accountId", "launcherName",
-                         "loginStartTime", "loginEndTime", "sessionEndTime",
-                         "sessionMetricEnabled", "properties"},
-                        {}
+                            & [
+                                AccountName = Measurement.Prop(Record.FieldOrDefault(m, "properties", null), "AccountName"),
+                                RemotingProtocol = Measurement.Prop(Record.FieldOrDefault(m, "properties", null), "RemotingProtocol")
+                            ]
+                    ),
+                    tableRaw = Table.FromRecords(withContext, null, MissingField.UseNull),
+                    finalCols = Table.SelectColumns(
+                        tableRaw,
+                        {
+                            "measurementId", "appExecutionId", "applicationId", "launcherName",
+                            "accountId", "testRunId", "userSessionId", "duration", "timestamp",
+                            "AccountName", "RemotingProtocol"
+                        },
+                        MissingField.UseNull
                     )
+                in
+                    Table.TransformColumnTypes(
+                        finalCols,
+                        {
+                            {"measurementId", type text}, {"appExecutionId", type text}, {"applicationId", type text},
+                            {"launcherName", type text}, {"accountId", type text}, {"testRunId", type text},
+                            {"userSessionId", type text},
+                            {"timestamp", type datetime},
+                            {"duration", type number},
+                            {"AccountName", type text},
+                            {"RemotingProtocol", type text}
+                        }
+                    )
+            else
+                #table(
+                    type table [
+                        measurementId = text, appExecutionId = text, applicationId = text, launcherName = text,
+                        accountId = text, testRunId = text, userSessionId = text, duration = number,
+                        timestamp = datetime, AccountName = text, RemotingProtocol = text
+                    ],
+                    {}
+                )
+    in
+        result;
+
+// Events: global endpoint, whole window in one fully paged request, filtered to [From, To).
+GetEvents = (ctx as record, window as record) as table =>
+    let
+        items = Api.GetAllItems(
+            ctx,
+            "events",
+            [direction = "asc", include = "none", from = window[FromText], to = window[ToText]]
         ),
+        inWindow = List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+        result =
+            if List.Count(inWindow) > 0 then
+                let
+                    tableRaw = Table.FromList(inWindow, Splitter.SplitByNothing(), {"Event"}),
+                    expanded = ExpandRecordSafe(
+                        tableRaw,
+                        "Event",
+                        {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"}
+                    ),
+                    fixed = Table.SelectColumns(
+                        expanded,
+                        {"id","eventType","timestamp","title","testId","testRunId","userSessionId","applicationId"},
+                        MissingField.UseNull
+                    )
+                in
+                    Table.TransformColumnTypes(fixed, {{"timestamp", type datetime}})
+            else
+                #table(
+                    type table [id = text, eventType = text, timestamp = datetime, title = text,
+                                testId = text, testRunId = text, userSessionId = text, applicationId = text],
+                    {}
+                )
+    in
+        result;
 
-        // Combine with empty data protection
-        cleanedList = List.RemoveNulls(rawList),
-        combined = if List.Count(cleanedList) > 0 then 
-                       Table.Combine(cleanedList)
-                   else
-                       #table(
-                           {"id", "testId", "testRunId", "created", "loginState", "sessionState",
-                            "stateLastModified", "testType", "accountId", "launcherName",
-                            "loginStartTime", "loginEndTime", "sessionEndTime",
-                            "sessionMetricEnabled", "properties"},
-                           {}
-                       ),
+UserSessionColumns = {
+    "id","testId","testRunId","created","loginState","sessionState",
+    "stateLastModified","testType","accountId","launcherName",
+    "loginStartTime","loginEndTime","sessionEndTime",
+    "sessionMetricEnabled","properties"
+};
 
-        // Guarantee schema even if some fields are missing this refresh
-        expectedCols = {
-            "id","testId","testRunId","created","loginState","sessionState",
-            "stateLastModified","testType","accountId","launcherName",
-            "loginStartTime","loginEndTime","sessionEndTime",
-            "sessionMetricEnabled","properties"
-        },
-        // Guarantee schema even if some fields are missing this refresh
-        fixed =
-            EnsureColumns(
-                Table.SelectColumns(combined, expectedCols, MissingField.UseNull),
-                expectedCols,
-                {
-                    type text,          // id
-                    type text,          // testId
-                    type text,          // testRunId
-                    type datetime,      // created
-                    type text,          // loginState
-                    type text,          // sessionState
-                    type datetime,      // stateLastModified
-                    type text,          // testType
-                    type text,          // accountId
-                    type text,          // launcherName
-                    type datetime,      // loginStartTime
-                    type datetime,      // loginEndTime
-                    type datetime,      // sessionEndTime
-                    type logical,       // sessionMetricEnabled
-                    type any            // properties
-                }
-            ),
+// User sessions per run overlapping the window (all run types), fully paged.
+GetUserSessions = (ctx as record, runsRaw as list, window as record) as table =>
+    let
+        runs = Runs.InWindow(runsRaw, window, null),
+        rows = List.Combine(
+            List.Transform(
+                runs,
+                (r) => Api.GetAllItems(
+                    ctx,
+                    "test-runs/" & r[id] & "/user-sessions",
+                    [direction = "asc", from = window[FromText], to = window[ToText]],
+                    true
+                )
+            )
+        ),
+        base = Table.FromList(Records.DistinctBy(rows, "id"), Splitter.SplitByNothing(), {"UserSession"}),
+        expanded = ExpandRecordSafe(base, "UserSession", UserSessionColumns),
+        fixed = EnsureColumns(
+            Table.SelectColumns(expanded, UserSessionColumns, MissingField.UseNull),
+            UserSessionColumns,
+            {
+                type text, type text, type text, type datetime, type text, type text,
+                type datetime, type text, type text, type text,
+                type datetime, type datetime, type datetime,
+                type logical, type any
+            }
+        ),
         typed = Table.TransformColumnTypes(
             fixed,
             {
@@ -903,155 +862,59 @@ GetUserSessions = (testRunsTable as table, FQDN as text, ApiToken as text, Start
     in
         typed;
 
-// Function to retrieve user session metrics for test runs
-GetUserSessionMetrics = (
-    testRunsTable as table,
-    FQDN as text,
-    ApiToken as text,
-    StartDate as date,
-    EndDate as date
-) as table =>
+// Aggregated user-session metrics. Load runs use the load-test endpoint, Continuous runs the continuous endpoint
+// (avgHour). Application runs have no such endpoint and are not queried.
+GetUserSessionMetrics = (ctx as record, runsRaw as list, window as record) as table =>
     let
-        // Convert StartDate/EndDate
-        dateToIso = (d as date) => DateTime.ToText(DateTime.From(d), "yyyy-MM-ddTHH:mm:ssZ"),
-        fromParam = dateToIso(StartDate),
-        toParam   = dateToIso(EndDate),
-
-        // Buffer and split runs into loadTest vs continuousTest
-        runsBuffered   = Table.Buffer(testRunsTable),
-        loadRuns       = Table.SelectRows(runsBuffered, each [type] = "LoadTest"),
-        continuousRuns = Table.SelectRows(runsBuffered, each [type] = "ContinuousTest"),
-
-        // For each loadTest runId, call the aggregated‐load endpoint and append testRunId
-        loadAggregated =
-          List.Combine(
-            List.Transform(
-              Table.Column(loadRuns, "id"),
-              (runId) =>
+        loadRuns       = Runs.InWindow(runsRaw, window, {"loadtest"}),
+        continuousRuns = Runs.InWindow(runsRaw, window, {"continuoustest"}),
+        Fetch = (r as record, routeSuffix as text, extra as record) as list =>
+            let
+                route = "test-runs/" & r[id] & "/" & routeSuffix,
+                items = Api.GetList(ctx, route, extra & [from = window[FromText], to = window[ToText]], true)
+            in
+                List.Transform(
+                    List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+                    (i) => i & [testRunId = r[id]]
+                ),
+        loadAggregated = List.Combine(List.Transform(loadRuns, (r) => Fetch(r, "aggregated-load-test-user-session-metrics", []))),
+        continuousAggregated = List.Combine(List.Transform(continuousRuns, (r) => Fetch(r, "aggregated-continuous-test-user-session-metrics", [aggregationMode = "avgHour"]))),
+        allAggregatedRows = List.Combine({loadAggregated, continuousAggregated}),
+        result =
+            if List.Count(allAggregatedRows) > 0 then
                 let
-                  endpoint = 
-                    "test-runs/" & runId
-                    & "/aggregated-load-test-user-session-metrics"
-                    & "?from=" & fromParam
-                    & "&to="   & toParam,
-
-                  rawResp  = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-                  baseList =
-                    if rawResp = null then
-                      {}
-                    else if Value.Is(rawResp, type list) then
-                      rawResp
-                    else if Value.Is(rawResp, type record) and Record.HasFields(rawResp, "items") then
-                      rawResp[items]
-                    else
-                      {},
-                  // inject testRunId into every record
-                  itemsList = List.Transform(baseList, each Record.AddField(_, "testRunId", runId))
+                    tableRaw = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
+                    expanded = ExpandRecordSafe(tableRaw, "Metric", {"timestamp","metricId","measurement","count","displayName","unit","testRunId"}),
+                    expandedFixed = Table.SelectColumns(expanded, {"timestamp","metricId","measurement","count","displayName","unit","testRunId"}, MissingField.UseNull)
                 in
-                  itemsList
-            )
-          ),
-
-        // For each continuousTest runId, call the aggregated‐continuous endpoint and append testRunId
-        continuousAggregated =
-          List.Combine(
-            List.Transform(
-              Table.Column(continuousRuns, "id"),
-              (runId) =>
-                let
-                  endpoint = 
-                    "test-runs/" & runId
-                    & "/aggregated-continuous-test-user-session-metrics"
-                    & "?aggregationMode=avgHour"
-                    & "&from=" & fromParam
-                    & "&to="   & toParam,
-
-                  rawResp  = try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-                  baseList =
-                    if rawResp = null then
-                      {}
-                    else if Value.Is(rawResp, type list) then
-                      rawResp
-                    else if Value.Is(rawResp, type record) and Record.HasFields(rawResp, "items") then
-                      rawResp[items]
-                    else
-                      {},
-                  // inject testRunId into every record
-                  itemsList = List.Transform(baseList, each Record.AddField(_, "testRunId", runId))
-                in
-                  itemsList
-            )
-          ),
-
-        // Combine both lists into a single flat list of records
-        allAggregatedRows = List.Combine({ loadAggregated, continuousAggregated }),
-
-        // Handle empty result with proper schema
-        result = if List.Count(allAggregatedRows) > 0 then
-                     let
-                         tableRaw  = Table.FromList(allAggregatedRows, Splitter.SplitByNothing(), {"Metric"}),
-                         expanded   = ExpandRecordSafe(
-                                        tableRaw,
-                                        "Metric",
-                                        {
-                                          "timestamp",
-                                          "metricId",
-                                          "measurement",
-                                          "count",
-                                          "displayName",
-                                          "unit",
-                                          "testRunId"
-                                        }
-                                      ),
-                         expandedFixed = Table.SelectColumns(
-                             expanded,
-                             {"timestamp","metricId","measurement","count","displayName","unit","testRunId"},
-                             MissingField.UseNull
-                         ),
-                         typed = Table.TransformColumnTypes(
-                             expandedFixed,
-                             {
-                                 {"timestamp", type datetime},
-                                 {"metricId", Int64.Type},
-                                 {"measurement", type number},
-                                 {"count", Int64.Type},
-                                 {"displayName", type text},
-                                 {"unit", type text},
-                                 {"testRunId", type text}
-                             }
-                         )
-                     in
-                         typed
-                 else
-                     #table(
-                         type table [timestamp = datetime, metricId = Int64.Type, measurement = number, 
-                                     count = Int64.Type, displayName = text, unit = text, testRunId = text],
-                         {}
-                     )
+                    Table.TransformColumnTypes(
+                        expandedFixed,
+                        {
+                            {"timestamp", type datetime},
+                            {"metricId", Int64.Type},
+                            {"measurement", type number},
+                            {"count", Int64.Type},
+                            {"displayName", type text},
+                            {"unit", type text},
+                            {"testRunId", type text}
+                        }
+                    )
+            else
+                #table(
+                    type table [timestamp = datetime, metricId = Int64.Type, measurement = number,
+                                count = Int64.Type, displayName = text, unit = text, testRunId = text],
+                    {}
+                )
     in
         result;
 
-// Function to retrieve environments from the Login Enterprise API, with optional filtering based on test data
-GetEnvironments = (FQDN as text, ApiToken as text, testsTable as table) as table =>
+// Environments (fully paged)
+GetEnvironments = (ctx as record, testsTable as table) as table =>
     let
-        rawResp =
-            try
-                GetLoginEnterpriseData(
-                    "environments?orderBy=name&count=1000&offset=0&includeTotalCount=false&include=none",
-                    FQDN,
-                    ApiToken
-                )
-            otherwise
-                null,
-
-        rawList =
-            if rawResp <> null and Value.Is(rawResp, type record) and Record.HasFields(rawResp, "items") then
-                rawResp[items]
-            else
-                {},
+        rawList = Api.GetAllItems(ctx, "environments", [orderBy = "name", include = "none"]),
 
         tableRaw =
-            Table.FromList(rawList, Splitter.SplitByNothing(), {"Environment"}),
+            Table.FromList(Records.DistinctBy(rawList, "id"), Splitter.SplitByNothing(), {"Environment"}),
 
         expanded =
             ExpandRecordSafe(
@@ -1067,96 +930,39 @@ GetEnvironments = (FQDN as text, ApiToken as text, testsTable as table) as table
                     "environmentAttributes",
                     "provider"
                 },
-                {
-                    type text,
-                    type text,
-                    type text,
-                    type logical,
-                    type logical,
-                    type any,
-                    type any,
-                    type any
-                }
+                {type text, type text, type text, type logical, type logical, type any, type any, type any}
             ),
 
         expandedAttrs =
-            ExpandRecordSafe(
-                expanded,
-                "environmentAttributes",
-                {"resourceGroup", "hostPool"},
-                {type text, type text}
-            ),
+            ExpandRecordSafe(expanded, "environmentAttributes", {"resourceGroup", "hostPool"}, {type text, type text}),
 
         expandedCost =
             ExpandRecordSafe(
                 expandedAttrs,
                 "environmentCost",
+                {"currency", "expectedUserAmount", "actualUserAmount", "capitalExpenditures", "operationalExpenditures"},
+                {type text, type number, type number, type number, type number}
+            ),
+
+        providerField = (name as text) => (r as record) =>
+            try Record.FieldOrDefault(r[provider], name, null) otherwise null,
+
+        withProvider =
+            List.Accumulate(
                 {
-                    "currency",
-                    "expectedUserAmount",
-                    "actualUserAmount",
-                    "capitalExpenditures",
-                    "operationalExpenditures"
+                    {"providerType", "type"},
+                    {"providerId", "id"},
+                    {"providerName", "name"},
+                    {"providerDescription", "description"},
+                    {"providerTenantId", "tenantId"},
+                    {"providerApplicationId", "applicationId"}
                 },
-                {
-                    type text,
-                    type number,
-                    type number,
-                    type number,
-                    type number
-                }
-            ),
-
-        providerType =
-            Table.AddColumn(
                 expandedCost,
-                "providerType",
-                each try Record.FieldOrDefault([provider], "type", null) otherwise null,
-                type text
-            ),
-
-        providerId =
-            Table.AddColumn(
-                providerType,
-                "providerId",
-                each try Record.FieldOrDefault([provider], "id", null) otherwise null,
-                type text
-            ),
-
-        providerName =
-            Table.AddColumn(
-                providerId,
-                "providerName",
-                each try Record.FieldOrDefault([provider], "name", null) otherwise null,
-                type text
-            ),
-
-        providerDescription =
-            Table.AddColumn(
-                providerName,
-                "providerDescription",
-                each try Record.FieldOrDefault([provider], "description", null) otherwise null,
-                type text
-            ),
-
-        providerTenantId =
-            Table.AddColumn(
-                providerDescription,
-                "providerTenantId",
-                each try Record.FieldOrDefault([provider], "tenantId", null) otherwise null,
-                type text
-            ),
-
-        providerApplicationId =
-            Table.AddColumn(
-                providerTenantId,
-                "providerApplicationId",
-                each try Record.FieldOrDefault([provider], "applicationId", null) otherwise null,
-                type text
+                (state, pair) => Table.AddColumn(state, pair{0}, providerField(pair{1}), type text)
             ),
 
         providerRemoved =
-            try Table.RemoveColumns(providerApplicationId, {"provider"}) otherwise providerApplicationId,
+            try Table.RemoveColumns(withProvider, {"provider"}) otherwise withProvider,
 
         testCountTable =
             Table.Group(
@@ -1169,30 +975,14 @@ GetEnvironments = (FQDN as text, ApiToken as text, testsTable as table) as table
             ),
 
         mergedTestCounts =
-            Table.NestedJoin(
-                providerRemoved,
-                {"id"},
-                testCountTable,
-                {"environmentKey"},
-                "TestCounts",
-                JoinKind.LeftOuter
-            ),
+            Table.NestedJoin(providerRemoved, {"id"}, testCountTable, {"environmentKey"}, "TestCounts", JoinKind.LeftOuter),
 
         expandedTestCounts =
-            Table.ExpandTableColumn(
-                mergedTestCounts,
-                "TestCounts",
-                {"mappedTestCount"},
-                {"mappedTestCount"}
-            ),
+            Table.ExpandTableColumn(mergedTestCounts, "TestCounts", {"mappedTestCount"}, {"mappedTestCount"}),
 
         finalTyped =
             Table.TransformColumnTypes(
-                EnsureColumns(
-                    expandedTestCounts,
-                    {"mappedTestCount"},
-                    {Int64.Type}
-                ),
+                EnsureColumns(expandedTestCounts, {"mappedTestCount"}, {Int64.Type}),
                 {
                     {"enableEnvironmentDataCollection", type logical},
                     {"enableCostCalculation", type logical},
@@ -1206,121 +996,71 @@ GetEnvironments = (FQDN as text, ApiToken as text, testsTable as table) as table
     in
         finalTyped;
 
-// Function to retrieve platform metrics for specified environments and date range
-GetPlatformMetrics = (
-    environmentIds as list,
-    FQDN as text,
-    ApiToken as text,
-    StartDate as date,
-    EndDate as date
-) as table =>
+// Platform metrics per environment. Environments that explicitly disable data collection are not applicable and are
+// not queried; a 404 for an environment is treated as "unavailable" (empty); any other failure raises an error.
+GetPlatformMetrics = (ctx as record, environmentsTable as table, window as record) as table =>
     let
-        // Convert a date to a full ISO 8601 UTC timestamp string
-        dateToIsoUtc = (d as date) as text =>
-            DateTime.ToText(
-                DateTimeZone.RemoveZone(
-                    DateTimeZone.SwitchZone(
-                        DateTimeZone.From(DateTime.From(d)),
-                        0
-                    )
-                ),
-                "yyyy-MM-ddTHH:mm:ss"
-            ) & "Z",
-
-        // StartDate / EndDate already reflect either DaysBack or manual range
-        fromParam = dateToIsoUtc(StartDate),
-
-        // Add 1 day so the selected End Date is fully included
-        toParam = dateToIsoUtc(Date.AddDays(EndDate, 1)),
-
-        envIds =
-            List.Buffer(
-                List.Distinct(
-                    List.RemoveNulls(environmentIds)
-                )
+        queryable =
+            Table.SelectRows(
+                Table.SelectColumns(environmentsTable, {"id", "enableEnvironmentDataCollection"}, MissingField.UseNull),
+                each [id] <> null and [enableEnvironmentDataCollection] <> false
             ),
+        envIds = List.Buffer(List.Distinct(Table.Column(queryable, "id"))),
 
         EmptyTable =
             #table(
                 type table [
-                    metricId = text,
-                    environmentKey = text,
-                    displayName = text,
-                    unit = text,
-                    instance = text,
-                    group = text,
-                    componentType = text,
-                    customTagsJson = text,
-                    customTag_cluster_name = text,
-                    customTag_cluster_uuid = text,
-                    timestamp = datetime,
-                    value = number
+                    metricId = text, environmentKey = text, displayName = text, unit = text, instance = text,
+                    group = text, componentType = text, customTagsJson = text, customTag_cluster_name = text,
+                    customTag_cluster_uuid = text, timestamp = datetime, value = number
                 ],
                 {}
             ),
 
         allMetricSeries =
-            if List.Count(envIds) = 0 then
-                {}
-            else
-                List.Combine(
-                    List.Transform(
-                        envIds,
-                        (envId) =>
-                            let
-                                endpoint =
-                                    "platform-metrics"
-                                    & "?from=" & Uri.EscapeDataString(fromParam)
-                                    & "&to=" & Uri.EscapeDataString(toParam)
-                                    & "&environmentIds=" & Uri.EscapeDataString(Text.From(envId)),
+            List.Combine(
+                List.Transform(
+                    envIds,
+                    (envId) =>
+                        Api.GetList(
+                            ctx,
+                            "platform-metrics",
+                            [from = window[FromText], to = window[ToText], environmentIds = Text.From(envId)],
+                            true
+                        )
+                )
+            ),
 
-                                rawResp =
-                                    try GetLoginEnterpriseData(endpoint, FQDN, ApiToken) otherwise null,
-
-                                metricList =
-                                    if rawResp <> null and Value.Is(rawResp, type list) then
-                                        rawResp
-                                    else
-                                        {}
-                            in
-                                metricList
-                    )
+        // keep only in-window data points; series with none left carry no data
+        inWindowSeries =
+            List.Select(
+                List.Transform(
+                    List.Select(allMetricSeries, (s) => s is record),
+                    (s) =>
+                        Record.TransformFields(
+                            s,
+                            {{"dataPoints", (dp) =>
+                                if dp is list then
+                                    List.Select(dp, (p) => p is record and Time.InRange(Record.FieldOrDefault(p, "timestamp", null), window[From19], window[To19]))
+                                else
+                                    {}}},
+                            MissingField.UseNull
+                        )
                 ),
+                (s) => (Record.FieldOrDefault(s, "dataPoints", null) is list) and List.Count(Record.Field(s, "dataPoints")) > 0
+            ),
 
         result =
-            if List.Count(allMetricSeries) > 0 then
+            if List.Count(inWindowSeries) > 0 then
                 let
-                    tableRaw =
-                        Table.FromList(allMetricSeries, Splitter.SplitByNothing(), {"PlatformMetric"}),
-
+                    tableRaw = Table.FromList(inWindowSeries, Splitter.SplitByNothing(), {"PlatformMetric"}),
                     expandedMetric =
                         Table.ExpandRecordColumn(
                             tableRaw,
                             "PlatformMetric",
-                            {
-                                "metricId",
-                                "environmentKey",
-                                "displayName",
-                                "unit",
-                                "instance",
-                                "group",
-                                "componentType",
-                                "customTags",
-                                "dataPoints"
-                            },
-                            {
-                                "metricId",
-                                "environmentKey",
-                                "displayName",
-                                "unit",
-                                "instance",
-                                "group",
-                                "componentType",
-                                "customTags",
-                                "dataPoints"
-                            }
+                            {"metricId", "environmentKey", "displayName", "unit", "instance", "group", "componentType", "customTags", "dataPoints"},
+                            {"metricId", "environmentKey", "displayName", "unit", "instance", "group", "componentType", "customTags", "dataPoints"}
                         ),
-
                     normalized =
                         Table.TransformColumns(
                             expandedMetric,
@@ -1329,15 +1069,8 @@ GetPlatformMetrics = (
                                 {"dataPoints", each if _ is null then {} else _, type list}
                             }
                         ),
-
                     withCustomTagsJson =
-                        Table.AddColumn(
-                            normalized,
-                            "customTagsJson",
-                            each RecordToJsonText([customTags]),
-                            type text
-                        ),
-
+                        Table.AddColumn(normalized, "customTagsJson", each RecordToJsonText([customTags]), type text),
                     withClusterName =
                         Table.AddColumn(
                             withCustomTagsJson,
@@ -1345,7 +1078,6 @@ GetPlatformMetrics = (
                             each try Text.From(Record.FieldOrDefault([customTags], "cluster_name", null)) otherwise null,
                             type text
                         ),
-
                     withClusterUuid =
                         Table.AddColumn(
                             withClusterName,
@@ -1353,38 +1085,19 @@ GetPlatformMetrics = (
                             each try Text.From(Record.FieldOrDefault([customTags], "cluster_uuid", null)) otherwise null,
                             type text
                         ),
-
-                    expandedDataPointsList =
-                        Table.ExpandListColumn(withClusterUuid, "dataPoints"),
-
+                    expandedDataPointsList = Table.ExpandListColumn(withClusterUuid, "dataPoints"),
                     expandedDataPoints =
-                        Table.ExpandRecordColumn(
-                            expandedDataPointsList,
-                            "dataPoints",
-                            {"timestamp", "value"},
-                            {"timestamp", "value"}
-                        ),
-
+                        Table.ExpandRecordColumn(expandedDataPointsList, "dataPoints", {"timestamp", "value"}, {"timestamp", "value"}),
                     selected =
                         Table.SelectColumns(
                             expandedDataPoints,
                             {
-                                "metricId",
-                                "environmentKey",
-                                "displayName",
-                                "unit",
-                                "instance",
-                                "group",
-                                "componentType",
-                                "customTagsJson",
-                                "customTag_cluster_name",
-                                "customTag_cluster_uuid",
-                                "timestamp",
-                                "value"
+                                "metricId", "environmentKey", "displayName", "unit", "instance", "group",
+                                "componentType", "customTagsJson", "customTag_cluster_name", "customTag_cluster_uuid",
+                                "timestamp", "value"
                             },
                             MissingField.UseNull
                         ),
-
                     typed =
                         Table.TransformColumnTypes(
                             selected,
@@ -1410,17 +1123,208 @@ GetPlatformMetrics = (
     in
         result;
 
-// Test connection function for the Login Enterprise data source
-LoginEnterprise_PBI.TestConnection = (FQDN as text, ApiToken as text) =>
-    { "LoginEnterprise_PBI.Contents", { FQDN, ApiToken } };
+// ---------------------------------------------------------------------------
+// Navigation table assembly
+// ---------------------------------------------------------------------------
+LoginEnterpriseCore = (ctx as record, window as record) as table =>
+    let
+        testsTable = GetTests(ctx),
+        environmentsTable = GetEnvironments(ctx, testsTable),
+        testRunsRaw = GetTestRunsRaw(ctx),
+        testRunsTable = TestRunsToTable(testRunsRaw),
+        workloadStepsTable = GetWorkloadSteps(testRunsTable),
+        applicationsTable = GetApplications(ctx),
+        allMeasurements = GetMeasurements(ctx, testRunsRaw, window),
+        aggregatedEUXResultsTable = GetAggregatedEUXResults(ctx, testRunsRaw, window),
+        allEvents = GetEvents(ctx, window),
+        userSessionsTable = GetUserSessions(ctx, testRunsRaw, window),
+        userSessionMetricsTable = GetUserSessionMetrics(ctx, testRunsRaw, window),
+        platformMetricsTable = GetPlatformMetrics(ctx, environmentsTable, window),
 
-// Metadata for the Login Enterprise data source
+        entities = {
+            [Name = "Environments", Data = environmentsTable, ItemKind = "Table", ItemName = "Environments", IsLeaf = true],
+            [Name = "Platform Metrics", Data = platformMetricsTable, ItemKind = "Table", ItemName = "PlatformMetrics", IsLeaf = true],
+            [Name = "Tests", Data = testsTable, ItemKind = "Table", ItemName = "Tests", IsLeaf = true],
+            [Name = "Test Runs", Data = testRunsTable, ItemKind = "Table", ItemName = "TestRuns", IsLeaf = true],
+            [Name = "Workload Steps", Data = workloadStepsTable, ItemKind = "Table", ItemName = "WorkloadSteps", IsLeaf = true],
+            [Name = "Aggregated EUX Results", Data = aggregatedEUXResultsTable, ItemKind = "Table", ItemName = "AggregatedEUXResults", IsLeaf = true],
+            [Name = "Applications", Data = applicationsTable, ItemKind = "Table", ItemName = "Applications", IsLeaf = true],
+            [Name = "Measurements", Data = allMeasurements, ItemKind = "Table", ItemName = "Measurements", IsLeaf = true],
+            [Name = "Events", Data = allEvents, ItemKind = "Table", ItemName = "Events", IsLeaf = true],
+            [Name = "User Sessions", Data = userSessionsTable, ItemKind = "Table", ItemName = "UserSessions", IsLeaf = true],
+            [Name = "User Session Metrics", Data = userSessionMetricsTable, ItemKind = "Table", ItemName = "UserSessionMetrics", IsLeaf = true]
+        },
+        navTable = Table.FromRecords(entities),
+        finalNav = Table.ToNavigationTable(navTable, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+    in
+        // Probing first makes URL/auth/TLS problems (and gateway TestConnection) fail fast with a clear message.
+        if window[DayCount] > 0 and Api.Probe(ctx) then finalNav else error "unreachable";
+
+// Shared implementation behind both entry points.
+LoginEnterpriseBuild = (
+    FQDN as nullable text,
+    token as nullable text,
+    DaysBack as nullable number,
+    UseDateRange as nullable logical,
+    StartDateParam as nullable date,
+    EndDateParam as nullable date
+) as table =>
+    LoginEnterpriseCore(
+        Ctx.Create(FQDN, token),
+        Window.Create(DaysBack, UseDateRange, StartDateParam, EndDateParam)
+    );
+
+// ---------------------------------------------------------------------------
+// Entry point 1 (legacy, unchanged interface): API token passed as a function argument, Anonymous authentication.
+// NOTE: the token is part of the data source path and is stored in the report/parameters in clear text.
+// Prefer LoginEnterprise_PBI.ContentsKey for new reports (see README).
+// ---------------------------------------------------------------------------
+[DataSource.Kind = "LoginEnterprise_PBI", Publish = "LoginEnterprise_PBI.Publish"]
+shared LoginEnterprise_PBI.Contents = Value.ReplaceType(LoginEnterpriseImpl, LoginEnterpriseType);
+
+LoginEnterpriseImpl = (
+    FQDN as text,
+    ApiToken as text,
+    optional DaysBack as nullable number,
+    optional UseDateRange as nullable logical,
+    optional StartDateParam as nullable date,
+    optional EndDateParam as nullable date
+) as table =>
+    LoginEnterpriseBuild(FQDN, ApiToken, DaysBack, UseDateRange, StartDateParam, EndDateParam);
+
+LoginEnterpriseType = type function (
+    FQDN as (
+        type text meta [
+            Documentation.FieldCaption = "FQDN",
+            Documentation.FieldDescription = "Fully qualified domain name of the Login Enterprise appliance (e.g., demo.loginvsi.com). HTTPS only; no path.",
+            Documentation.SampleValues = {"demo.loginvsi.com"}
+        ]
+    ),
+    ApiToken as (
+        type text meta [
+            Documentation.FieldCaption = "API Token",
+            Documentation.FieldDescription = "Your Login Enterprise API token. Stored in clear text with this entry point; see README for the Key-credential alternative.",
+            Documentation.SampleValues = {"<your-api-token>"}
+        ]
+    ),
+    optional DaysBack as (
+        type number meta [
+            Documentation.FieldCaption = "Days Back",
+            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-366). Ignored when Use Date Range is true.",
+            Documentation.AllowedValues = {1, 7, 30, 60, 90},
+            Documentation.SampleValues = {30}
+        ]
+    ),
+    optional UseDateRange as (
+        type logical meta [
+            Documentation.FieldCaption = "Use Date Range",
+            Documentation.FieldDescription = "Enable to use the fixed Start/End Date inputs (both required) instead of Days Back.",
+            Documentation.SampleValues = {false}
+        ]
+    ),
+    optional StartDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "Start Date",
+            Documentation.FieldDescription = "First UTC day to include. Required when Use Date Range is true.",
+            Documentation.SampleValues = {#date(2026, 1, 1)}
+        ]
+    ),
+    optional EndDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "End Date",
+            Documentation.FieldDescription = "Last UTC day to include (the whole day is included). Required when Use Date Range is true; must not be before Start Date.",
+            Documentation.SampleValues = {#date(2026, 1, 31)}
+        ]
+    )
+) as table;
+
+// ---------------------------------------------------------------------------
+// Entry point 2 (new, additive): Key credential. The token is entered once in the Power BI credential dialog
+// (Extension.CurrentCredential) and is NOT part of the query or data source path.
+// Not yet runtime-accepted in Power BI Desktop/Service; see ACCEPTANCE.md.
+// ---------------------------------------------------------------------------
+[DataSource.Kind = "LoginEnterprise_PBI_Key", Publish = "LoginEnterprise_PBI_Key.Publish"]
+shared LoginEnterprise_PBI.ContentsKey = Value.ReplaceType(LoginEnterpriseKeyImpl, LoginEnterpriseKeyType);
+
+LoginEnterpriseKeyImpl = (
+    FQDN as text,
+    optional DaysBack as nullable number,
+    optional UseDateRange as nullable logical,
+    optional StartDateParam as nullable date,
+    optional EndDateParam as nullable date
+) as table =>
+    LoginEnterpriseBuild(FQDN, Extension.CurrentCredential()[Key], DaysBack, UseDateRange, StartDateParam, EndDateParam);
+
+LoginEnterpriseKeyType = type function (
+    FQDN as (
+        type text meta [
+            Documentation.FieldCaption = "FQDN",
+            Documentation.FieldDescription = "Fully qualified domain name of the Login Enterprise appliance (e.g., demo.loginvsi.com). HTTPS only; no path.",
+            Documentation.SampleValues = {"demo.loginvsi.com"}
+        ]
+    ),
+    optional DaysBack as (
+        type number meta [
+            Documentation.FieldCaption = "Days Back",
+            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-366). Ignored when Use Date Range is true.",
+            Documentation.AllowedValues = {1, 7, 30, 60, 90},
+            Documentation.SampleValues = {30}
+        ]
+    ),
+    optional UseDateRange as (
+        type logical meta [
+            Documentation.FieldCaption = "Use Date Range",
+            Documentation.FieldDescription = "Enable to use the fixed Start/End Date inputs (both required) instead of Days Back.",
+            Documentation.SampleValues = {false}
+        ]
+    ),
+    optional StartDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "Start Date",
+            Documentation.FieldDescription = "First UTC day to include. Required when Use Date Range is true.",
+            Documentation.SampleValues = {#date(2026, 1, 1)}
+        ]
+    ),
+    optional EndDateParam as (
+        type nullable date meta [
+            Documentation.FieldCaption = "End Date",
+            Documentation.FieldDescription = "Last UTC day to include (the whole day is included). Required when Use Date Range is true; must not be before Start Date.",
+            Documentation.SampleValues = {#date(2026, 1, 31)}
+        ]
+    )
+) as table;
+
+// ---------------------------------------------------------------------------
+// TestConnection (documented dataSourcePath callback; flat positional arguments).
+// The invoked function probes the API eagerly, so a successful test performs a real small request.
+// ---------------------------------------------------------------------------
+LoginEnterprise_PBI.TestConnection = (dataSourcePath as text) as list =>
+    let
+        json = Json.Document(dataSourcePath)
+    in
+        {"LoginEnterprise_PBI.Contents", json[FQDN], json[ApiToken]};
+
+LoginEnterprise_PBI_Key.TestConnection = (dataSourcePath as text) as list =>
+    let
+        trimmed = Text.Trim(dataSourcePath),
+        fqdn = if Text.StartsWith(trimmed, "{") then Json.Document(trimmed)[FQDN] else trimmed
+    in
+        {"LoginEnterprise_PBI.ContentsKey", fqdn};
+
+// Data source kinds
 LoginEnterprise_PBI = [
     Authentication = [ Anonymous = [] ],
-    TestConnection = LoginEnterprise_PBI.TestConnection
+    TestConnection = LoginEnterprise_PBI.TestConnection,
+    Label = "Login Enterprise (API token parameter)"
 ];
 
-// Publish metadata for the Login Enterprise data source
+LoginEnterprise_PBI_Key = [
+    Authentication = [ Key = [ KeyLabel = "API Token", Label = "Login Enterprise API token" ] ],
+    TestConnection = LoginEnterprise_PBI_Key.TestConnection,
+    Label = "Login Enterprise (Key credential)"
+];
+
+// Publish metadata
 LoginEnterprise_PBI.Publish = [
     Beta = true,
     Category = "Other",
@@ -1430,7 +1334,16 @@ LoginEnterprise_PBI.Publish = [
     SourceTypeImage = LoginEnterprise_PBI.Icons
 ];
 
-// Icons for the Login Enterprise data source
+LoginEnterprise_PBI_Key.Publish = [
+    Beta = true,
+    Category = "Other",
+    ButtonText = {"Login Enterprise (Key credential)", "Connect to Login Enterprise using a stored API token credential"},
+    LearnMoreUrl = "https://www.loginvsi.com/",
+    SourceImage = LoginEnterprise_PBI.Icons,
+    SourceTypeImage = LoginEnterprise_PBI.Icons
+];
+
+// Icons
 LoginEnterprise_PBI.Icons = [
     Icon16 = {
         Extension.Contents("LE_16.png"),
