@@ -1,0 +1,9 @@
+-- table: Aggregated EUX Results
+-- name: Max EUX Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MAX('Aggregated EUX Results'[score]),
+    0
+)

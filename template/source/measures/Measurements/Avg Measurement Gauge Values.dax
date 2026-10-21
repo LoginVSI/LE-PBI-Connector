@@ -1,0 +1,9 @@
+-- table: Measurements
+-- name: Avg Measurement Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    AVERAGE(Measurements[duration_seconds]),
+    0
+)

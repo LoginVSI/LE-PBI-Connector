@@ -1,0 +1,9 @@
+-- table: Aggregated EUX Results
+-- name: Avg EUX Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    AVERAGE('Aggregated EUX Results'[score]),
+    0
+)

@@ -1,0 +1,9 @@
+-- table: Measurements
+-- name: Max Measurement Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MAX(Measurements[duration_seconds]),
+    0
+)

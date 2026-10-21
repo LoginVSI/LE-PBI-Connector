@@ -1,0 +1,9 @@
+-- table: User Sessions
+-- name: Show No Data Message (User Sessions)
+-- format: 
+-- description: 
+IF (
+    COUNTROWS('User Sessions') = 0,
+    "No Data",
+    ""
+)

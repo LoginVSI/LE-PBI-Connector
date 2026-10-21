@@ -1,0 +1,11 @@
+-- table: Test Runs
+-- name: Total Tests Run by Type
+-- format: 0
+-- description: 
+CALCULATE(
+    COUNTROWS('Test Runs'),
+    FILTER(
+        'Test Runs',
+        'Test Runs'[id] IN DISTINCT('Measurements'[testRunId])
+    )
+)

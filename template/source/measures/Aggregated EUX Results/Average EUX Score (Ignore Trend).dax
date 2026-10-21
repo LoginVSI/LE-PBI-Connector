@@ -1,0 +1,8 @@
+-- table: Aggregated EUX Results
+-- name: Average EUX Score (Ignore Trend)
+-- format: 
+-- description: 
+CALCULATE (
+    AVERAGE ( 'Aggregated EUX Results'[score] ),
+    REMOVEFILTERS ( 'Aggregated EUX Results'[timestamp] )
+)

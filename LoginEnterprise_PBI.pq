@@ -1140,6 +1140,12 @@ LoginEnterpriseCore = (ctx as record, window as record) as table =>
         userSessionsTable = GetUserSessions(ctx, testRunsRaw, window),
         userSessionMetricsTable = GetUserSessionMetrics(ctx, testRunsRaw, window),
         platformMetricsTable = GetPlatformMetrics(ctx, environmentsTable, window),
+        // Additive (1.1.0.2): ids of runs whose start/finish overlaps the window, even if they produced no fact rows
+        // (e.g. failed runs with no measurements). Used by the template to keep such runs in comparisons.
+        testRunsInWindowTable = Table.TransformColumnTypes(
+            Table.FromList(List.Transform(Runs.InWindow(testRunsRaw, window, null), each _[id]), Splitter.SplitByNothing(), {"id"}),
+            {{"id", type text}}
+        ),
 
         entities = {
             [Name = "Environments", Data = environmentsTable, ItemKind = "Table", ItemName = "Environments", IsLeaf = true],
@@ -1152,7 +1158,8 @@ LoginEnterpriseCore = (ctx as record, window as record) as table =>
             [Name = "Measurements", Data = allMeasurements, ItemKind = "Table", ItemName = "Measurements", IsLeaf = true],
             [Name = "Events", Data = allEvents, ItemKind = "Table", ItemName = "Events", IsLeaf = true],
             [Name = "User Sessions", Data = userSessionsTable, ItemKind = "Table", ItemName = "UserSessions", IsLeaf = true],
-            [Name = "User Session Metrics", Data = userSessionMetricsTable, ItemKind = "Table", ItemName = "UserSessionMetrics", IsLeaf = true]
+            [Name = "User Session Metrics", Data = userSessionMetricsTable, ItemKind = "Table", ItemName = "UserSessionMetrics", IsLeaf = true],
+            [Name = "Test Runs In Window", Data = testRunsInWindowTable, ItemKind = "Table", ItemName = "TestRunsInWindow", IsLeaf = true]
         },
         navTable = Table.FromRecords(entities),
         finalNav = Table.ToNavigationTable(navTable, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")

@@ -1,0 +1,11 @@
+-- table: Applications
+-- name: Show No Data Message (Name Count)
+-- format: 
+-- description: 
+VAR NameCount =
+    CALCULATE (
+        COUNTROWS ( 'Applications' ),
+        NOT ISBLANK ( 'Applications'[name] )
+    )
+RETURN
+    IF ( NameCount = 0, "No Data", "" )

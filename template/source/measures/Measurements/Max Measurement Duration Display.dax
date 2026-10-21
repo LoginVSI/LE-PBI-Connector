@@ -1,0 +1,12 @@
+-- table: Measurements
+-- name: Max Measurement Duration Display
+-- format: 
+-- description: 
+VAR MaxDuration =
+    MAX ( 'Measurements'[duration_seconds] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( MaxDuration ),
+        "No Data",
+        FORMAT ( MaxDuration, "#,0.00" )
+    )

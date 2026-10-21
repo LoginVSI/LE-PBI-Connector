@@ -1,0 +1,5 @@
+-- table: Platform Metrics
+-- name: PM Selected Unit
+-- format: 
+-- description: 
+SELECTEDVALUE( 'Platform Metrics'[unit], "Select a Unit" )

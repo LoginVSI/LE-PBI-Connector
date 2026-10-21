@@ -1,0 +1,31 @@
+-- table: Tests
+-- name: LoadHasMeasurements
+-- format: 0
+-- description: 
+VAR CurrentTestId = MAX('Tests'[id])
+
+-- Confirm if this test is of type ContinuousTest
+VAR IsLoadTest =
+    LOOKUPVALUE (
+        'Tests'[type],
+        'Tests'[id],
+        CurrentTestId
+    ) = "LoadTest"
+
+-- Get Measurement count directly via relationships
+VAR MeasurementCount =
+    CALCULATE (
+        COUNTROWS('Measurements'),
+        FILTER (
+            'Test Runs',
+            'Test Runs'[testId] = CurrentTestId
+        ),
+        'Measurements'
+    )
+
+RETURN
+    IF (
+        IsLoadTest && MeasurementCount > 0,
+        1,
+        0
+    )

@@ -1,0 +1,17 @@
+-- table: Platform Metrics
+-- name: PM Latest Value By Metric
+-- format: 
+-- description: 
+AVERAGEX(
+    VALUES('Platform Metrics'[instance]),
+    VAR LatestTsForInstance =
+        CALCULATE(
+            MAX('Platform Metrics'[timestamp]),
+            REMOVEFILTERS('Platform Metrics'[timestamp])
+        )
+    RETURN
+        CALCULATE(
+            AVERAGE('Platform Metrics'[value]),
+            KEEPFILTERS('Platform Metrics'[timestamp] = LatestTsForInstance)
+        )
+)

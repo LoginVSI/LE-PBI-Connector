@@ -1,0 +1,11 @@
+-- table: Workload Steps
+-- name: appId Distinct Count
+-- format: 
+-- description: 
+VAR AppIdCount =
+    CALCULATE (
+        DISTINCTCOUNT ( 'Workload Steps'[appId] ),
+        NOT ISBLANK ( 'Workload Steps'[appId] )
+    )
+RETURN
+    IF ( NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) ||AppIdCount = 0, "No Data", FORMAT(AppIdCount, "0") )

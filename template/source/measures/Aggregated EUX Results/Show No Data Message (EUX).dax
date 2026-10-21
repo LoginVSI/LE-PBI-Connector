@@ -1,0 +1,9 @@
+-- table: Aggregated EUX Results
+-- name: Show No Data Message (EUX)
+-- format: 
+-- description: 
+IF (
+    COUNTROWS('Aggregated EUX Results') = 0,
+    "No Data",
+    ""
+)

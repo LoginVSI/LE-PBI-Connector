@@ -1,0 +1,17 @@
+-- table: User Session Metrics
+-- name: Max Memory (MB) Display
+-- format: 
+-- description: 
+VAR MemoryValues =
+    FILTER (
+        'User Session Metrics',
+        'User Session Metrics'[displayName] = "Memory"
+    )
+VAR MaxMemory =
+    MAXX ( MemoryValues, 'User Session Metrics'[measurement] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( MaxMemory ),
+        "No Data",
+        FORMAT ( MaxMemory, "#,0.00" )
+    )

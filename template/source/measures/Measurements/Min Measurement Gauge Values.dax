@@ -1,0 +1,9 @@
+-- table: Measurements
+-- name: Min Measurement Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MIN(Measurements[duration_seconds]),
+    0
+)

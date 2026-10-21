@@ -1,0 +1,10 @@
+-- table: Platform Metrics
+-- name: EnvironmentHasPlatformMetrics
+-- format: 0
+-- description: 
+VAR PMCount =
+    CALCULATE(
+        COUNTROWS('Platform Metrics')
+    )
+RETURN
+    IF(PMCount > 0, 1, 0)

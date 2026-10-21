@@ -1,0 +1,9 @@
+-- table: Applications
+-- name: Show No Data Message (Applications)
+-- format: 
+-- description: 
+IF (
+    [CountOfAppsInSelectedTest] = 0,
+    "No Data",
+    ""
+)

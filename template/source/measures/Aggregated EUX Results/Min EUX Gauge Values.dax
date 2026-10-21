@@ -1,0 +1,9 @@
+-- table: Aggregated EUX Results
+-- name: Min EUX Gauge Values
+-- format: 
+-- description: 
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MIN('Aggregated EUX Results'[score]),
+    0
+)

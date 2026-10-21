@@ -1,0 +1,5 @@
+-- table: Platform Metrics
+-- name: PM Average Value
+-- format: 
+-- description: 
+AVERAGE( 'Platform Metrics'[value] )

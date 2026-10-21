@@ -1,0 +1,15 @@
+-- table: Measurements
+-- name: Average Measurement Duration Display
+-- format: 
+-- description: 
+VAR AvgDuration =
+    CALCULATE(
+        AVERAGE('Measurements'[duration_seconds])
+    )
+
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK(AvgDuration),
+        "No Data",
+        FORMAT(AvgDuration, "#,0.00")
+    )

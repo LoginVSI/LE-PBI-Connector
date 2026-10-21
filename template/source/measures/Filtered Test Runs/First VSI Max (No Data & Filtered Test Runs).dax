@@ -1,0 +1,14 @@
+-- table: Filtered Test Runs
+-- name: First VSI Max (No Data & Filtered Test Runs)
+-- format: 
+-- description: 
+VAR FirstValue =
+    CALCULATE(
+        SELECTEDVALUE('Filtered Test Runs'[vsiMax_maxSessions])
+    )
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK(FirstValue),
+        "No Data",
+        FORMAT(FirstValue, "0")
+    )

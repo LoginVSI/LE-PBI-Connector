@@ -1,0 +1,17 @@
+-- table: User Session Metrics
+-- name: AVG Memory (MB) Display
+-- format: 
+-- description: 
+VAR MemoryValues =
+    FILTER (
+        'User Session Metrics',
+        'User Session Metrics'[displayName] = "Memory"
+    )
+VAR AvgMemory =
+    AVERAGEX ( MemoryValues, 'User Session Metrics'[measurement] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( AvgMemory ),
+        "No Data",
+        FORMAT ( AvgMemory, "#,0.00" )
+    )

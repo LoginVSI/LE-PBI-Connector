@@ -1,0 +1,9 @@
+-- table: User Session Metrics
+-- name: Show No Data Message (Session Metrics)
+-- format: 
+-- description: 
+IF (
+    SUM ( 'User Session Metrics'[measurement] ) = 0,
+    "No Data",
+    ""
+)

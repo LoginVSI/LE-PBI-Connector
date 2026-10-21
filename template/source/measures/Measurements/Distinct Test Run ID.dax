@@ -1,0 +1,12 @@
+-- table: Measurements
+-- name: Distinct Test Run ID
+-- format: 
+-- description: 
+VAR DistinctRuns =
+    DISTINCTCOUNT('Measurements'[testRunId])
+RETURN
+    IF(
+        ISBLANK(DistinctRuns) || DistinctRuns = 0,
+        "No Data",
+        FORMAT(DistinctRuns, "0")
+    )

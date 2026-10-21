@@ -77,7 +77,8 @@ let
     allNames = {"Test Runs", "Tests", "Measurements", "Events", "User Sessions", "Aggregated EUX Results", "User Session Metrics", "Platform Metrics", "Applications", "Environments", "Workload Steps"}
 in
     T[Run]({
-        T[Check]("navigation keys/names unchanged and ordered", () => navNames = {"Environments", "Platform Metrics", "Tests", "Test Runs", "Workload Steps", "Aggregated EUX Results", "Applications", "Measurements", "Events", "User Sessions", "User Session Metrics"}),
+        T[Check]("navigation keys/names unchanged and ordered", () => navNames = {"Environments", "Platform Metrics", "Tests", "Test Runs", "Workload Steps", "Aggregated EUX Results", "Applications", "Measurements", "Events", "User Sessions", "User Session Metrics", "Test Runs In Window"}),
+        T[Check]("Test Runs In Window lists overlapping runs incl. failed run with no data (F1) but not O1", () => List.Sort(Table.Column(nav{[Name = "Test Runs In Window"]}[Data], "id")) = {"A1", "C1", "F1", "L1"}),
         T[Check]("every table keeps its exact column set/order (customer PBIX compatibility): mismatches=" & Text.Combine(schemaMismatches, ","), () => List.Count(schemaMismatches) = 0),
         T[Check]("runs de-duplicated by id across duplicate pages", () => List.Count(runsRaw) = 5 and List.Count(List.Distinct(List.Transform(runsRaw, each _[id]))) = 5),
         T[Check]("Test Runs table keeps ALL runs (incl. outside window and failed)", () => rows("Test Runs") = 5),

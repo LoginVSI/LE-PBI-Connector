@@ -1,0 +1,21 @@
+-- table: Measurements
+-- name: Failed User Sessions (Matching Test Runs) Display
+-- format: 
+-- description: 
+VAR FailedCount =
+    CALCULATE (
+        COUNTROWS ( 'User Sessions' ),
+        'User Sessions'[loginState] = "failed",
+        KEEPFILTERS (
+            TREATAS (
+                VALUES ( 'Measurements'[testRunId] ),
+                'User Sessions'[testRunId]
+            )
+        )
+    )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( FailedCount ) || FailedCount = 0,
+        "No Data",
+        FORMAT ( FailedCount, "#,0" )
+    )

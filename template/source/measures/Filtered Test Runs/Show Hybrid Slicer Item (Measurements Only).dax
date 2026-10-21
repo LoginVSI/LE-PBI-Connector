@@ -1,0 +1,9 @@
+-- table: Filtered Test Runs
+-- name: Show Hybrid Slicer Item (Measurements Only)
+-- format: 0
+-- description: 
+IF (
+    CALCULATE ( COUNTROWS ( 'Measurements' ) ) > 0,
+    1,
+    0
+)

@@ -1,0 +1,30 @@
+-- table: Applications
+-- name: IsAppInSelectedTest
+-- format: 0
+-- description: 
+VAR SelectedTestIds = VALUES('Tests'[id])
+VAR CurrentAppId = SELECTEDVALUE('Applications'[id])
+
+VAR HasMeasurement =
+    CALCULATE (
+        COUNTROWS('Measurements'),
+        FILTER (
+            'Measurements',
+            'Measurements'[applicationId] = CurrentAppId &&
+            'Measurements'[testRunId] IN
+                SELECTCOLUMNS (
+                    FILTER (
+                        'Test Runs',
+                        'Test Runs'[testId] IN SelectedTestIds
+                    ),
+                    "id", 'Test Runs'[id]
+                )
+        )
+    )
+
+RETURN
+    IF (
+        NOT ISEMPTY(SelectedTestIds) && HasMeasurement > 0,
+        1,
+        0
+    )

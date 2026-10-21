@@ -1,0 +1,39 @@
+<#
+.SYNOPSIS
+  Exports the editable text source (DAX measures, M partitions) of a .pbit so changes can be reviewed in git.
+.DESCRIPTION
+  Writes template/source/measures/<Table>/<Measure>.dax and template/source/partitions/<Table>.m.
+  Run against the ORIGINAL binary to create the baseline, or against a Desktop-saved .pbit at acceptance to
+  re-baseline the source from what Desktop actually produced.
+#>
+[CmdletBinding()]
+param(
+    [string]$Pbit = (Join-Path $PSScriptRoot 'Login Enterprise.pbit'),
+    [string]$OutDir = (Join-Path $PSScriptRoot 'source')
+)
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+. (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
+
+$model = Read-PbitModel $Pbit
+function Safe([string]$n) { ($n -replace '[\/:*?"<>|]', '_').Trim() }
+foreach ($d in 'measures', 'partitions') { $p = Join-Path $OutDir $d; if (Test-Path $p) { Remove-Item $p -Recurse -Force }; New-Item -ItemType Directory -Force $p | Out-Null }
+
+foreach ($t in $model['model']['tables']) {
+    $tn = [string]$t['name']
+    if ($tn -like 'LocalDateTable*' -or $tn -like 'DateTableTemplate*') { continue }
+    foreach ($part in @($t['partitions'])) {
+        if ($part['source']['type'].ToString() -eq 'm') {
+            $text = Join-Lines $part['source']['expression']
+            Write-LfFile (Join-Path $OutDir "partitions/$(Safe $tn).m") $text
+        }
+    }
+    if ($t['measures']) {
+        $dir = Join-Path $OutDir "measures/$(Safe $tn)"; New-Item -ItemType Directory -Force $dir | Out-Null
+        foreach ($m in $t['measures']) {
+            $hdr = "-- table: $tn`n-- name: $($m['name'])`n-- format: $(if ($m['formatString']) { $m['formatString'] })`n-- description: $(if ($m['description']) { $m['description'] })`n"
+            Write-LfFile (Join-Path $dir "$(Safe ([string]$m['name'])).dax") ($hdr + (Join-Lines $m['expression']).Trim("`n") + "`n")
+        }
+    }
+}
+Write-Host "Exported to $OutDir"

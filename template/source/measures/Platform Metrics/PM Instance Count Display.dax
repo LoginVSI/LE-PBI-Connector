@@ -1,0 +1,12 @@
+-- table: Platform Metrics
+-- name: PM Instance Count Display
+-- format: 
+-- description: 
+VAR InstanceCount =
+    DISTINCTCOUNT('Platform Metrics'[instance])
+RETURN
+    IF(
+        NOT HASONEVALUE(Environments[id]) || InstanceCount = 0,
+        "No Data",
+        FORMAT(InstanceCount, "#,0")
+    )

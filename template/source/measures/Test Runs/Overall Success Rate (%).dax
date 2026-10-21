@@ -1,0 +1,27 @@
+-- table: Test Runs
+-- name: Overall Success Rate (%)
+-- format: 
+-- description: 
+VAR ValidTestRuns =
+    FILTER(
+        'Test Runs',
+        'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } &&
+        'Test Runs'[id] IN DISTINCT('Measurements'[testRunId])
+    )
+
+VAR TotalRuns =
+    COUNTROWS(ValidTestRuns)
+
+VAR SuccessfulRuns =
+    CALCULATE(
+        COUNTROWS('Test Runs'),
+        ValidTestRuns,
+        'Test Runs'[result] IN { "successful", "completed" }
+    )
+
+RETURN
+IF(
+    TotalRuns = 0,
+    "No Data",
+    FORMAT(DIVIDE(SuccessfulRuns, TotalRuns, 0) * 100, "0.0")
+)

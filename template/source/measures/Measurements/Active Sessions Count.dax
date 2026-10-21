@@ -1,0 +1,12 @@
+-- table: Measurements
+-- name: Active Sessions Count
+-- format: 
+-- description: 
+VAR SessionCount =
+    DISTINCTCOUNT('Measurements'[AccountName])
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) ||SessionCount = 0 || ISBLANK(SessionCount),
+        "No Data",
+        FORMAT(SessionCount, "0")
+    )

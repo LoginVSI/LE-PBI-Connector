@@ -1,0 +1,14 @@
+-- table: Filtered Test Runs
+-- name: First Login Success Count (No Data & Filtered Test Runs)
+-- format: 
+-- description: 
+VAR FirstValue =
+    CALCULATE(
+        SELECTEDVALUE('Filtered Test Runs'[login_successCount], 1)
+    )
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK(FirstValue),
+        "No Data",
+        FORMAT(FirstValue, "0")
+    )

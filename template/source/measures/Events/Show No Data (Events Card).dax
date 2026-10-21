@@ -1,0 +1,12 @@
+-- table: Events
+-- name: Show No Data (Events Card)
+-- format: 
+-- description: 
+VAR EventCount =
+    COUNTROWS ( 'Events' )
+RETURN
+    IF (
+        NOT HASONEVALUE('Filtered Test Runs'[id]) ||ISBLANK ( EventCount ) || EventCount = 0,
+        "No Data",
+        FORMAT ( EventCount, "#,0" )
+    )
