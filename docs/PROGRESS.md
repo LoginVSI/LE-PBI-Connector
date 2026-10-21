@@ -24,7 +24,7 @@ READY-FOR-DESKTOP: staged MEZ `bin/AnyCPU/Debug/LE-PBI-Connector.mez` + candidat
 ## Key decisions
 - Canonical package: `bin/AnyCPU/Debug/LE-PBI-Connector.mez`, version **1.1.0.2**, built by `build/Build-Mez.ps1` (byte-reproducible; stored ZIP, fixed timestamps, LF sources via `.gitattributes`). CI checks source == package.
 - Date policy: UTC calendar days, half-open `[start 00:00Z, end+1 00:00Z)`. Rolling `DaysBack=N` = today(UTC) + N previous days. Fixed range needs both dates. Invalid input errors; nothing silently widened.
-- Verified on the real engine: Power Query converts `…Z` timestamps to the *refreshing machine's local time* when typing `datetime`; `DateTime.LocalNow()` is fixed during an evaluation (a wall-clock paging deadline is therefore not implementable in M; page-count limit is used instead).
+- Verified on the real engine: Power Query converts `…Z` timestamps to the *refreshing machine's local time* when typing `datetime`; the original fixed-clock conclusion was disproved by the independent forced-clock probe. The current implementation has a cooperative elapsed request budget and separate timeout/retry/page limits, not a hard overall refresh deadline.
 - Legacy `LoginEnterprise_PBI.Contents(FQDN, ApiToken, …)` interface unchanged. New additive `LoginEnterprise_PBI.ContentsKey(FQDN, …)` (Key credential). Template stays on legacy function until Desktop acceptance.
 
 ## Credential hygiene
@@ -33,3 +33,7 @@ The old `LoginEnterprise_PBI.query.pq` in public history contained a credential-
 ## Delivery state
 - Branch `fix/connector-repair-1.1.0.2`, draft PR #4 (not merged, nothing released/published). CI (`ci` workflow, windows-latest): green on commit `72ccf1b` (secret scan, MEZ source parity, 89 M test checks on PQTest, template static checks). First CI run failed on parity because a CRLF `resources.resx` had been packaged locally; fixed by LF-normalising and rebuilding.
 - Remaining owner actions: revoke/rotate the old credential-like literal; run `docs/ACCEPTANCE.md` when Power BI Desktop is released; separate Codex audit (`docs/AUDIT-HANDOFF.md`); licence/ownership decision; confirm API limits on a lab appliance.
+
+## Independent audit completion
+
+The separate Codex audit reproduced material defects against f503293 and continued the existing repair branch. See [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md), [evidence](evidence/) and SHA256SUMS.txt for the current evidence, rather than the historical phase claims above. Bounded live GET checks reused the approved native vault/profile without modifying Toolkit or shared Desktop state. Weighted measures are deferred until count populations are established. Desktop/DAX/Service/gateway acceptance remains outstanding. Final delivery and CI are recorded in the draft PR description and the audit session response.

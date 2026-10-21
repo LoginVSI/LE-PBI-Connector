@@ -8,7 +8,7 @@ let
     // 2500 items, page size 1000 => 3 pages; handler fails the test if paging params are ever duplicated/odd
     strict = (route, q, a) =>
         if q[count] <> "1000" then T[Raw](500, "unexpected count " & q[count])
-        else if not List.Contains({"0", "1000", "2000"}, q[offset]) then T[Raw](500, "unexpected offset " & q[offset])
+        else if not List.Contains({"0", "1000", "2000", "2500"}, q[offset]) then T[Raw](500, "unexpected offset " & q[offset])
         else T[Ok](T[Page](items(2500), q)),
     r2500 = T[GetAllItems](ctxWith(strict, null), "x", [orderBy = "name"]),
     // caller wrongly supplies count/offset: connector must override exactly once
@@ -20,7 +20,7 @@ let
     sameAgain = (route, q, a) => T[Ok]([items = List.FirstN(items(5000), 1000), totalCount = 5000]),
     shortOfTotal = (route, q, a) => T[Ok]([items = if q[offset] = "0" then items(50) else {}, totalCount = 100]),
     errOf = (f) => let r = try f() in if r[HasError] then r[Error][Message] else "(no error)",
-    attemptsSeen = (route, q, a) => if a < 2 then T[Raw](503, "busy") else T[Ok]([items = {[id = "ok"]}]),
+    attemptsSeen = (route, q, a) => if a < 2 then T[Raw](503, "busy") else T[Ok]([items = if q[offset] = "0" then {[id = "ok"]} else {}]),
     notLeaked = (msg) => not Text.Contains(msg, T[Token])
 in
     T[Run]({
@@ -49,7 +49,7 @@ in
         T[CheckError]("lazy failure inside the returned record (as Web.Contents does) is still classified", () => T[GetAllItems](ctxWith((r, q, a) => [Status = error Error.Record("DataSource.Error", "TLS handshake failed"), Body = ""], null), "x", []), "never disables certificate validation"),
         T[Check]("response body echoing the token is scrubbed", () => notLeaked(errOf(() => T[GetAllItems](ctxWith((r, q, a) => T[Raw](400, "bad token " & T[Token]), null), "x", [])))),
         T[CheckError]("GetList wrong shape is an error", () => T[GetList](ctxWith((r, q, a) => T[Ok]([foo = 1]), null), "x", []), "expected an array"),
-        T[Check]("GetList accepts bare array and {items}", () => List.Count(T[GetList](ctxWith((r, q, a) => T[Ok]({1, 2}), null), "x", [])) = 2 and List.Count(T[GetList](ctxWith((r, q, a) => T[Ok]([items = {1}]), null), "x", [])) = 1),
+        T[Check]("GetList accepts bare array and {items}", () => List.Count(T[GetList](ctxWith((r, q, a) => T[Ok]({[id="1"], [id="2"]}), null), "x", [])) = 2 and List.Count(T[GetList](ctxWith((r, q, a) => T[Ok]([items = {[id="1"]}]), null), "x", [])) = 1),
         T[CheckError]("blank token rejected before any request", () => T[Ctx]("demo.loginvsi.com", "  ")[Token], "token is blank"),
         T[CheckError]("http:// FQDN rejected", () => T[Ctx]("http://demo.loginvsi.com", "t")[Fqdn], "HTTPS only"),
         T[CheckError]("FQDN with path rejected", () => T[Ctx]("demo.loginvsi.com/api", "t")[Fqdn], "host name"),

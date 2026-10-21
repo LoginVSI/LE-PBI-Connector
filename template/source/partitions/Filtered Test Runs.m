@@ -3,14 +3,13 @@ let
     Source = #"Test Runs",
 
     // Normalize type for reliable filtering, but keep all original columns
-    // (this overwrites the type values to lowercase; if you want to preserve original casing, I can give a helper-column version)
     Normalized = Table.TransformColumns(
         Source,
         {{"type", each if _ is null then null else Text.Lower(Text.From(_)), type text}}
     ),
 
-    // Keep all Continuous test runs
-    ContinuousRuns = Table.SelectRows(Normalized, each [type] = "continuoustest"),
+    // Current connector: keep only Continuous runs in the loaded window; older connector fallback uses evidence.
+    ContinuousCandidates = Table.SelectRows(Normalized, each [type] = "continuoustest"),
 
     // Filter only Application + Load runs by in-range fact data
     NonContinuousRuns = Table.SelectRows(
@@ -78,7 +77,10 @@ let
     ),
     FilteredNonContinuousClean = Table.RemoveColumns(FilteredNonContinuous, {"MatchedRuns"}),
 
-    // Add all continuous runs back
+    ContinuousRuns = Table.RemoveColumns(
+        Table.NestedJoin(ContinuousCandidates, {"id"}, DistinctRunIds, {"testRunId"}, "MatchedRuns", JoinKind.Inner),
+        {"MatchedRuns"}
+    ),
     Final = Table.Combine({ContinuousRuns, FilteredNonContinuousClean})
 in
     Final

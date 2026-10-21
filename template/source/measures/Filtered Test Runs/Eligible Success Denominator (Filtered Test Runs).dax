@@ -1,12 +1,12 @@
 -- table: Filtered Test Runs
 -- name: Eligible Success Denominator (Filtered Test Runs)
 -- format: 0
--- description: NEW 1.1.0.2. Numeric. Finished (result is not blank) Application and Load runs in the current selection. Failed/aborted runs with no measurements are included; in-progress runs (blank result) are excluded.
+-- description: NEW 1.1.0.2. Numeric. Finished (finished timestamp is not blank) Application and Load runs in the current selection. Failed/aborted runs with no measurements are included; in-progress runs (blank result) are excluded.
 VAR n =
     CALCULATE (
         COUNTROWS ( 'Filtered Test Runs' ),
         KEEPFILTERS ( 'Filtered Test Runs'[type] IN { "applicationtest", "loadtest" } ),
-        KEEPFILTERS ( 'Filtered Test Runs'[result] <> BLANK () )
+        KEEPFILTERS ( 'Filtered Test Runs'[finished] <> BLANK () )
     )
 RETURN
     COALESCE ( n, 0 )

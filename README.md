@@ -2,7 +2,7 @@
 
 ## Summary
 
-This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom report connector** and also details on the Power BI Template file that is available to leverage dor your Login Enterprise data. You’ll learn how to:
+This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom report connector** and also details on the Power BI Template file that is available to use with your Login Enterprise data. You’ll learn how to:
 
 - Install and configure Power BI Desktop
 - Download and install the `.mez` connector file
@@ -13,7 +13,7 @@ This connector helps you transform Login Enterprise performance data into action
 
 > **Unsupported community/reference tooling.** This connector and template are provided as reference tooling that you can adapt to your environment. They are not a supported Login VSI product and are not covered by product support. Test changes against your own appliance before relying on the numbers, and see [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for what has and has not been verified.
 
-> NOTE: The connector uses the `v7-preview` Public API route (`https://<fqdn>/publicApi/v7-preview/...`). It has not been migrated to a newer API target. Parameter limits for that route could not be verified against your appliance's Swagger document by this project; see the verification list in [docs/CHANGE-TEST-MATRIX.md](docs/CHANGE-TEST-MATRIX.md).
+> NOTE: The connector uses the `v7-preview` Public API route (`https://<fqdn>/publicApi/v7-preview/...`). It has not been migrated to a newer API target. A bounded read-only check verified the matching appliance Swagger and production page size on sampled routes. Endpoint maxima are not specified by that Swagger; see [the independent audit](docs/INDEPENDENT-AUDIT.md) for exact coverage and limitations.
 
 **Current package:** `LE-PBI-Connector.mez`, connector version **1.1.0.2** (release candidate, see [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for what is still unverified in Power BI Desktop). Changes: [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
@@ -87,7 +87,7 @@ Power BI loads custom connectors from a **per-user** folder: `<your Documents fo
 4. When prompted:
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
    - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
-   - Select the **Days Back** (a whole number from 1 to 366; the drop-down suggests 1, 7, 30, 60, 90). Rolling window: **today plus that many previous days**, in UTC.
+   - Select the **Days Back** (a whole number from 1 to 365; the drop-down suggests 1, 7, 30, 60, 90). Rolling window: **today plus that many previous days**, in UTC.
    - **Use Date Range** – Select TRUE to ignore Days Back and use a fixed range instead.
    - **Start Date** / **End Date** – first and last day to include (both required when Use Date Range is TRUE; the whole End Date day is included).
 
@@ -271,19 +271,19 @@ The template report is fully customizable, allowing customers to tailor it to th
 
 ## Date windows
 
-One policy applies to every table:
+Point observations use this UTC-day policy; run/session tables have interval semantics described below:
 
 - A "day" is a **UTC calendar day**. The window is `[Start 00:00Z, End+1 00:00Z)`, so the selected end day (including today) is fully included and an observation exactly at midnight belongs to one day only.
 - **Rolling (Use Date Range off):** end = today (UTC), start = today minus *Days Back*. `Days Back = 1` therefore covers today and yesterday.
 - **Fixed (Use Date Range on):** Start and End are both required, Start must not be after End, and the span is limited to 366 days.
-- Invalid input is an error, never silently widened, defaulted or swapped.
+- Rolling Days Back is 1..365 (plus today); fixed ranges are at most 366 days. Invalid input is an error, never silently widened or swapped. Omitted Days Back defaults to 30.
 - The window does not depend on the refreshing machine's time zone or daylight saving. **However**, Power Query converts the API's UTC timestamps to the *local time of the machine that refreshes* when it types `datetime` columns (verified on the Power Query engine). Desktop on a UTC-7 laptop and the Service (UTC) therefore show the same instants as different clock times, and a report's "today" in DAX is local. Keep that in mind when reconciling with the Login Enterprise UI.
-- Test runs and the Test Runs table are not date-filtered; per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
+- Test Runs is an unfiltered compatibility table; the template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
 
 ## What the connector now does differently (1.1.0.2)
 
-- Every list is fully paged (`count`/`offset` added exactly once, totalCount cross-checked). Previously measurements were truncated at 1000 rows per run per day, applications sent duplicate paging parameters, and environments read one page.
-- A failed request is an error with context (HTTP status, route, hint) instead of an empty table. The token is never included in error text. Transient statuses (408/429/5xx) are retried a bounded number of times.
+- Paged lists are read through an empty terminator, including capped pages without totals (`count`/`offset` added exactly once; offsets and totals cross-checked). Previously measurements were truncated at 1000 rows per run per day, applications sent duplicate paging parameters, and environments read one page.
+- A failed request is an error with context (HTTP status, route, hint) instead of an empty table. The token is never included in error text. Transient statuses (408/429/5xx) get at most three attempts with 1/2-second retry delays. Requests have 30-second timeouts and paged reads stop at 1000 pages. A shared 300-second cooperative request budget is checked before attempts and after bodies; it cannot interrupt an in-flight request or decoding and is not a hard overall refresh deadline. Separate evaluations have separate budgets. See [audit limitations](docs/INDEPENDENT-AUDIT.md). Queried-route 404s fail refresh; absent data must be an empty success response.
 - A `Test Runs In Window` navigation item was added (used by the 1.1.0.2 template so failed runs without data stay visible). Existing navigation items, tables and columns are unchanged.
 
 ## Troubleshooting

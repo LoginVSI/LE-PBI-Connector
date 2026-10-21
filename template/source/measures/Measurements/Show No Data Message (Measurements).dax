@@ -3,7 +3,7 @@
 -- format: 
 -- description: 
 IF (
-    COUNTROWS(Measurements) = 0,
+    COUNT ( Measurements[duration] ) = 0,
     "No Data",
     ""
 )

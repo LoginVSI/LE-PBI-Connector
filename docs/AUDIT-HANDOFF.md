@@ -1,6 +1,6 @@
 # Focused audit handoff (for a separate Codex review)
 
-The implementing session's self-review is **not** an independent audit and no nested Claude audit was run. Please review with public/synthetic inputs only; no appliance, token, Desktop or tenant is needed.
+The implementing session's self-review is **not** an independent audit and no nested Claude audit was run. The original brief used synthetic inputs. The owner subsequently authorized bounded read-only reuse of the existing approved appliance profile for this independent audit; see the findings below.
 
 Scope (branch `fix/connector-repair-1.1.0.2` vs `origin/main` `089200f`):
 1. `LoginEnterprise_PBI.pq` – full rewrite of acquisition: `Api.*` (request, retry, interpretation, `GetAllItems`), `Window.Create`, `Runs.InWindow`, per-table `Get*` functions, entry points, `TestConnection`.
@@ -23,4 +23,4 @@ How to run: `pwsh tests/Run-Tests.ps1` (Windows; downloads hash-pinned PQTest fr
 Dispositions of findings should be recorded in this file under a "Findings" heading.
 
 ## Findings
-_(none recorded yet)_
+Independent Codex review completed. Material defects were reproduced against `f503293` and repaired on the same branch. See [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md) for severity, evidence, live-contract coverage and remaining acceptance limits. No Desktop, DAX, gateway or Service acceptance is claimed.

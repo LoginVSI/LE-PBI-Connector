@@ -1,22 +1,8 @@
 -- table: Test Runs
 -- name: Overall Success Rate (%)
 -- format:
--- description: CHANGED 1.1.0.2. Display text over the unfiltered Test Runs table. Denominator = finished (result not blank) Application/Load runs, no longer limited to runs that have Measurements.
-VAR Denominator =
-    CALCULATE (
-        COUNTROWS ( 'Test Runs' ),
-        KEEPFILTERS ( 'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } ),
-        KEEPFILTERS ( 'Test Runs'[result] <> BLANK () )
-    )
-VAR Successful =
-    CALCULATE (
-        COUNTROWS ( 'Test Runs' ),
-        KEEPFILTERS ( 'Test Runs'[type] IN { "ApplicationTest", "LoadTest" } ),
-        KEEPFILTERS ( 'Test Runs'[result] IN { "successful", "completed" } )
-    )
-RETURN
-    IF (
-        COALESCE ( Denominator, 0 ) = 0,
-        "No Data",
-        FORMAT ( DIVIDE ( COALESCE ( Successful, 0 ), Denominator ) * 100, "0.0" )
-    )
+-- description: Success rate for loaded-window runs, intersected with any selection on the legacy Test Runs table.
+CALCULATE (
+    [Overall Success Rate (% & Filtered Test Runs)],
+    KEEPFILTERS ( TREATAS ( VALUES ( 'Test Runs'[id] ), 'Filtered Test Runs'[id] ) )
+)

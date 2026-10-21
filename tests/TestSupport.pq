@@ -52,8 +52,7 @@ Fake.Page = (items as list, q as record) as record =>
         take = List.Min({cnt, n - off}),
         slice = List.Range(items, off, take)
     in
-        [items = slice]
-            & (if Record.FieldOrDefault(q, "includeTotalCount", "false") = "true" then [totalCount = n] else []);
+        [items = slice, offset = Number.FromText(Record.FieldOrDefault(q, "offset", "0"), "en-US"), totalCount = if Record.FieldOrDefault(q, "includeTotalCount", "false") = "true" then n else null];
 
 Fake.Ctx = (handler as function, optional overrides as nullable record) as record =>
     Ctx.Create(

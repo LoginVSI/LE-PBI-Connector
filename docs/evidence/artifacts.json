@@ -1,0 +1,30 @@
+{
+  "artifacts": [
+    {
+      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "bytes": 95740,
+      "sha256": "2E40132F078EF8E7D1BD76175D380DEF3AFA0CD1869ACF632858162247F752D7"
+    },
+    {
+      "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
+      "bytes": 4927797,
+      "sha256": "AF98F740CBAC816080920BCE4C4E741BA67D1A03A73E532CD7A6BBAEF9399565"
+    },
+    {
+      "path": "template/Login Enterprise.pbit",
+      "bytes": 353337,
+      "sha256": "4529178FFBE8AB5021FE4188F1683945012C362C82E4658CD8F1B554FD5B0D12"
+    }
+  ],
+  "connectorVersion": "1.1.0.2",
+  "templateVersion": "1.1.0.2-candidate (structurally derived)",
+  "mezEntries": 11,
+  "everyMezEntryEqualsSource": true,
+  "testExportsAbsent": true,
+  "originalPbitUnchanged": true,
+  "templateParameterDefaultsNull": [
+    "APIToken",
+    "FQDN"
+  ],
+  "sourceSha256": "DB9CE36695AC7A1125881E2129C36FE4AC5F313C8E755F8E45DBB13AFF32F91F"
+}

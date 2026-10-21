@@ -1,0 +1,4 @@
+Built <isolated temporary artifact> (103215 bytes) sha256 8F4E5E202FA658CEFECEB772A1ADBE18ABCFDC5A44E7B7E676AEB356190CC891
+PASS  01_window.pq  PASS 30 checks
+
+1/1 test files passed

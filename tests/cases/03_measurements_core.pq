@@ -30,7 +30,7 @@ let
             [id = "e2", eventType = "x", timestamp = "2026-10-22T00:00:00Z", testRunId = "L1"],
             [id = "e3", eventType = "x", timestamp = "2026-10-21T23:59:59Z", testRunId = "C1"]
         },
-        sessions = [L1 = {[id = "s1", testRunId = "L1", loginState = "failed"], [id = "s2", testRunId = "L1", loginState = "success"]}, C1 = {[id = "s3", testRunId = "C1"]}],
+        sessions = [L1 = {[created = "2026-10-20T10:00:00Z", id = "s1", testRunId = "L1", loginState = "failed"], [created = "2026-10-20T10:00:00Z", id = "s2", testRunId = "L1", loginState = "success"]}, C1 = {[created = "2026-10-20T10:00:00Z", id = "s3", testRunId = "C1"]}],
         eux = [L1 = {[timestamp = "2026-10-20T10:01:00Z", score = 7.5, count = 10]}, C1 = {[timestamp = "2026-10-20T10:01:00Z", score = 8, count = 3], [timestamp = "2026-10-22T00:00:00Z", score = 1, count = 1]}],
         metricsLoad = [L1 = {[timestamp = "2026-10-20T10:01:00Z", metricId = 1, measurement = 0, count = 5, displayName = "CPU", unit = "%"]}],
         metricsCont = [C1 = {[timestamp = "2026-10-20T10:00:00Z", metricId = 2, measurement = 2048, count = 4, displayName = "Memory", unit = "MB"]}],

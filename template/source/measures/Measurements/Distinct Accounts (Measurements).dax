@@ -1,8 +1,8 @@
 -- table: Measurements
 -- name: Distinct Accounts (Measurements)
 -- format:
--- description: NEW 1.1.0.2. Distinct AccountName values seen in the selected run's measurements. This is NOT concurrency; it replaces the misleading Active Sessions Count label.
-VAR AccountCount = DISTINCTCOUNT ( 'Measurements'[AccountName] )
+-- description: NEW 1.1.0.2. Distinct nonblank accountId values seen in the selected run's measurements. This is NOT concurrency; it replaces the misleading Active Sessions Count label.
+VAR AccountCount = DISTINCTCOUNTNOBLANK ( 'Measurements'[accountId] )
 RETURN
     IF (
         NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || AccountCount = 0 || ISBLANK ( AccountCount ),

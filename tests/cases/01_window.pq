@@ -45,8 +45,11 @@ in
         T[CheckError]("partial range (no start) is rejected, not widened", () => W(null, true, null, #date(2026, 10, 1), now), "not both set"),
         T[CheckError]("DaysBack 0 rejected", () => W(0, false, null, null, now), "Days Back"),
         T[CheckError]("DaysBack fractional rejected", () => W(1.5, false, null, null, now), "Days Back"),
+        T[Check]("rolling 365 is the maximum 366-day window", () => W(365,false,null,null,now)[DayCount]=366),
+        T[CheckError]("rolling 366 is rejected consistently", () => W(366,false,null,null,now), "1 and 365"),
         T[CheckError]("DaysBack too large rejected", () => W(400, false, null, null, now), "Days Back"),
         T[CheckError]("range longer than 366 days rejected", () => W(null, true, #date(2024, 1, 1), #date(2026, 1, 1), now), "maximum"),
+        T[Check]("typed timestamps preserve refreshing-machine local conversion", () => Table.TransformColumnTypes(#table({"t"},{{"2026-10-20T00:00:00Z"}}),{{"t",type datetime}}){0}[t] = DateTimeZone.RemoveZone(DateTimeZone.ToLocal(DateTimeZone.FromText("2026-10-20T00:00:00Z")))),
         T[Check]("TextToUtc19 Z", () => T[TimeTextToUtc19]("2026-10-20T10:00:00Z") = "2026-10-20T10:00:00"),
         T[Check]("TextToUtc19 fractional Z", () => T[TimeTextToUtc19]("2026-10-20T10:00:00.1234567Z") = "2026-10-20T10:00:00"),
         T[Check]("TextToUtc19 offset", () => T[TimeTextToUtc19]("2026-10-20T03:00:00-07:00") = "2026-10-20T10:00:00"),
@@ -54,5 +57,6 @@ in
         T[Check]("TextToUtc19 null/blank", () => T[TimeTextToUtc19](null) = null and T[TimeTextToUtc19]("") = null),
         T[Check]("run selection: ongoing continuous, inside, boundary-touching start; excludes finished-before/after/never-started",
             () => sel = {"ongoingCont", "inside", "endsExactlyAtStart"}),
+        T[Check]("terminal startup failure uses created when started is missing", () => List.Count(T[RunsInWindow]({T[Run_]("failed", "ApplicationTest", null, "2026-10-20T10:01:00Z") & [created="2026-10-20T10:00:00Z"]},single,null))=1),
         T[Check]("run selection by type is case-insensitive", () => selLoadCont = {"ongoingCont", "endsExactlyAtStart"})
     })

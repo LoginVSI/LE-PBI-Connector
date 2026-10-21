@@ -1,11 +1,12 @@
 -- table: Filtered Test Runs
 -- name: Successful Test Runs (Filtered Test Runs)
 -- format: 0
--- description: NEW 1.1.0.2. Numeric. Application and Load runs whose result is successful/completed in the current selection (zero when none).
+-- description: NEW 1.1.0.2. Numeric. Finished Application and Load runs whose result is successful/completed in the current selection (zero when none).
 VAR n =
     CALCULATE (
         COUNTROWS ( 'Filtered Test Runs' ),
         KEEPFILTERS ( 'Filtered Test Runs'[type] IN { "applicationtest", "loadtest" } ),
+        KEEPFILTERS ( 'Filtered Test Runs'[finished] <> BLANK () ),
         KEEPFILTERS ( 'Filtered Test Runs'[result] IN { "successful", "completed" } )
     )
 RETURN

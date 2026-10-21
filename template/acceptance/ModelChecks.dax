@@ -1,0 +1,53 @@
+-- UNEXECUTED. Run against the refreshed candidate in Desktop DAX query view.
+-- Compare each ID/type/finished/result with an independent hand list from existing API results.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Filtered Test Runs'[id],
+    'Filtered Test Runs'[type],
+    'Filtered Test Runs'[finished],
+    'Filtered Test Runs'[result],
+    "eligible", [Eligible Test Runs (Filtered Test Runs)],
+    "denominator", [Eligible Success Denominator (Filtered Test Runs)],
+    "successful", [Successful Test Runs (Filtered Test Runs)],
+    "rate", [Overall Success Rate Value (Filtered Test Runs)],
+    "accounts", [Distinct Accounts (Measurements)],
+    "sessionNoData", [Show No Data Message (Session Metrics)],
+    "failedSessions", [Failed User Sessions (Matching Test Runs) Display],
+    "gauge", [Avg Measurement Gauge Values],
+    "weightedEUX", [Average EUX Score Weighted Value],
+    "weightedCPU", [Avg CPU Weighted Value],
+    "weightedMemory", [Avg Memory Weighted Value]
+)
+ORDER BY 'Filtered Test Runs'[id]
+
+-- Aggregate and type-filter context. Empty denominator -> BLANK rate; zero successes -> numeric zero rate.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Filtered Test Runs'[type],
+    "eligible", [Eligible Test Runs (Filtered Test Runs)],
+    "denominator", [Eligible Success Denominator (Filtered Test Runs)],
+    "successful", [Successful Test Runs (Filtered Test Runs)],
+    "rate", [Overall Success Rate Value (Filtered Test Runs)]
+)
+
+-- Tests must filter runs through the actual active relationship, including failed runs without facts.
+EVALUATE
+SUMMARIZECOLUMNS (
+    Tests[id], Tests[name],
+    "eligible", [Eligible Test Runs (Filtered Test Runs)],
+    "showName", [HasMeasurements],
+    "showLoadName", [LoadHasMeasurements],
+    "showApplicationName", [ApplicationHasMeasurements],
+    "showContinuousName", [ContinuousHasMeasurements]
+)
+
+-- Multiple/no-run context: check these with explicit ID filters in a separate query as well as visual selection.
+-- If the model itself contains one run, HASONEVALUE is true without an explicit slicer selection.
+EVALUATE
+ROW (
+    "visibleRunIDs", COUNTROWS ( VALUES ( 'Filtered Test Runs'[id] ) ),
+    "measurementGauge", [Avg Measurement Gauge Values],
+    "euxGauge", [Avg EUX Gauge Values],
+    "legacySuccessDisplay", [Overall Success Rate (%)],
+    "loadedSuccessDisplay", [Overall Success Rate (% & Filtered Test Runs)]
+)

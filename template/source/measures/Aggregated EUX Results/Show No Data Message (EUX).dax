@@ -3,7 +3,7 @@
 -- format: 
 -- description: 
 IF (
-    COUNTROWS('Aggregated EUX Results') = 0,
+    COUNT ( 'Aggregated EUX Results'[score] ) = 0,
     "No Data",
     ""
 )

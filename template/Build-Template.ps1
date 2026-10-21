@@ -13,9 +13,21 @@
 param(
     [string]$Original = (Join-Path $PSScriptRoot 'Login Enterprise.pbit'),
     [string]$SourceDir = (Join-Path $PSScriptRoot 'source'),
-    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit')
+    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit'),
+    [switch]$Check
 )
 $ErrorActionPreference = 'Stop'
+if ($Check) {
+    $scratch = Join-Path ([IO.Path]::GetTempPath()) ('le-template-' + [guid]::NewGuid().ToString('N') + '.pbit')
+    try {
+        & $PSCommandPath -Original $Original -SourceDir $SourceDir -Output $scratch
+        if ((Get-FileHash -LiteralPath $scratch).Hash -ne (Get-FileHash -LiteralPath $Output).Hash) {
+            throw 'Staged template differs from editable sources. Rebuild and commit the candidate.'
+        }
+        Write-Host 'OK: staged template matches source rebuild byte-for-byte'
+    } finally { if (Test-Path -LiteralPath $scratch) { Remove-Item -LiteralPath $scratch -Force } }
+    return
+}
 . (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
 Add-Type -AssemblyName System.IO.Compression
 
@@ -90,7 +102,7 @@ $src = [IO.Compression.ZipFile]::OpenRead($Original)
 $dst = [IO.Compression.ZipFile]::Open($Output, [IO.Compression.ZipArchiveMode]::Create)
 try {
     foreach ($e in $src.Entries) {
-        $ne = $dst.CreateEntry($e.FullName, [IO.Compression.CompressionLevel]::Optimal)
+        $ne = $dst.CreateEntry($e.FullName, [IO.Compression.CompressionLevel]::NoCompression)
         $ne.LastWriteTime = $e.LastWriteTime
         $os = $ne.Open()
         if ($replacements.ContainsKey($e.FullName)) { $b = $replacements[$e.FullName]; $os.Write($b, 0, $b.Length) }

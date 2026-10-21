@@ -19,3 +19,9 @@ Template (candidate, see TEMPLATE-CHANGES.md)
 - EndDate+1 day for Aggregated EUX and User Session Metrics only (preserved and generalised in 1.1.0.2).
 
 ## 1.1.0 (public source)
+
+## Independent audit corrections to 1.1.0.2 candidate
+
+Correct capped/no-total paging, totals/offset validation, late-page and production subresource 404 handling, strict lower timestamp boundaries, session interval filtering and terminal startup failures. Add manual credential handling for the bearer header, stricter malformed-data errors, a cooperative elapsed budget and tighter request/retry/page limits.
+
+Repair loaded-window success and name-slicer context, require terminal timestamps, count account IDs and preserve zero versus missing values. Weighted statistics remain disabled until API count meaning is established. CI now checks the deliberate M failure probe and staged PBIT source parity. Independent evidence and all acceptance limits are in INDEPENDENT-AUDIT.md.

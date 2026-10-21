@@ -1,0 +1,4 @@
+Candidate written: <isolated temporary artifact>
+  measures changed=20 added=13; partitions changed=1; layout renames applied
+  size 4927797 bytes (original 353337)
+OK: staged template matches source rebuild byte-for-byte

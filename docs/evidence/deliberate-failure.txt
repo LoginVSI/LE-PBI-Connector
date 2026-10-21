@@ -1,0 +1,5 @@
+Built <isolated temporary artifact> (102983 bytes) sha256 B413E9EFBE18531F1E62D387CE2B6A602E97C2C2A1C30F522827217447D940CD
+FAIL  deliberate_failure.pq
+      {"Message":"1 of 1 failed: deliberate failure => returned false","Details":{"Reason":"Test.Failed","Microsoft.Data.Mashup.ErrorCode":null}}
+
+0/1 test files passed

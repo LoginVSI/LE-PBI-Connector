@@ -1,21 +1,5 @@
 -- table: User Session Metrics
 -- name: Avg Memory Weighted Value
 -- format: 0.00
--- description: NEW 1.1.0.2. Numeric count-weighted mean of Memory aggregate rows. BLANK if the selected Memory rows carry more than one unit. Legacy AVG Memory (MB) Display is an unweighted mean of aggregate rows; Min/Max are the lowest/highest aggregate bucket average, not raw extrema.
-VAR Rows =
-    FILTER (
-        'User Session Metrics',
-        'User Session Metrics'[displayName] = "Memory"
-            && NOT ISBLANK ( 'User Session Metrics'[measurement] )
-            && 'User Session Metrics'[count] > 0
-    )
-VAR UnitCount = COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( Rows, "u", 'User Session Metrics'[unit] ) ) )
-RETURN
-    IF (
-        UnitCount > 1,
-        BLANK (),
-        DIVIDE (
-            SUMX ( Rows, 'User Session Metrics'[measurement] * 'User Session Metrics'[count] ),
-            SUMX ( Rows, 'User Session Metrics'[count] )
-        )
-    )
+-- description: DEFERRED. Returns BLANK until the population represented by API count is independently established. Swagger describes count only as Count; it does not establish observation weights. Legacy unweighted bucket measures remain available.
+BLANK ()

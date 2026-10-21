@@ -16,7 +16,7 @@ Preconditions (owner actions, in order):
 
 ## B. Data correctness (reconcile with the appliance UI / API)
 - [ ] Today: a run started today appears; End Date = today includes data after midnight UTC.
-- [ ] A run with > 1000 measurements in one day: row count in `Measurements` equals the API `totalCount` for the run/day (query `…/measurements?from=…&to=…&count=1&includeTotalCount=true`).
+- [ ] A run with > 1000 measurements in one day: row count in `Measurements` equals the API rows satisfying the same half-open client filter (an inclusive API end can make its raw total one or more rows larger) (query `…/measurements?from=…&to=…&count=1&includeTotalCount=true`).
 - [ ] > 1000 applications / environments (if available) all present; no duplicates by `id`.
 - [ ] A Continuous run that started before the window and is still running: present for every in-window day.
 - [ ] Boundary: an observation at exactly 00:00Z appears once.
@@ -26,7 +26,7 @@ Preconditions (owner actions, in order):
 ## C. Empty / error / zero / failure behaviour
 - [ ] A window with no runs → empty typed tables, no error.
 - [ ] Revoke/alter the token mid-way → refresh fails (no partial tables published).
-- [ ] A run with zero-valued metrics is shown as 0, not "No Data". A failed run with no measurements counts in the success-rate denominator.
+- [ ] A run with zero-valued metrics is shown as 0, not "No Data". A finished failed run with no measurements counts in the success-rate denominator; a run with no finish timestamp does not, even if it has a result enum.
 
 ## D. Template candidate (`template/candidate/…candidate.pbit`)
 - [ ] Opens without repair prompts; prompts for FQDN/token/Days Back; first refresh completes; second refresh completes (note durations).
@@ -50,3 +50,12 @@ Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (
 
 ## Recorded hashes (pre-acceptance)
 Installed public 1.1.0 copy (read-only inspection): see `docs/SHA256SUMS.txt`.
+
+## Exact sequence after the host is available
+
+1. Confirm the Toolkit owner has released Desktop. Record and back up the installed connector outside Custom Connectors. Verify candidate SHA256 against SHA256SUMS.txt; replace only LE-PBI-Connector.mez and restart Desktop. Leave ResultsToolkit.mez, trust and shared credentials alone.
+2. Open a copy of an existing legacy PBIX and refresh a small existing-result window twice. Reconcile run IDs and half-open measurement/event timestamps, inclusive API end rows, ongoing Continuous runs, session interval IDs and local display times. Do not sum session counts across adjacent windows. Check an empty window and explanatory invalid-range errors. Do not revoke a shared token to simulate a failure; use an intentionally invalid value in an isolated copy.
+3. Open the candidate PBIT, enter the existing authorized scope, refresh twice, and inspect every one of its 9 pages. Check failed/no-measurement run selection via both test-name and hybrid slicers, type filters and cross-highlighting.
+4. In DAX query view run `template/acceptance/ModelChecks.dax`. Compare eligible/finished/successful counts with a hand list of loaded IDs. Exercise no selection, one run, multiple runs, a failed finished run without facts, an unfinished run with a default result, a true zero metric, null-only metrics and duplicate/blank account names with distinct IDs where existing results permit. Record unavailable cases rather than creating tests. Weighted values must be BLANK.
+5. On a separate report copy, migrate only that copy to ContentsKey. Verify Key credential UI, FQDN-only data-source scope, two refreshes and rollback to the legacy copy. No token should appear in query text or parameters on that copy.
+6. Move one visual, Save As PBIX, close, reopen and refresh. Record Desktop version, durations, prompts and DAX results. Re-save the PBIT from Desktop and re-export its editable source only after all checks pass; do not publish to Service. Restore the backed-up connector if acceptance fails.

@@ -3,7 +3,7 @@
 let
     partitionText = {{FILE:template/source/partitions/Filtered Test Runs.m}},
     run = (id, ty) => [id = id, type = ty],
-    testRuns = Table.FromRecords({run("L1", "LoadTest"), run("F1", "LoadTest"), run("O1", "LoadTest"), run("C1", "ContinuousTest"), run("A1", "ApplicationTest")}),
+    testRuns = Table.FromRecords({run("L1", "LoadTest"), run("F1", "LoadTest"), run("O1", "LoadTest"), run("C1", "ContinuousTest"), run("COLD", "ContinuousTest"), run("A1", "ApplicationTest")}),
     fact = (ids) => Table.FromRecords(List.Transform(ids, each [testRunId = _])),
     navWith = Table.FromRecords({[Name = "Test Runs In Window", Data = Table.FromRecords({[id = "L1"], [id = "F1"], [id = "C1"], [id = "A1"]})]}),
     navWithout = Table.FromRecords({[Name = "Tests", Data = #table({"id"}, {})]}),
@@ -21,8 +21,8 @@ let
     T = LoginEnterprise_PBI.TestExports
 in
     T[Run]({
-        T[Check]("1.1.0.2 connector: failed run with no data (F1) and no-measurement app run (A1) stay; run outside window (O1) dropped; all Continuous kept",
+        T[Check]("1.1.0.2 connector: failed run with no data (F1) and no-measurement app run (A1) stay; run outside window (O1) dropped; out-of-window Continuous dropped",
             () => ids(navWith) = {"A1", "C1", "F1", "L1"}),
-        T[Check]("older connector (no nav item): previous behaviour, data-presence only", () => ids(navWithout) = {"C1", "L1"}),
+        T[Check]("older connector (no nav item): data-presence fallback for all types", () => ids(navWithout) = {"L1"}),
         T[Check]("type is still normalised to lowercase for measures", () => List.Contains(Table.Column(Expression.Evaluate(partitionText, envFor(navWith)), "type"), "loadtest"))
     })

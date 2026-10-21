@@ -1,0 +1,202 @@
+{
+  "requests": [
+    {
+      "route": "v7-preview/tests",
+      "status": 200,
+      "countRequested": 1
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1,
+      "endpoint": "measurements",
+      "shape": "dict",
+      "total": 4,
+      "fields": [
+        "measurementId",
+        "appExecutionId",
+        "applicationId",
+        "launcherName",
+        "accountId",
+        "testRunId",
+        "userSessionId",
+        "duration",
+        "timestamp",
+        "properties"
+      ]
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 2
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 2
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1000
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1,
+      "endpoint": "user-sessions",
+      "shape": "dict",
+      "total": 1,
+      "fields": [
+        "id",
+        "testId",
+        "testRunId",
+        "created",
+        "loginState",
+        "sessionState",
+        "stateLastModified",
+        "testType",
+        "accountId",
+        "launcherName",
+        "loginStartTime",
+        "loginEndTime",
+        "sessionEndTime",
+        "sessionMetricEnabled",
+        "properties"
+      ]
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 2
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 2
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1000
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": 1,
+      "endpoint": "eux-results",
+      "shape": "list",
+      "total": null,
+      "fields": []
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": null
+    },
+    {
+      "route": "v7-preview/test-runs",
+      "status": 200,
+      "countRequested": null
+    }
+  ],
+  "notes": [
+    {
+      "runTypes": [
+        "type",
+        "testRunConfigurationSnapshot",
+        "state",
+        "result",
+        "rampUpCompleted",
+        "activeSessionCount",
+        "statisticsReady",
+        "productVersion",
+        "loginCounts",
+        "engineCounts",
+        "appExecutionCounts",
+        "euxScore",
+        "vsiMax",
+        "comment",
+        "id",
+        "testId",
+        "created",
+        "started",
+        "finished",
+        "counter",
+        "numberOfEvents"
+      ],
+      "result": "completed",
+      "state": "completed"
+    },
+    {
+      "endpoint": "measurements",
+      "boundary": "from",
+      "exactBoundaryPresent": true,
+      "total": 4
+    },
+    {
+      "endpoint": "measurements",
+      "boundary": "to",
+      "exactBoundaryPresent": true,
+      "total": 4
+    },
+    {
+      "endpoint": "measurements",
+      "count1000Status": 200,
+      "rows": 4,
+      "total": 4
+    },
+    {
+      "endpoint": "measurements",
+      "offsetReturned": 1,
+      "totalAtOffset1": 4
+    },
+    {
+      "endpoint": "user-sessions",
+      "boundary": "from",
+      "exactBoundaryPresent": true,
+      "total": 1
+    },
+    {
+      "endpoint": "user-sessions",
+      "boundary": "to",
+      "exactBoundaryPresent": false,
+      "total": 0
+    },
+    {
+      "endpoint": "user-sessions",
+      "count1000Status": 200,
+      "rows": 1,
+      "total": 1
+    },
+    {
+      "endpoint": "user-sessions",
+      "offsetReturned": 1,
+      "totalAtOffset1": 1
+    },
+    {
+      "endpoint": "aggregated-eux-results",
+      "shape": "list",
+      "rows": 0,
+      "fields": [],
+      "countMeaning": "Swagger says Count only; raw observation/session population not established"
+    },
+    {
+      "endpoint": "aggregated-load-test-user-session-metrics",
+      "shape": "list",
+      "rows": 0,
+      "fields": [],
+      "countMeaning": "Swagger says Count only; raw observation/session population not established"
+    }
+  ]
+}

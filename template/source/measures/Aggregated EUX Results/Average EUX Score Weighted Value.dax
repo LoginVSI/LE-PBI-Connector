@@ -1,15 +1,5 @@
 -- table: Aggregated EUX Results
 -- name: Average EUX Score Weighted Value
 -- format: 0.00
--- description: NEW 1.1.0.2. Numeric mean of EUX score weighted by each aggregate row's observation count. The legacy Average EUX Score is an unweighted mean of rows and is unchanged; the two differ when row counts are unequal.
-VAR Rows =
-    FILTER (
-        'Aggregated EUX Results',
-        NOT ISBLANK ( 'Aggregated EUX Results'[score] )
-            && 'Aggregated EUX Results'[count] > 0
-    )
-RETURN
-    DIVIDE (
-        SUMX ( Rows, 'Aggregated EUX Results'[score] * 'Aggregated EUX Results'[count] ),
-        SUMX ( Rows, 'Aggregated EUX Results'[count] )
-    )
+-- description: DEFERRED. Returns BLANK until the population represented by API count is independently established. Swagger describes count only as Count; it does not establish observation weights. Legacy unweighted bucket measures remain available.
+BLANK ()

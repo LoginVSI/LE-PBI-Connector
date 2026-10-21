@@ -1,7 +1,7 @@
 -- table: Aggregated EUX Results
 -- name: Avg EUX Gauge Values
 -- format:
--- description: CHANGED 1.1.0.2. BLANK instead of 0 when no single run is selected. Legacy semantics: unweighted mean of aggregate score rows (see Average EUX Score Weighted Value for the count-weighted mean).
+-- description: CHANGED 1.1.0.2. BLANK instead of 0 when no single run is selected. Legacy semantics: unweighted mean of aggregate score rows (weighted values are deferred until count semantics are established).
 IF(
     HASONEVALUE('Filtered Test Runs'[id]),
     AVERAGE('Aggregated EUX Results'[score]),

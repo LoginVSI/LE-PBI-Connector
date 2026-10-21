@@ -25,9 +25,16 @@ jobs:
       - name: M tests on the Power Query engine (PQTest, hash-pinned SDK tools)
         shell: pwsh
         run: ./tests/Run-Tests.ps1
+      - name: Deliberate M failure must be detected
+        shell: pwsh
+        run: |
+          & pwsh -NoProfile -File ./tests/Run-Tests.ps1 -ProbeFailure
+          if ($LASTEXITCODE -ne 1) { throw 'Deliberate M failure was not detected.' }
+          $global:LASTEXITCODE = 0
       - name: Template candidate builds and passes static checks
         shell: pwsh
         run: |
+          ./template/Build-Template.ps1 -Check
           ./template/Build-Template.ps1 -Output "$env:RUNNER_TEMP/candidate.pbit"
           ./template/Test-Template.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
       - name: Print checksums

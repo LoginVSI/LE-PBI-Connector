@@ -1,22 +1,15 @@
-# Open items, limitations and owner decisions
+# Open items and owner actions
 
-## Owner actions
-1. **Revoke/rotate the credential-like literal** that was in the old `LoginEnterprise_PBI.query.pq` in public history (`089200f` and earlier). Removing it from the current tree does not invalidate it and repository history was not rewritten. The value was not printed, copied or tested during this work. Only its owner can revoke it. Decide separately whether history needs rewriting.
-2. Desktop acceptance (docs/ACCEPTANCE.md) when the shared host is free.
-3. Licensing/ownership: the repository has no `LICENSE` file. The MIT decision for Results Toolkit was **not** assumed to apply here. Confirm upstream ownership and the licence for this connector/template before describing it as open source.
-4. Confirm API limits against the appliance Swagger (docs/CHANGE-TEST-MATRIX.md "Unverified").
+Independent review and repairs: [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md). This is a staged candidate, not a Desktop-accepted release.
 
-## Not done / deferred
-- Actual Power BI Desktop validation of the MEZ (discovery, UI, credential dialogs), the candidate PBIT (opens, renders, refreshes, saves) and any Service/gateway refresh.
-- DAX execution. No Analysis Services engine could be used without touching the shared Power BI installation; template DAX is statically checked only. Acceptance includes explicit DAX queries.
-- Key-credential migration is implemented additively but is **not** the template default and has only run in the Power Query SDK harness. Until accepted, do not describe legacy parameter storage as secure.
-- Wall-clock deadline for paging: not possible in M (`LocalNow` is fixed per evaluation). Page-count and completeness limits are used instead.
-- Application-test session-metric branch: not implemented (no documented endpoint reviewed).
-- Raw min/max CPU/memory/EUX: not available from aggregate endpoints; labelled, not invented.
-- Layout label edits beyond the Active Sessions cards (e.g. "Min CPU" wording) were not made; do them in Desktop.
-- Independent review: per the instructions for this session no nested Claude audit was run; see docs/AUDIT-HANDOFF.md for the focused Codex review brief.
-- Test Runs table remains unfiltered (all runs ever, paged) – may be slow on very large estates.
+1. Revoke/rotate the credential-like literal in public history (`089200f` and earlier). It was not used for this audit. Removing it from the tree does not revoke it; history was not rewritten. The owner must decide separately whether history should be rewritten.
+2. Run [Desktop acceptance](ACCEPTANCE.md) when the Results Toolkit owner releases the shared host. Discovery, existing-report compatibility, Key dialogs, full appliance refresh, all template visuals, DAX/filter behavior and save/reopen are unexecuted.
+3. Confirm licensing/ownership. No LICENSE file exists; the Toolkit's licence was not copied here.
+4. Establish each aggregate `count` population from authoritative implementation/vendor evidence or raw-to-bucket reconciliation on existing results. Weighted measures return BLANK until then.
+5. Extend read-only appliance coverage to populated EUX/session aggregates, Continuous results, platform metrics and large stable multi-page results. Swagger supplies no `count` maximum. Size 1000 was accepted on sampled endpoints, not proven universal. Tied ordering and snapshot consistency are not guaranteed.
 
-## Known compatibility notes
-- Template candidate requires connector 1.1.0.2 for the failed-run feature; with an older connector the partition falls back to the old behaviour.
-- Table timestamps are local time of the refreshing machine (Power Query behaviour), windows are UTC.
+The elapsed guard is a 300-second cooperative request budget, not a hard overall refresh deadline. It cannot preempt requests, decoding or other engine work, and separate evaluations have separate budgets. Request timeouts, retries and page caps provide additional bounds. Exact details are in the independent audit.
+
+Application-test aggregated session metrics remain unimplemented because no matching endpoint exists in the reviewed contract. Raw min/max cannot be inferred from aggregate buckets. Legacy CPU/Memory averages remain unweighted bucket means with legacy labels; Desktop acceptance should confirm units and label extrema as bucket extrema.
+
+The legacy token parameter remains in the template for compatibility and is stored in clear text. The additive Key path has isolated SDK evidence only. Gateway deployment, Service scheduled refresh, incremental ingestion and other optional integrations stay in the backlog.

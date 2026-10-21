@@ -7,7 +7,7 @@ section LoginEnterprise_PBI;
 // Login Enterprise public API route (v7-preview; unchanged from earlier releases).
 ApiRoot = "publicApi/v7-preview/";
 DefaultPageSize = 1000;
-DefaultMaxPages = 5000;
+DefaultMaxPages = 1000;
 MaxWindowDays = 366;
 // HTTP statuses retried (bounded) before failing.
 RetryStatuses = {408, 429, 500, 502, 503, 504};
@@ -58,8 +58,8 @@ EnsureColumns = (tbl as table, cols as list, optional types as nullable list) as
 // Safely expand a record column (treats null as empty record, then guarantees all requested fields exist)
 ExpandRecordSafe = (tbl as table, col as text, fields as list, optional types as nullable list) as table =>
     let
-        normalized = Table.TransformColumns(tbl, {{col, each if _ is null then [] else _}}),
-        expanded   = try Table.ExpandRecordColumn(normalized, col, fields, fields) otherwise normalized,
+        normalized = Table.TransformColumns(tbl, {{col, each if _ is null then [] else if _ is record then _ else Api.Fail("Invalid record column " & col & ".", [Column = col])}}),
+        expanded   = Table.ExpandRecordColumn(normalized, col, fields, fields),
         ensured    = EnsureColumns(expanded, fields, types)
     in
         ensured;
@@ -91,12 +91,14 @@ Ctx.NormalizeFqdn = (fqdn as nullable text) as text =>
         noScheme = if Text.StartsWith(t, "https://", Comparer.OrdinalIgnoreCase) then Text.Range(t, 8) else t,
         host = if Text.EndsWith(noScheme, "/") then Text.Start(noScheme, Text.Length(noScheme) - 1) else noScheme,
         bad = host = "" or Text.Contains(host, "/") or Text.Contains(host, " ") or Text.Contains(host, "?")
+            or Text.Contains(host, "@") or Text.Contains(host, "#") or Text.Contains(host, "\")
+            or Text.Contains(host, "://") or Text.Contains(host, "&")
             or Text.StartsWith(host, "http:", Comparer.OrdinalIgnoreCase)
     in
         if bad then
             error Error.Record(
                 "DataSource.Error",
-                "FQDN must be a host name such as demo.loginvsi.com (HTTPS only, no path or query). Received: " & (if fqdn = null then "(blank)" else fqdn)
+                "FQDN must be a host name such as demo.loginvsi.com (HTTPS only, no path or query)."
             )
         else
             host;
@@ -111,13 +113,16 @@ Ctx.Create = (fqdn as nullable text, token as nullable text, optional fetch as n
                 error Error.Record("DataSource.Error", "The Login Enterprise API token is blank. Provide a token generated in the appliance (Settings > Public API).")
             else
                 Text.Trim(token),
-        defaults = [PageSize = DefaultPageSize, MaxPages = DefaultMaxPages, RetryDelays = {1, 2, 4}],
+        defaults = [PageSize = DefaultPageSize, MaxPages = DefaultMaxPages, RetryDelays = {1, 2},
+            RequestTimeoutSeconds = 30, BudgetSeconds = 300,
+            Clock = () => Function.InvokeAfter(DateTimeZone.UtcNow, #duration(0, 0, 0, 0))],
         merged = defaults & (if overrides = null then [] else overrides)
     in
         merged & [
             Fqdn = host,
             Token = tok,
-            Fetch = if fetch <> null then fetch else Api.DefaultFetch(host, tok)
+            Deadline = merged[Clock]() + #duration(0, 0, 0, merged[BudgetSeconds]),
+            Fetch = if fetch <> null then fetch else Api.DefaultFetch(host, tok, merged[RequestTimeoutSeconds])
         ];
 
 // ---------------------------------------------------------------------------
@@ -136,18 +141,19 @@ Time.Iso = (dt as datetime) as text =>
 
 // Normalises an API timestamp to a "yyyy-MM-ddTHH:mm:ss" UTC string for ordinal comparison. null when blank/unparseable.
 Time.TextToUtc19 = (t as nullable text) as nullable text =>
-    if t = null or Text.Length(t) < 19 then
-        null
-    else if Text.EndsWith(t, "Z") then
-        Text.Start(t, 19)
-    else if Text.PositionOfAny(Text.Range(t, 10), {"+", "-"}) = -1 then
-        // no zone designator: the API contract is UTC
-        Text.Start(t, 19)
+    if t = null or Text.Trim(t) = "" then null
     else
         let
-            parsed = try DateTimeZone.FromText(t) otherwise null
+            zoned = if Text.EndsWith(t, "Z", Comparer.OrdinalIgnoreCase)
+                or Text.PositionOfAny(Text.Range(t, List.Min({10, Text.Length(t)})), {"+", "-"}) >= 0 then t else t & "Z",
+            parsed = try DateTimeZone.FromText(zoned, [Culture = "en-US"]) otherwise null
         in
             if parsed = null then null else Time.Iso(DateTimeZone.RemoveZone(DateTimeZone.SwitchZone(parsed, 0)));
+
+// Request a one-second superset so strict `from` endpoints retain observations exactly at midnight.
+// Client filtering still owns the half-open policy; fractional timestamps in the extra second are discarded.
+Time.RequestFrom = (from19 as text) as text =>
+    Time.Iso(DateTime.FromText(from19, [Culture = "en-US"]) - #duration(0, 0, 0, 1)) & "Z";
 
 Window.Create = (
     daysBack as nullable number,
@@ -157,11 +163,11 @@ Window.Create = (
     optional nowUtc as nullable datetimezone
 ) as record =>
     let
-        now = if nowUtc <> null then DateTimeZone.SwitchZone(nowUtc, 0) else DateTimeZone.UtcNow(),
+        now = if nowUtc <> null then DateTimeZone.SwitchZone(nowUtc, 0) else DateTimeZone.FixedUtcNow(),
         today = DateTime.Date(DateTimeZone.RemoveZone(now)),
         fixedMode = useDateRange = true,
         days = if daysBack = null then 30 else daysBack,
-        daysValid = days >= 1 and days <= MaxWindowDays and days = Number.RoundDown(days),
+        daysValid = days >= 1 and days < MaxWindowDays and days = Number.RoundDown(days),
         s = if fixedMode then startDate else Date.AddDays(today, -days),
         e = if fixedMode then endDate else today,
         spanDays = if s = null or e = null then null else Duration.Days(e - s) + 1,
@@ -169,7 +175,7 @@ Window.Create = (
             if fixedMode and (startDate = null or endDate = null) then
                 "Use Date Range is enabled but Start Date and End Date are not both set. Provide both dates, or turn Use Date Range off to use Days Back."
             else if not fixedMode and not daysValid then
-                "Days Back must be a whole number between 1 and " & Text.From(MaxWindowDays, "en-US") & ". Received: " & Text.From(days, "en-US")
+                "Days Back must be a whole number between 1 and " & Text.From(MaxWindowDays - 1, "en-US") & ". Received: " & Text.From(days, "en-US")
             else if spanDays < 1 then
                 "Start Date (" & Date.ToText(s, [Format = "yyyy-MM-dd", Culture = "en-US"]) & ") is after End Date (" & Date.ToText(e, [Format = "yyyy-MM-dd", Culture = "en-US"]) & ")."
             else if spanDays > MaxWindowDays then
@@ -213,15 +219,23 @@ Time.InRange = (timestamp as nullable text, from19 as text, to19 as text) as log
 // ---------------------------------------------------------------------------
 // Test-run selection (works on raw API run records)
 // ---------------------------------------------------------------------------
+// A malformed observation must not silently become an empty success.
+Time.RequirePoint = (row as any, route as text) as record =>
+    if not (row is record) then Api.Fail("Invalid observation from " & route & ".", [Route = route])
+    else if Time.TextToUtc19(Record.FieldOrDefault(row, "timestamp", null)) = null then
+        Api.Fail("Missing or invalid timestamp from " & route & ".", [Route = route])
+    else row;
+
 Run.TypeOf = (run as record) as text =>
     Text.Lower(Text.From(Record.FieldOrDefault(run, "type", "")));
 
 // A run overlaps [from19, to19) if it started before the end and has not finished before the start (finished = null: still running).
-// A run that never started has no data and is excluded.
+// An unfinished run that never started is excluded; a terminal startup failure uses its created timestamp.
 Run.Overlaps = (run as record, from19 as text, to19 as text) as logical =>
     let
-        s = Time.TextToUtc19(Record.FieldOrDefault(run, "started", null)),
-        f = Time.TextToUtc19(Record.FieldOrDefault(run, "finished", null))
+        started = Time.TextToUtc19(Record.FieldOrDefault(run, "started", null)),
+        f = Time.TextToUtc19(Record.FieldOrDefault(run, "finished", null)),
+        s = if started <> null then started else if f <> null then Time.TextToUtc19(Record.FieldOrDefault(run, "created", null)) else null
     in
         s <> null and s < to19 and (f = null or f >= from19);
 
@@ -252,7 +266,7 @@ Api.BodySnippet = (ctx as record, body as any) as text =>
         else if Text.Length(scrubbed) > 300 then Text.Start(scrubbed, 300) & "..."
         else scrubbed;
 
-Api.DefaultFetch = (fqdn as text, token as text) =>
+Api.DefaultFetch = (fqdn as text, token as text, timeoutSeconds as number) =>
     (route as text, query as record, attempt as number) as record =>
         let
             response = Web.Contents(
@@ -262,8 +276,9 @@ Api.DefaultFetch = (fqdn as text, token as text) =>
                     Query = query,
                     Headers = [#"Accept" = "application/json", #"Authorization" = "Bearer " & token],
                     ManualStatusHandling = HandledStatuses,
+                    ManualCredentials = true,
                     IsRetry = attempt > 0,
-                    Timeout = #duration(0, 0, 2, 0)
+                    Timeout = #duration(0, 0, 0, timeoutSeconds)
                 ]
             ),
             status = Value.Metadata(response)[Response.Status],
@@ -274,10 +289,10 @@ Api.DefaultFetch = (fqdn as text, token as text) =>
 Api.TransportError = (ctx as record, route as text, err as record) as any =>
     Api.Fail(
         "Could not complete the request to https://" & ctx[Fqdn] & "/" & ApiRoot & route
-            & ". " & Api.Scrub(ctx, Text.From(Record.FieldOrDefault(err, "Message", "Unknown error")))
+            & ". "
             & " -- Check the FQDN, network reachability, and that the appliance TLS certificate is trusted by this machine "
             & "(this connector never disables certificate validation). See README > Troubleshooting.",
-        [Route = route, Reason = Record.FieldOrDefault(err, "Reason", null)]
+        [Route = route]
     );
 
 Api.StatusError = (ctx as record, route as text, status as number, body as any, attempts as number) as any =>
@@ -293,9 +308,15 @@ Api.StatusError = (ctx as record, route as text, status as number, body as any, 
             else "Unexpected response."
     in
         Api.Fail(
-            "HTTP " & Text.From(status, "en-US") & " from " & where & ". " & hint & " Response: " & snippet,
+            "HTTP " & Text.From(status, "en-US") & " from " & where & ". " & hint,
             [Route = route, Status = status]
         );
+
+// Cooperative elapsed-time budget shared by this connector evaluation. Force the snapshot before the live clock.
+// This cannot preempt JSON/table evaluation or an in-flight request; Web.Contents has its own 30-second timeout.
+Api.CheckBudget = (ctx as record, route as text) as logical =>
+    if ctx[Deadline] = ctx[Deadline] and ctx[Clock]() < ctx[Deadline] then true
+    else Api.Fail("Elapsed request budget exceeded for " & route & "; narrow the date window.", [Route = route]);
 
 // Returns [Found = logical, Json = any]. 404 is returned as Found = false only when allowNotFound is true.
 Api.Request = (ctx as record, route as text, query as record, allowNotFound as logical) as record =>
@@ -304,12 +325,16 @@ Api.Request = (ctx as record, route as text, query as record, allowNotFound as l
         Attempt = (n as number) as record =>
             let
                 // Record/list fields are lazy: touch Status and Body inside the try so transport/TLS errors are caught here.
-                r = try (let x = ctx[Fetch](route, query, n), s = x[Status], b = x[Body] in if s = s and b = b then {s, b} else {s, b}),
+                r = if Api.CheckBudget(ctx, route) then
+                    try (let x = ctx[Fetch](route, query, n), s = x[Status], b = x[Body]
+                         in if s = s and b = b then {s, b} else {s, b})
+                    else error "unreachable",
                 resp = if r[HasError] then Api.TransportError(ctx, route, r[Error]) else [Status = r[Value]{0}, Body = r[Value]{1}],
                 status = resp[Status],
                 retry = List.Contains(RetryStatuses, status) and n < List.Count(delays)
             in
-                if retry then
+                if status = status and resp[Body] = resp[Body] and not Api.CheckBudget(ctx, route) then error "unreachable"
+                else if retry then
                     Function.InvokeAfter(() => @Attempt(n + 1), #duration(0, 0, 0, delays{n}))
                 else
                     Api.Interpret(ctx, route, resp, allowNotFound, n + 1),
@@ -329,10 +354,11 @@ Api.Interpret = (ctx as record, route as text, resp as record, allowNotFound as 
             in
                 if parsed[HasError] then
                     Api.Fail(
-                        "The response from " & ctx[Fqdn] & "/" & ApiRoot & route & " was not valid JSON ("
-                            & Api.Scrub(ctx, Text.From(parsed[Error][Message])) & "). First characters: " & Api.BodySnippet(ctx, resp[Body]),
+                        "The response from " & ctx[Fqdn] & "/" & ApiRoot & route & " was not valid JSON.",
                         [Route = route, Status = status]
                     )
+                else if parsed[Value] = null then
+                    Api.Fail("Unexpected null JSON response from " & route & ".", [Route = route, Status = status])
                 else
                     [Found = true, Json = parsed[Value]]
         else if status = 404 and allowNotFound then
@@ -343,32 +369,33 @@ Api.Interpret = (ctx as record, route as text, resp as record, allowNotFound as 
 // Parses a paged result set: { items: [...], totalCount?: n }.
 Api.ReadItems = (route as text, json as any) as record =>
     if json = null then
-        [items = {}, total = null]
+        [items = {}, total = null, offset = null]
     else if json is record and Record.HasFields(json, "items") and Record.Field(json, "items") is list then
         [
-            items = Record.Field(json, "items"),
-            total = let t = Record.FieldOrDefault(json, "totalCount", null) in if t is number then t else null
+            items = if List.AllTrue(List.Transform(json[items], each _ is record)) then json[items]
+                else Api.Fail("Invalid item in paged response from " & route & ".", [Route = route]),
+            offset = Record.FieldOrDefault(json, "offset", null),
+            total = let t = Record.FieldOrDefault(json, "totalCount", null) in if t = null then null else if t is number and t >= 0 and t = Number.RoundDown(t) then t
+                else Api.Fail("Invalid totalCount from " & route & ".", [Route = route])
         ]
     else
         Api.Fail("Unexpected response shape from " & route & ": expected an object with an 'items' array.", [Route = route]);
 
 // Parses a non-paged list response (bare array, or an object with items).
 Api.ReadList = (route as text, json as any) as list =>
-    if json = null then {}
-    else if json is list then json
-    else if json is record and Record.HasFields(json, "items") and Record.Field(json, "items") is list then Record.Field(json, "items")
-    else Api.Fail("Unexpected response shape from " & route & ": expected an array.", [Route = route]);
+    let
+        rows = if json = null then {}
+            else if json is list then json
+            else if json is record and Record.HasFields(json, "items") and json[items] is list then json[items]
+            else Api.Fail("Unexpected response shape from " & route & ": expected an array.", [Route = route])
+    in if List.AllTrue(List.Transform(rows, each _ is record)) then rows
+        else Api.Fail("Invalid record in array from " & route & ".", [Route = route]);
 
-Api.PageFingerprint = (items as list) as text =>
-    if List.Count(items) = 0 then
-        ""
-    else
-        Text.From(List.Count(items), "en-US")
-            & "|" & Text.FromBinary(Json.FromValue(List.First(items)))
-            & "|" & Text.FromBinary(Json.FromValue(List.Last(items)));
+// Compare the entire page, not just its first/last rows (which can legitimately tie).
+Api.PageFingerprint = (items as list) as text => Text.FromBinary(Json.FromValue(items));
 
 // Fetches every page with count/offset appended exactly once (any count/offset/includeTotalCount in `query` is replaced).
-// Stops on a short/empty page or when totalCount is reached; fails on non-progress, page-limit overrun, or fewer items than totalCount.
+// Stops only on an empty page (including capped servers without totals); fails on non-progress, page-limit overrun, or fewer items than totalCount.
 Api.GetAllItems = (ctx as record, route as text, query as record, optional allowNotFound as nullable logical) as list =>
     let
         allow = allowNotFound = true,
@@ -380,8 +407,10 @@ Api.GetAllItems = (ctx as record, route as text, query as record, optional allow
                 q = baseQuery
                     & [count = Text.From(pageSize, "en-US"), offset = Text.From(offset, "en-US")]
                     & (if offset = 0 then [includeTotalCount = "true"] else []),
-                resp = Api.Request(ctx, route, q, allow),
-                shaped = if resp[Found] then Api.ReadItems(route, resp[Json]) else [items = {}, total = null],
+                resp = if index >= maxPages then
+                    Api.Fail("Stopped at the page safety limit for " & route & ". Narrow the date window.", [Route = route])
+                    else Api.Request(ctx, route, q, allow and index = 0),
+                shaped = if resp[Found] then Api.ReadItems(route, resp[Json]) else [items = {}, total = null, offset = null],
                 items = shaped[items],
                 count = List.Count(items),
                 fp = Api.PageFingerprint(items),
@@ -390,6 +419,12 @@ Api.GetAllItems = (ctx as record, route as text, query as record, optional allow
             in
                 if index >= maxPages then
                     Api.Fail("Stopped after " & Text.From(maxPages, "en-US") & " pages from " & route & "; the result is larger than this connector's safety limit. Narrow the date window.", [Route = route])
+                else if knownTotal <> null and shaped[total] <> null and shaped[total] <> knownTotal then
+                    Api.Fail("Changing totalCount from " & route & "; refresh a stable window.", [Route = route])
+                else if shaped[offset] <> null and shaped[offset] <> offset then
+                    Api.Fail("Pagination offset mismatch for " & route & ".", [Route = route])
+                else if total <> null and nextOffset > total then
+                    Api.Fail("Inconsistent totalCount from " & route & ".", [Route = route])
                 else if prevFp <> null and count > 0 and fp = prevFp then
                     Api.Fail("Pagination made no progress for " & route & " at offset " & Text.From(offset, "en-US") & ": the appliance returned the same page again.", [Route = route, Offset = offset])
                 else
@@ -399,7 +434,7 @@ Api.GetAllItems = (ctx as record, route as text, query as record, optional allow
                         Fingerprint = fp,
                         Index = index,
                         Total = total,
-                        More = count > 0 and (if total <> null then nextOffset < total else count >= pageSize)
+                        More = count > 0
                     ],
         states = List.Generate(
             () => LoadPage(0, null, 0, null),
@@ -409,7 +444,8 @@ Api.GetAllItems = (ctx as record, route as text, query as record, optional allow
         items = List.Combine(List.Transform(states, each [Items])),
         finalTotal = List.Last(states)[Total]
     in
-        if finalTotal <> null and List.Count(items) < finalTotal then
+        if List.Count(items) >= 0 and not Api.CheckBudget(ctx, route) then error "unreachable"
+        else if finalTotal <> null and List.Count(items) < finalTotal then
             Api.Fail(
                 "Incomplete result from " & route & ": received " & Text.From(List.Count(items), "en-US") & " of " & Text.From(finalTotal, "en-US") & " items.",
                 [Route = route]
@@ -453,7 +489,7 @@ GetTests = (ctx as record) as table =>
             "logonTimeTrackingProcess","engineStartTimeout","applicationDebugModeEnabled"},
             {type text,type text,type text,type text,type datetime,type text,Int64.Type,
             Int64.Type,Int64.Type,Int64.Type,type logical,type any,type logical,Int64.Type,
-            type text,type any,type any,type text,Int64.Type,type logical}
+            type text,type text,type any,type any,type text,Int64.Type,type logical}
         ),
 
         // Be lenient if these optional columns don't exist
@@ -490,7 +526,7 @@ GetTestRunsRaw = (ctx as record) as list =>
             (tt) => Api.GetAllItems(
                 ctx,
                 "tests/test-runs",
-                [testType = tt, orderBy = "testName", direction = "asc", include = "testRunConfigurationSnapshot"]
+                [testType = tt, orderBy = "created", direction = "asc", include = "testRunConfigurationSnapshot"]
             )
         )
     in
@@ -643,12 +679,12 @@ GetAggregatedEUXResults = (ctx as record, runsRaw as list, window as record) as 
                         items = Api.GetList(
                             ctx,
                             "test-runs/" & runId & "/aggregated-eux-results",
-                            [from = window[FromText], to = window[ToText]],
-                            true
+                            [from = Time.RequestFrom(window[From19]), to = window[ToText]],
+                            false
                         )
                     in
                         List.Transform(
-                            List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+                            List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], window[From19], window[To19])),
                             (i) => i & [testRunId = runId]
                         )
             )
@@ -714,11 +750,11 @@ GetMeasurements = (ctx as record, runsRaw as list, window as record) as table =>
                 items = Api.GetAllItems(
                     ctx,
                     "test-runs/" & runId & "/measurements",
-                    [from = dw[FromText], to = dw[ToText], include = "all", direction = "asc"],
-                    true
+                    [from = Time.RequestFrom(dw[From19]), to = dw[ToText], include = "all", direction = "asc"],
+                    false
                 )
             in
-                List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), dw[From19], dw[To19])),
+                List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], dw[From19], dw[To19])),
         perRun = List.Transform(
             runs,
             (r) =>
@@ -787,9 +823,9 @@ GetEvents = (ctx as record, window as record) as table =>
         items = Api.GetAllItems(
             ctx,
             "events",
-            [direction = "asc", include = "none", from = window[FromText], to = window[ToText]]
+            [direction = "asc", include = "none", from = Time.RequestFrom(window[From19]), to = window[ToText]]
         ),
-        inWindow = List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+        inWindow = List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], window[From19], window[To19])),
         result =
             if List.Count(inWindow) > 0 then
                 let
@@ -832,12 +868,20 @@ GetUserSessions = (ctx as record, runsRaw as list, window as record) as table =>
                 (r) => Api.GetAllItems(
                     ctx,
                     "test-runs/" & r[id] & "/user-sessions",
-                    [direction = "asc", from = window[FromText], to = window[ToText]],
-                    true
+                    [direction = "asc", filterType = "loggedIn", from = Time.RequestFrom(window[From19]), to = window[ToText]],
+                    false
                 )
             )
         ),
-        base = Table.FromList(Records.DistinctBy(rows, "id"), Splitter.SplitByNothing(), {"UserSession"}),
+        // Sessions are intervals, not point observations. Active sessions can legitimately appear in adjacent windows.
+        inWindow = List.Select(rows, (r) =>
+            let
+                start = Time.TextToUtc19(Record.FieldOrDefault(r, "loginStartTime", null)),
+                created = Time.TextToUtc19(Record.FieldOrDefault(r, "created", null)),
+                finish = Time.TextToUtc19(Record.FieldOrDefault(r, "sessionEndTime", null)),
+                first = if start <> null then start else created
+            in first <> null and first < window[To19] and (finish = null or finish > window[From19])),
+        base = Table.FromList(Records.DistinctBy(inWindow, "id"), Splitter.SplitByNothing(), {"UserSession"}),
         expanded = ExpandRecordSafe(base, "UserSession", UserSessionColumns),
         fixed = EnsureColumns(
             Table.SelectColumns(expanded, UserSessionColumns, MissingField.UseNull),
@@ -871,10 +915,10 @@ GetUserSessionMetrics = (ctx as record, runsRaw as list, window as record) as ta
         Fetch = (r as record, routeSuffix as text, extra as record) as list =>
             let
                 route = "test-runs/" & r[id] & "/" & routeSuffix,
-                items = Api.GetList(ctx, route, extra & [from = window[FromText], to = window[ToText]], true)
+                items = Api.GetList(ctx, route, extra & [from = Time.RequestFrom(window[From19]), to = window[ToText]], false)
             in
                 List.Transform(
-                    List.Select(items, (i) => i is record and Time.InRange(Record.FieldOrDefault(i, "timestamp", null), window[From19], window[To19])),
+                    List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], window[From19], window[To19])),
                     (i) => i & [testRunId = r[id]]
                 ),
         loadAggregated = List.Combine(List.Transform(loadRuns, (r) => Fetch(r, "aggregated-load-test-user-session-metrics", []))),
@@ -911,7 +955,7 @@ GetUserSessionMetrics = (ctx as record, runsRaw as list, window as record) as ta
 // Environments (fully paged)
 GetEnvironments = (ctx as record, testsTable as table) as table =>
     let
-        rawList = Api.GetAllItems(ctx, "environments", [orderBy = "name", include = "none"]),
+        rawList = Api.GetAllItems(ctx, "environments", [orderBy = "name", direction = "asc", include = "none"]),
 
         tableRaw =
             Table.FromList(Records.DistinctBy(rawList, "id"), Splitter.SplitByNothing(), {"Environment"}),
@@ -997,7 +1041,7 @@ GetEnvironments = (ctx as record, testsTable as table) as table =>
         finalTyped;
 
 // Platform metrics per environment. Environments that explicitly disable data collection are not applicable and are
-// not queried; a 404 for an environment is treated as "unavailable" (empty); any other failure raises an error.
+// not queried. A 404 on a queried route is a refresh error, not evidence of an empty result.
 GetPlatformMetrics = (ctx as record, environmentsTable as table, window as record) as table =>
     let
         queryable =
@@ -1025,8 +1069,8 @@ GetPlatformMetrics = (ctx as record, environmentsTable as table, window as recor
                         Api.GetList(
                             ctx,
                             "platform-metrics",
-                            [from = window[FromText], to = window[ToText], environmentIds = Text.From(envId)],
-                            true
+                            [from = Time.RequestFrom(window[From19]), to = window[ToText], environmentIds = Text.From(envId)],
+                            false
                         )
                 )
             ),
@@ -1041,9 +1085,8 @@ GetPlatformMetrics = (ctx as record, environmentsTable as table, window as recor
                             s,
                             {{"dataPoints", (dp) =>
                                 if dp is list then
-                                    List.Select(dp, (p) => p is record and Time.InRange(Record.FieldOrDefault(p, "timestamp", null), window[From19], window[To19]))
-                                else
-                                    {}}},
+                                    List.Select(dp, (p) => Time.InRange(Time.RequirePoint(p, "platform-metrics")[timestamp], window[From19], window[To19]))
+                                else if dp = null then {} else Api.Fail("Invalid dataPoints from platform-metrics.", [Route = "platform-metrics"]) }},
                             MissingField.UseNull
                         )
                 ),
@@ -1217,7 +1260,7 @@ LoginEnterpriseType = type function (
     optional DaysBack as (
         type number meta [
             Documentation.FieldCaption = "Days Back",
-            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-366). Ignored when Use Date Range is true.",
+            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-365). Ignored when Use Date Range is true.",
             Documentation.AllowedValues = {1, 7, 30, 60, 90},
             Documentation.SampleValues = {30}
         ]
@@ -1273,7 +1316,7 @@ LoginEnterpriseKeyType = type function (
     optional DaysBack as (
         type number meta [
             Documentation.FieldCaption = "Days Back",
-            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-366). Ignored when Use Date Range is true.",
+            Documentation.FieldDescription = "Rolling window: today (UTC) plus this many previous UTC days (whole number 1-365). Ignored when Use Date Range is true.",
             Documentation.AllowedValues = {1, 7, 30, 60, 90},
             Documentation.SampleValues = {30}
         ]

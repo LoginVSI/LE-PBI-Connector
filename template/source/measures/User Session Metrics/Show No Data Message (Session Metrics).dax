@@ -3,7 +3,7 @@
 -- format:
 -- description: CHANGED 1.1.0.2. No Data when there are no rows. Previously tested SUM(measurement) = 0, which mislabelled valid all-zero metrics as No Data (used by the Continuous page).
 IF (
-    COUNTROWS ( 'User Session Metrics' ) = 0,
+    COUNT ( 'User Session Metrics'[measurement] ) = 0,
     "No Data",
     ""
 )
