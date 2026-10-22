@@ -1,0 +1,29 @@
+{
+  "loadedMeasurementRows": 11549,
+  "windowLocalOffset": "-07:00",
+  "allTimestampsWithinWindow": true,
+  "utcMidnightRows": 0,
+  "endExclusiveRows": 0,
+  "lastUTCDayRows": 2331,
+  "representatives": [
+    {
+      "alias": "representative-1",
+      "exactIdTimestampDurationMultisetMatches": false,
+      "durationSecondsMultisetMatches": true,
+      "accountIdSetMatches": true,
+      "timestampComparison": {
+        "exactMatch": false,
+        "maxAbsoluteDifferenceSeconds": 0.001195,
+        "allEightWithinTwoMilliseconds": true,
+        "explanation": "Observed sub-millisecond to 1.195 ms difference after Desktop model datetime storage. Exact source-to-model timestamp equality is not claimed."
+      }
+    },
+    {
+      "alias": "representative-2",
+      "exactIdTimestampDurationMultisetMatches": true,
+      "durationSecondsMultisetMatches": true,
+      "accountIdSetMatches": true
+    }
+  ],
+  "midnightAndDstDisposition": "No exact-midnight observations or DST transition in selected data; those cases retain M-engine evidence only."
+}

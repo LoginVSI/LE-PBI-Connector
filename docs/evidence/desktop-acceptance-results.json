@@ -1,0 +1,346 @@
+{
+  "dateUtc": "2026-10-22T19:59:22.718263+00:00",
+  "disposition": "partial; Key migration and remaining interactive acceptance pending",
+  "ownerObserved": {
+    "repairRefresh": "passed; data displayed",
+    "subsequentRefreshAndSave": "passed; owner completed requested refresh, save and leave-open",
+    "editSaveCloseReopen": "passed; edit type unspecified",
+    "refreshDuration": "not recorded",
+    "ISODateFields": "passed; exact ISO strings accepted with en-US regional settings"
+  },
+  "previousEmptyReadback": {
+    "workingPath": ".cache/desktop-acceptance-20261021/LE-acceptance-in-progress.pbix",
+    "savedFileSha256": "004E106061656E29F2FE7FBFB108BBF46DF21283F813937DD3DA2F0383E2CA86",
+    "savedLastWriteUtc": "2026-10-21T21:58:44Z",
+    "ModelChecksExecuted": true,
+    "ModelChecksResultSetRowCounts": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "allMeasuresEvaluated": 83,
+    "daxEvaluationErrors": 0,
+    "tableCounts": {
+      "Test Runs": 0,
+      "Filtered Test Runs": 0,
+      "Measurements": 0,
+      "Tests": 0,
+      "User Sessions": 0
+    },
+    "startDateParam": "null",
+    "scope": "Prepared saved copy is empty; successful populated model not yet observed. Owner confirms this same saved file path. Refresh/save/leave-open handoff requested.",
+    "privateEvidence": [
+      ".cache/desktop-acceptance-20261021/successful-retry-modelchecks.raw.json",
+      ".cache/desktop-acceptance-20261021/raw-counts.json",
+      ".cache/desktop-acceptance-20261021/all-measures-empty-model.raw.json"
+    ],
+    "emptyContextChecks": [
+      {
+        "measure": "Avg Measurement Gauge Values",
+        "expected": null,
+        "actual": null,
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Avg EUX Gauge Values",
+        "expected": null,
+        "actual": null,
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Average EUX Score Weighted Value",
+        "expected": null,
+        "actual": null,
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Avg CPU Weighted Value",
+        "expected": null,
+        "actual": null,
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Avg Memory Weighted Value",
+        "expected": null,
+        "actual": null,
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Distinct Accounts (Measurements)",
+        "expected": "No Data",
+        "actual": "No Data",
+        "status": "passed on empty model only"
+      },
+      {
+        "measure": "Overall Success Rate (% & Filtered Test Runs)",
+        "expected": "No Data",
+        "actual": "No Data",
+        "status": "passed on empty model only"
+      }
+    ]
+  },
+  "populatedModel": {
+    "ModelChecksExecuted": true,
+    "resultSetRowCounts": [
+      50,
+      3,
+      71,
+      1
+    ],
+    "allMeasuresEvaluated": 83,
+    "daxErrors": 0,
+    "tableRows": {
+      "Test Runs": 1608,
+      "Filtered Test Runs": 49,
+      "Measurements": 11549,
+      "Tests": 70,
+      "User Sessions": 223,
+      "User Session Metrics": 724,
+      "Aggregated EUX Results": 85,
+      "Events": 5779,
+      "Workload Steps": 40,
+      "Platform Metrics": 0
+    },
+    "windowRunIDSetMatchesSource": true,
+    "finiteRunIDSetMatchesSource": true,
+    "totalEligible": 24,
+    "eligibleApplication": 20,
+    "eligibleContinuousWithEvidence": 4,
+    "continuousOverlappingMetadata": 29,
+    "denominator": 20,
+    "successful": 19,
+    "successRate": 0.95,
+    "noSelectionGauges": "BLANK",
+    "multipleSelectionGauges": "BLANK",
+    "weightedMeasures": "BLANK in all exercised contexts; population definition still unverified",
+    "blankMember": "ModelChecks includes one synthetic unknown-member row, eligible=0; physical window runs=49, VALUES count=50. Summary legend shows a zero-valued Blank category.",
+    "privateEvidence": [
+      ".cache/desktop-acceptance-20261021/populated-modelchecks.raw.json",
+      ".cache/desktop-acceptance-20261021/populated-contexts.raw.json",
+      ".cache/desktop-acceptance-20261021/all-measures-populated.raw.json"
+    ],
+    "ModelChecksQuerySha256": "46BA267B847A49AEED1EEAC0DC495AD8B650CBF6FD0F40E64401B797C042EBF2"
+  },
+  "contextChecks": {
+    "successfulRepresentative": {
+      "[eligible]": 1,
+      "[den]": 1,
+      "[succ]": 1,
+      "[rate]": 1.0,
+      "[measurementRows]": 8,
+      "[mean]": 0.80775,
+      "[accounts]": "1",
+      "[gauge]": 0.80775,
+      "[euxGauge]": null,
+      "[weightedEUX]": null,
+      "[weightedCPU]": null,
+      "[weightedMemory]": null,
+      "[showName]": 1,
+      "[showAppName]": 1,
+      "[sessionNoData]": "No Data"
+    },
+    "failedRepresentative": {
+      "[eligible]": 1,
+      "[den]": 1,
+      "[succ]": 0,
+      "[rate]": 0.0,
+      "[measurementRows]": null,
+      "[mean]": null,
+      "[accounts]": "No Data",
+      "[gauge]": null,
+      "[euxGauge]": null,
+      "[weightedEUX]": null,
+      "[weightedCPU]": null,
+      "[weightedMemory]": null,
+      "[showName]": 1,
+      "[showAppName]": 1,
+      "[sessionNoData]": "No Data"
+    },
+    "twoRepresentatives": {
+      "[eligible]": 2,
+      "[den]": 2,
+      "[succ]": 1,
+      "[rate]": 0.5,
+      "[measurementRows]": 8,
+      "[mean]": 0.80775,
+      "[accounts]": "No Data",
+      "[gauge]": null,
+      "[euxGauge]": null,
+      "[weightedEUX]": null,
+      "[weightedCPU]": null,
+      "[weightedMemory]": null,
+      "[showName]": 1,
+      "[showAppName]": 1,
+      "[sessionNoData]": "No Data"
+    },
+    "emptySelection": {
+      "[eligible]": 0,
+      "[den]": 0,
+      "[succ]": 0,
+      "[rate]": null,
+      "[measurementRows]": null,
+      "[mean]": null,
+      "[accounts]": "No Data",
+      "[gauge]": null,
+      "[euxGauge]": null,
+      "[weightedEUX]": null,
+      "[weightedCPU]": null,
+      "[weightedMemory]": null,
+      "[showName]": 0,
+      "[showAppName]": 0,
+      "[sessionNoData]": "No Data"
+    },
+    "testsRelationship": {
+      "[matchingTests]": 1,
+      "[eligible]": 20,
+      "[den]": 20,
+      "[succ]": 19,
+      "[rate]": 0.95,
+      "[failedRunVisible]": 1,
+      "[nameVisible]": 1
+    },
+    "legacySelection": {
+      "[legacyDisplay]": "0.0",
+      "[loadedDisplay]": "95.0",
+      "[hybridVisible]": 1
+    },
+    "hybridVisibility": {
+      "[hybridVisible]": 1,
+      "[eligible]": 1,
+      "[gauge]": null
+    }
+  },
+  "zeroVersusMissing": {
+    "actualZeroRows": 1,
+    "zeroMessage": "",
+    "emptyNumericSubsetMessage": "No Data",
+    "actualNullOnlyObservationCase": "not available; zero null measurement rows",
+    "sourceConfirmation": "desktop-live-reconciliation.json"
+  },
+  "sourceReconciliation": [
+    "desktop-measurement-reconciliation.json",
+    "desktop-live-reconciliation.json"
+  ],
+  "pages": [
+    {
+      "page": "Summary",
+      "canonicalVisualCount": 35,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "A9B6D259D7D13D42D04599113670B689DC33B92752CC2BF6AB53C410463656EA",
+      "context": "24 eligible runs, 223 sessions, 95.0% success; matches actual model"
+    },
+    {
+      "page": "Continuous Testing",
+      "canonicalVisualCount": 18,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "FA850568D7D99CB879D9835FEF1CFB83D6FA27A7618B8B9AD73674D4D841F561",
+      "context": "No selected test; Show Test Data gate is false at All"
+    },
+    {
+      "page": "Load Testing",
+      "canonicalVisualCount": 23,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "6ADED62DAE3FBB803D32786CE37599DDFD68D3A77BE24D0194602ECA0DD88EC6",
+      "context": "No Load runs in the selected source window"
+    },
+    {
+      "page": "Application Testing",
+      "canonicalVisualCount": 18,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "97669C59209E3DA1F3475138CEE9CEE55B1978D75E7A61AEF7C0407ADDB29A1D",
+      "context": "No selected run; detail gate false"
+    },
+    {
+      "page": "Session Metrics Overview",
+      "canonicalVisualCount": 37,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "98BA8614281F2EFC65CF2B0A21985C2A56187F558395337E4F9C2E4F7DF39E1B",
+      "context": "No selected A/B runs; detail gates false"
+    },
+    {
+      "page": "Apps Overview",
+      "canonicalVisualCount": 23,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "7328DE1726F25BAC13E4F7FE3C3BE84390C6C4BCDF19CDB550F57F85195657C7",
+      "context": "No selected A/B runs; detail gates false"
+    },
+    {
+      "page": "EUX Overview",
+      "canonicalVisualCount": 20,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "1C7EDA1E8698822ADB42C7BAEC5FAA031BE9ED92128769E569E4569576DBDE51",
+      "context": "No selected A/B runs; gauges BLANK"
+    },
+    {
+      "page": "Logon Metrics Overview",
+      "canonicalVisualCount": 29,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "4F8078F6C63CFC988B994591CAA53F1A3AFC52F3FDCB376CEA473724FB8DF8A6",
+      "context": "No selected A/B runs; Distinct Accounts cards render No Data"
+    },
+    {
+      "page": "Platform Metrics Overview",
+      "canonicalVisualCount": 17,
+      "layoutInventory": "static only",
+      "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
+      "filters": "All selection observed; selected-run checks pending",
+      "screenshotSha256": "69F58D1B0100DA53BFB092957FE71AAD9B8CEB522E10DE68AFBBB8F0634E3340",
+      "context": "Platform table has zero rows; populated platform acceptance unavailable"
+    }
+  ],
+  "remainingChecks": [
+    "Selected-run screenshot interaction checks",
+    "Separate existing 1.1.0 PBIX compatibility (none available)",
+    "Key UI, credential scope, two refreshes and rollback on prepared separate copy",
+    "Explicit visual edit type and Desktop-saved PBIT export",
+    "Exact-midnight/DST populated cases unavailable; retain M-engine coverage",
+    "Full populated Platform and Load checks unavailable in selected scope"
+  ],
+  "preservation": {
+    "reportWrittenByAgent": false,
+    "parametersWrittenByAgent": false,
+    "toolkitProjectTouched": false,
+    "trustOrCredentialsChanged": false,
+    "desktopOpenedOnlyAfterNoExistingProcess": true
+  },
+  "artifacts": [
+    {
+      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "bytes": 97100,
+      "sha256": "8B7EAC70A460A0EF03DEAAE650AF9DCF747849538B70EAA1CEA22E5F5F43D768"
+    },
+    {
+      "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
+      "bytes": 4928191,
+      "sha256": "77E9FB6A53787A9A2D1C92351BF36DC25D7BE4237CFA18DEF2BC8EC7799BCD50"
+    },
+    {
+      "path": "template/Login Enterprise.pbit",
+      "bytes": 353337,
+      "sha256": "4529178FFBE8AB5021FE4188F1683945012C362C82E4658CD8F1B554FD5B0D12"
+    }
+  ],
+  "computerUse": "native pipe unavailable after reset and retry",
+  "deferred": [
+    "gateway",
+    "Service scheduling",
+    "incremental ingestion"
+  ]
+}

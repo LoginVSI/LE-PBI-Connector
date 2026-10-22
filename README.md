@@ -17,6 +17,8 @@ This connector helps you transform Login Enterprise performance data into action
 
 **Current package:** `LE-PBI-Connector.mez`, connector version **1.1.0.2** (release candidate, see [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for what is still unverified in Power BI Desktop). Changes: [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
+The owner reports that the repaired report refreshed and displayed data, and that a saved edit survived closing and reopening. Populated-model DAX and representative source reconciliation now pass, and all nine pages render in the supplied screenshots. Selected-run interactions, Key migration and remaining compatibility checks are still open. See [the acceptance record](docs/DESKTOP-ACCEPTANCE.md) for the evidence and current dependency.
+
 ---
 
 ## Prerequisites
@@ -166,6 +168,8 @@ This Power BI template enables Login Enterprise users to effortlessly visualize 
 
 When opening the `.pbit` file, you will be prompted to enter the FQDN (e.g., demolab.loginvsi.com) of the Login Enterprise virtual appliance, an API Token (e.g., Xg0yWyQLAz...) generated from the appliance, and either a Days Back value to retrieve data from a set number of days ago up to the current date, or enable Use Date Range and provide both a Start Date and End Date for a specific time period.
 
+For a fixed range, set `UseDateRange` to True and enter dates as **YYYY-MM-DD**. For example, `StartDateParam = 2026-09-18` and `EndDateParam = 2026-09-24` select 18 through 24 September 2026. The end date includes the **entire UTC day** of 24 September, with an exclusive boundary at `2026-09-25T00:00:00Z`. Keep these parameter identifiers unchanged. ISO entry was accepted in the Desktop Date fields on the acceptance host with en-US regional settings. Other cultures have M parsing coverage, not Desktop control acceptance.
+
 ![Template Prompt](images/readme_17.png)
 
 > NOTE: The connector will need to be placed in the Custom Connectors folder of your Power BI Desktop install previously to opening the `.pbit` file as shown above
@@ -278,7 +282,7 @@ Point observations use this UTC-day policy; run/session tables have interval sem
 - **Fixed (Use Date Range on):** Start and End are both required, Start must not be after End, and the span is limited to 366 days.
 - Rolling Days Back is 1..365 (plus today); fixed ranges are at most 366 days. Invalid input is an error, never silently widened or swapped. Omitted Days Back defaults to 30.
 - The window does not depend on the refreshing machine's time zone or daylight saving. **However**, Power Query converts the API's UTC timestamps to the *local time of the machine that refreshes* when it types `datetime` columns (verified on the Power Query engine). Desktop on a UTC-7 laptop and the Service (UTC) therefore show the same instants as different clock times, and a report's "today" in DAX is local. Keep that in mind when reconciling with the Login Enterprise UI.
-- Test Runs retains an unfiltered metadata catalog. Configuration snapshots and derived workload steps are retrieved only for overlapping Application/Load runs; out-of-window catalog rows have null snapshots. A selected snapshot retrieval failure fails refresh. the template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
+- Test Runs retains an unfiltered metadata catalog. Configuration snapshots and derived workload steps are retrieved only for overlapping Application/Load runs; out-of-window catalog rows have null snapshots. A selected snapshot retrieval failure fails refresh. The template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
 
 ## What the connector now does differently (1.1.0.2)
 

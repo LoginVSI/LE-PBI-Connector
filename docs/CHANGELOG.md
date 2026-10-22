@@ -29,3 +29,11 @@ Repair loaded-window success and name-slicer context, require terminal timestamp
 ## First Desktop Load repair (acceptance pending)
 
 Reproduced the run-catalog 500 caused by expansion of some older stored snapshots. Enumerate metadata without expansion and hydrate overlapping Application/Load snapshots through the independently verified v7-preview single-run route. Keep metadata and schemas; document that snapshot/workload values are now window-scoped. Preserve errors for selected-run failures. Add a real HTTP cache/retry probe and selected-window snapshot regression. The failed Desktop attempt remains failed until an actual retry succeeds.
+
+## Desktop retry, 22 October 2026
+
+Owner reports a successful repaired refresh with visible data and a saved edit that survived closing and reopening. Retain the first failed Load and installation history. Execute ModelChecks and all 83 measures read-only on the prepared saved copy; that copy is empty, so these results establish only empty-context execution. Record all nine pages separately as awaiting visual checks. Populated reconciliation, compatibility, Key migration and date-control validation remain open. Package versions and hashes are unchanged.
+
+## Populated Desktop reconciliation and date help
+
+Actual-model checks now reconcile the retained run list, 95% Application success rate, failed/no-measurement denominator, account count and representative durations. A 5,601-row run matches six source pages, and a real zero session metric remains data. All nine supplied screenshots render without visual errors at All selection. Selected-run interactions and Key acceptance remain open. After the owner verified ISO Date-field entry in en-US, replace both unexplained US date examples with YYYY-MM-DD examples and explicit whole-UTC-end-day guidance. Parameter identifiers and parsing remain unchanged; rebuild the canonical candidate without overwriting the working report.

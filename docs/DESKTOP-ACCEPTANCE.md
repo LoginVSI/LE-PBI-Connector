@@ -1,4 +1,41 @@
-# Desktop acceptance: first Load failed, 21 October 2026
+# Desktop acceptance: populated model reconciled, final UI gates open
+
+Updated 22 October 2026. Draft PR #4 remains draft. The connector retains the Desktop slot; no Toolkit project was opened or changed.
+
+## Completed checks
+
+| Check | Result and evidence |
+|---|---|
+| Repaired refresh | Owner observed successful refresh and visible data, then completed a further Refresh and Save with Desktop left open. Durations were not recorded. |
+| Edit/save/reopen | Owner observed a saved edit persisting without errors. The edit type was not specified, so an explicit moved-visual check is not inferred. |
+| Actual model | ModelChecks executed on the populated local Desktop model: 50, 3, 71 and 1 result rows. The 49 physical window IDs exactly match the independent source list; DAX also exposes a synthetic BLANK member with eligible count zero. |
+| Counts and denominators | 20 Application and 29 overlapping Continuous metadata runs. Eligible total is 24: 20 Application plus 4 Continuous runs with evidence. Finished success denominator 20, successful 19, rate 95%. The other 25 Continuous metadata rows do not add to the evidence-based eligible count. |
+| Failed run without measurements | Eligible=1, denominator=1, successful=0, rate=0%; no measurements, blank gauge. Actual Tests relationship retains this run and its name; hybrid visibility=1. |
+| One/multiple/no-run contexts | Successful representative: 8 measurements, mean 0.80775 seconds, 1 distinct account. Success plus failure: denominator 2, success 1, rate 50%, blank gauge. Empty selection: denominator 0 and blank rate/gauges. Unselected and multiple-run gauges are blank. |
+| Real zero versus missing | Existing session-metric row has numeric count 1, sum 0 and an empty No Data message. Source confirms the zero and its count. Empty numeric subset shows No Data. No actual null-only metric rows exist in this scope. |
+| Account and duration reconciliation | Representative measurement durations and account-ID sets match the source. The successful run's Distinct Accounts measure is 1. Missing facts return No Data. |
+| Large-run paging | Seven bounded read-only appliance requests: six measurement pages return 5,601 rows, stable totalCount, exact match of observation-key/duration/account multisets; one aggregate-array request confirms the real zero. |
+| UTC end day and local display | All 11,549 loaded measurement timestamps are inside the selected UTC window; 2,331 are on the final UTC day. Local display uses -07:00. No exact-midnight observation or DST transition exists in this scope. Timestamp storage differs from the source by up to 1.195 ms on the eight-row sample; exact timestamp equality is not claimed. |
+| DAX execution | All 83 measures evaluated without errors on the populated model. Weighted alternatives stay BLANK in all exercised contexts because count populations remain unverified. |
+| Nine pages | Agent inspected nine owner-provided screenshots individually. No visual errors or Fix this. Summary matches DAX: 24 eligible, 223 sessions, 95.0% success. Other detail pages were at All selection; selection gates explain their blank charts. Load has zero source runs and Platform has zero rows, so populated acceptance of those pages is unavailable. |
+| Date fields and help | Owner re-entered exact ISO strings 2026-09-18 and 2026-09-24, confirmed acceptance and applied unchanged effective dates under en-US. Updated both canonical descriptions and README examples, preserving parameter identifiers and Date parsing. Rebuilt candidate; working PBIX and PBIT were not overwritten. Other cultures have M parsing coverage only. |
+| Preservation | Original and prior repair connectors backed up; installed MEZ matches verified candidate. ResultsToolkit hash unchanged. No agent writes to the report/parameters, appliance mutation, trust or credential change. |
+
+Public evidence: [per-check results](evidence/desktop-acceptance-results.json), [measurement comparison](evidence/desktop-measurement-reconciliation.json), [bounded live reconciliation](evidence/desktop-live-reconciliation.json), [date control](evidence/date-parameter-validation.json), [artifacts](evidence/artifacts.json). Raw source/model rows, identifiers, account names and screenshots stay outside Git. Initial empty-model readback is retained as history; after the owner refreshed and saved, populated checks succeeded.
+
+## Remaining acceptance
+
+- Selected successful and failed run screenshots on Logon Metrics are requested to verify interactive selection and the Distinct Accounts card. Current screenshots establish rendering at All selection only.
+- Separate Key template prepared at `.cache/desktop-acceptance-20261021/LE-acceptance-key.pbit`: 12 calls use ContentsKey, APIToken removed, accepted dates prefilled, no appliance or credential copied. It is preparation only. Key dialog, FQDN-only scope, two refreshes, source parity and rollback to the legacy PBIX need actual Desktop checks.
+- No existing 1.1.0 PBIX was available. The original legacy PBIT is staged; legacy signature and the current legacy-function report refresh are verified, but compatibility with an older saved model is not established.
+- Connector discovery entries, intentional wrong-credential UI, explicit visual move, Desktop export of the final PBIT and the revised tooltip display remain unobserved.
+- Summary donut retains a zero-valued BLANK legend category from the model's unknown member. It does not change the reconciled counts.
+
+Disposition: **partial acceptance; not merge-ready**. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
+
+## Historical preparation and first failure
+
+The records below preserve the earlier state; they are superseded by the current results above.
 
 Candidate branch started clean at 6393ce2. Draft PR #4 remains open and draft. The owner released the Desktop slot for this connector. No prior audit was repeated.
 

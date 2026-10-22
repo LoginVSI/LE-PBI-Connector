@@ -3,7 +3,7 @@
 Independent review and repairs: [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md). This is a staged candidate, not a Desktop-accepted release.
 
 1. Revoke/rotate the credential-like literal in public history (`089200f` and earlier). It was not used for this audit. Removing it from the tree does not revoke it; history was not rewritten. The owner must decide separately whether history should be rewritten.
-2. Run [Desktop acceptance](ACCEPTANCE.md) when the Results Toolkit owner releases the shared host. Discovery, existing-report compatibility, Key dialogs, full appliance refresh, all template visuals, DAX/filter behavior and save/reopen are unexecuted.
+2. Finish [Desktop acceptance](ACCEPTANCE.md). Populated-model DAX, representative source reconciliation, six-page measurement retrieval, real zero handling and nine-page rendering at All selection are verified. Selected-run interactions, Key UI/scope/two refreshes/rollback, older PBIX compatibility and final Desktop template export remain open. No existing legacy PBIX was found. Native UI automation remains unavailable.
 3. Confirm licensing/ownership. No LICENSE file exists; the Toolkit's licence was not copied here.
 4. Establish each aggregate `count` population from authoritative implementation/vendor evidence or raw-to-bucket reconciliation on existing results. Weighted measures return BLANK until then.
 5. Extend read-only appliance coverage to populated EUX/session aggregates, Continuous results, platform metrics and large stable multi-page results. Swagger supplies no `count` maximum. Size 1000 was accepted on sampled endpoints, not proven universal. Tied ordering and snapshot consistency are not guaranteed.
@@ -16,4 +16,4 @@ The legacy token parameter remains in the template for compatibility and is stor
 
 ## Current acceptance gate
 
-The first Desktop Load failed with thirteen blocked queries. A verified snapshot-acquisition repair is staged, but it is not installed into the open Desktop session and has not passed a real refresh. See [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md). A selected window containing a broken historical snapshot remains an appliance-side dependency; no error is hidden as empty data. The date-tooltip change is pending explicit Desktop ISO-entry validation.
+The first Desktop Load failed with thirteen blocked queries. The snapshot-acquisition repair was installed with backups and an unchanged Toolkit connector. The successful retry is followed by populated-model DAX/source reconciliation; see [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) for its scope and preserved initial empty readback. A selected window containing a broken historical snapshot remains an appliance-side dependency; no error is hidden as empty data. The owner verified ISO entry in en-US Desktop fields. Both date descriptions and setup examples are updated and the candidate rebuilt; the in-progress report is preserved.

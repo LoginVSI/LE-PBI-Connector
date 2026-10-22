@@ -1,4 +1,5 @@
--- UNEXECUTED. Run against the refreshed candidate in Desktop DAX query view.
+-- Run against the refreshed candidate in Desktop DAX query view or the read-only local model helper.
+-- Execution history and scope are in docs/evidence/desktop-acceptance-results.json.
 -- Compare each ID/type/finished/result with an independent hand list from existing API results.
 EVALUATE
 SUMMARIZECOLUMNS (

@@ -1,12 +1,12 @@
 {
   "StartDateParam": [
-    "The beginning date for your custom date range. Only used if Use Date Range is set to True.",
+    "The first UTC calendar day to include. Only used when UseDateRange is True.",
     "",
-    "Example: 7/01/2025"
+    "Enter YYYY-MM-DD, for example 2026-09-24 (24 September 2026). The window starts at 00:00 UTC on this date."
   ],
   "EndDateParam": [
-    "The ending date for your custom date range. Only used if Use Date Range is set to True.",
+    "The last UTC calendar day to include. Only used when UseDateRange is True.",
     "",
-    "Example: 7/31/2025"
+    "Enter YYYY-MM-DD, for example 2026-09-24 (24 September 2026). This includes the entire selected UTC day, ending just before 00:00 UTC on the following day."
   ]
 }

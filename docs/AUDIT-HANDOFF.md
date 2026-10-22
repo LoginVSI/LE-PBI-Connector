@@ -28,3 +28,11 @@ Independent Codex review completed. Material defects were reproduced against `f5
 ## Desktop finding after the independent audit
 
 The first real Load failed. See [DESKTOP-LOAD-FAILURE.md](DESKTOP-LOAD-FAILURE.md) for the independently reproduced old-snapshot expansion failure and verified window-scoped workaround. Earlier synthetic passes did not establish this acquisition behavior against old stored snapshots. Current report/parameters and failed evidence are preserved; acceptance is pending a real retry.
+
+## Successful retry reported, 22 October 2026
+
+The owner reports that the repaired report refreshed and displayed data, and that a saved edit survived closing and reopening. The locally reopened prepared PBIX still has an empty model and its pre-refresh timestamp. The owner confirmed that file path; a refresh/save/leave-open handoff is pending. ModelChecks and all 83 measures execute on that empty model, with seven empty-context assertions passing. This does not establish populated DAX, page rendering or compatibility. See [the per-check acceptance record](evidence/desktop-acceptance-results.json). Keep PR #4 draft until the remaining acceptance checks pass.
+
+## Populated readback established
+
+The owner completed Refresh and Save with Desktop left open, resolving the empty saved-copy dependency. Actual populated DAX and bounded source reconciliation now pass the cases in DESKTOP-ACCEPTANCE.md. All nine screenshots were inspected separately without visual errors at All selection. ISO Date-field entry is owner-verified under en-US, descriptions/examples updated, and candidate rebuilt. Key and remaining selected-run/compatibility/export checks are still open; keep the PR draft. Initial failures remain preserved.

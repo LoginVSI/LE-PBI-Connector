@@ -1,6 +1,6 @@
 # Desktop acceptance checklist (run when the shared Power BI host is released)
 
-**IN PROGRESS, 2026-10-21.** Installation/backup preparation is complete; the first Load failed with thirteen queries blocked by the shared run-catalog HTTP 500. No load, visual or DAX acceptance is claimed. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md). Do not call the candidate accepted from preparation or synthetic results.
+**PARTIAL, 2026-10-22.** Repaired and subsequent refreshes succeeded. Actual populated-model DAX and bounded source reconciliation pass the recorded cases. All nine screenshots render without visual errors at All selection. ISO date fields accepted the specified strings; canonical tooltips/examples were rebuilt. Selected-run UI, Key migration and remaining compatibility/export checks are still open. The initial failed Load and empty readback are retained. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) and [per-check results](evidence/desktop-acceptance-results.json). Keep PR #4 draft.
 
 Preconditions (owner actions, in order):
 1. Confirm the Results Toolkit session has released Power BI Desktop and the shared connector folder.
@@ -30,7 +30,7 @@ Preconditions (owner actions, in order):
 
 ## D. Template candidate (`template/candidate/…candidate.pbit`)
 - [ ] Opens without repair prompts; prompts for FQDN/token/Days Back; first refresh completes; second refresh completes (note durations).
-- [ ] All 9 pages render; no "Fix this" visuals (check each page; the two Logon Metrics "Distinct Accounts" cards and the 8 hybrid slicers specifically).
+- [x] All 9 pages render; no "Fix this" visuals (nine screenshots inspected individually; both Distinct Accounts cards render; selected-run interactions still pending).
 - [ ] Slicer selection and cross-filtering (Run labels, name slicers) behave; failed/no-measurement runs are selectable on Session/Apps/EUX/Logon pages.
 - [ ] Summary: Total Test Runs, Success Rate, donut by type vs a hand count from the API.
 - [ ] Gauges are empty (not 0) with no run selected; `Show No Data (Session Metrics)` is blank for an all-zero metric.
