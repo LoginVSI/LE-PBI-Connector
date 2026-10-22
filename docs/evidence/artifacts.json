@@ -7,8 +7,8 @@
     },
     {
       "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
-      "bytes": 4928191,
-      "sha256": "77E9FB6A53787A9A2D1C92351BF36DC25D7BE4237CFA18DEF2BC8EC7799BCD50"
+      "bytes": 4939809,
+      "sha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F"
     },
     {
       "path": "template/Login Enterprise.pbit",
@@ -26,5 +26,6 @@
     "APIToken",
     "FQDN"
   ],
-  "sourceSha256": "A68EF80E23FF002B173F381649BF3168612265C073172376490C3DA1E6A13546"
+  "sourceSha256": "A68EF80E23FF002B173F381649BF3168612265C073172376490C3DA1E6A13546",
+  "persistedQueryMetadataParity": true
 }

@@ -291,9 +291,9 @@
       "canonicalVisualCount": 29,
       "layoutInventory": "static only",
       "rendering": "passed; agent inspected owner-provided screenshot, no visual errors or Fix this",
-      "filters": "All selection observed; selected-run checks pending",
+      "filters": "passed for Test (A) successful and failed selections; B remains All",
       "screenshotSha256": "4F8078F6C63CFC988B994591CAA53F1A3AFC52F3FDCB376CEA473724FB8DF8A6",
-      "context": "No selected A/B runs; Distinct Accounts cards render No Data"
+      "context": "Successful Distinct Accounts=1 and Failed User Sessions=0; failed/no-measurement run selectable with No Data and blank gauges."
     },
     {
       "page": "Platform Metrics Overview",
@@ -306,12 +306,12 @@
     }
   ],
   "remainingChecks": [
-    "Selected-run screenshot interaction checks",
     "Separate existing 1.1.0 PBIX compatibility (none available)",
     "Key UI, credential scope, two refreshes and rollback on prepared separate copy",
     "Explicit visual edit type and Desktop-saved PBIT export",
     "Exact-midnight/DST populated cases unavailable; retain M-engine coverage",
-    "Full populated Platform and Load checks unavailable in selected scope"
+    "Full populated Platform and Load checks unavailable in selected scope",
+    "Remaining page-specific cross-filter and A/B interactions beyond tested Logon A selections"
   ],
   "preservation": {
     "reportWrittenByAgent": false,
@@ -328,8 +328,8 @@
     },
     {
       "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
-      "bytes": 4928191,
-      "sha256": "77E9FB6A53787A9A2D1C92351BF36DC25D7BE4237CFA18DEF2BC8EC7799BCD50"
+      "bytes": 4939809,
+      "sha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F"
     },
     {
       "path": "template/Login Enterprise.pbit",
@@ -342,5 +342,37 @@
     "gateway",
     "Service scheduling",
     "incremental ingestion"
-  ]
+  ],
+  "selectedLogonUI": {
+    "dateUtc": "2026-10-22T20:59:09.164586+00:00",
+    "successful": {
+      "screenshotSha256": "1C9A75C7BF75D16DC63349A40A48098834DFD058C61A8DA66444CFABB9F5854D",
+      "distinctAccounts": 1,
+      "failedUserSessions": 0,
+      "displayConnection": 2.46,
+      "gpoProcessing": 0.02,
+      "profileLoad": 0.01,
+      "totalLogonDisplay": 3.63,
+      "otherSide": "All; No Data",
+      "visualErrors": false
+    },
+    "failed": {
+      "screenshotSha256": "D01F0CFFC478B6718618CCEDF8EFBF7A503ED4F45EBC99203740652F6790DE2B",
+      "selectable": true,
+      "distinctAccounts": "No Data",
+      "gauges": "BLANK",
+      "noDataOverlay": true,
+      "otherSide": "All; No Data",
+      "visualErrors": false
+    },
+    "scope": "Test (A) successful and failed selections on Logon Metrics; other page interactions not inferred"
+  },
+  "finalTemplateMetadataRepair": {
+    "status": "rebuilt; Desktop retry pending",
+    "reason": "Key copy deletion left APIToken lineage in UnappliedChanges; canonical builder also left stale Filtered Test Runs M and date help there",
+    "repair": "Synchronize model and persisted query lineage, M and descriptions; remove only explicitly removed parameters in Key copy",
+    "regressionChecks": 7,
+    "priorDesktopEvidenceScope": "Previously refreshed legacy copy; updated persisted-query template still requires actual Desktop retry",
+    "nestedJsonParser": "failed first metadata repair reproduced 12 JSON rejections; corrected retry2 parses all 12 with installed Desktop Newtonsoft"
+  }
 }

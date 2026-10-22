@@ -1,0 +1,30 @@
+{
+  "dateUtc": "2026-10-22T21:11:18.486159+00:00",
+  "severity": "high for template import and source consistency",
+  "initialKeyFailure": "Removed APIToken expression retained in UnappliedChanges; its lineage tag matched the reported missing owner",
+  "canonicalDrift": "Prior canonical candidate retained older Filtered Test Runs text and RootFormulaText plus both old date descriptions in UnappliedChanges",
+  "firstRepairFailure": "lastLoadedAsTableFormulaText requires nested JSON; raw M caused Desktop parsing failure",
+  "fix": "Synchronize persisted query owners, text, nested RootFormulaText and help; preserve nested JSON schema; remove only explicitly migrated parameters",
+  "failedFilesPreserved": [
+    ".cache/desktop-acceptance-20261021/LE-acceptance-key.pbit",
+    ".cache/desktop-acceptance-20261021/LE-acceptance-key-retry.pbit"
+  ],
+  "sameInstalledDesktopJsonParser": {
+    "failedRetry": {
+      "parsed": 0,
+      "rejected": 12
+    },
+    "correctedRetry2": {
+      "parsed": 12,
+      "rejected": 0
+    }
+  },
+  "negativeAndRepairRegressions": 7,
+  "canonicalQueryCount": 18,
+  "keyCopyQueryCount": 17,
+  "staticModelPersistedParity": "passed",
+  "desktopResult": "retry2 pending; static parsing is not Desktop acceptance",
+  "canonicalCandidateSha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F",
+  "originalLegacyReportModifiedByRepair": false,
+  "mezChanged": false
+}

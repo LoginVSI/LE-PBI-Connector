@@ -5,6 +5,7 @@
   The original template/Login Enterprise.pbit is never modified. The candidate patches only:
     * DataModelSchema: measure expressions/new measures from source/measures/**.dax M partitions from source/partitions/*.m, and date help from source/parameter-descriptions.json
     * Report/Layout: exact-string renames from source/layout-renames.json (counts asserted)
+    * UnappliedChanges: M, lineage and help synchronized with DataModelSchema
   Everything else (relationships, columns, pages, visual layout, resources, SecurityBindings, Settings, ...) is copied byte-for-byte.
   This is a structurally derived file, NOT a Desktop-validated one. Open it in Power BI Desktop, check, and re-save
   (see docs/ACCEPTANCE.md); then re-baseline with Export-TemplateSource.ps1.
@@ -95,6 +96,8 @@ $ann = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $ann 'name' 'LE-
 $opts = [System.Text.Json.JsonSerializerOptions]::new(); $opts.WriteIndented = $true
 $opts.Encoder = [System.Text.Encodings.Web.JavaScriptEncoder]::UnsafeRelaxedJsonEscaping
 $modelJson = $model.ToJsonString($opts)
+$persisted = [JsonNode]::Parse((ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Original 'UnappliedChanges')))
+Sync-PersistedQueries $model $persisted
 
 # ---- layout ----------------------------------------------------------------
 $layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Original 'Report/Layout')
@@ -108,7 +111,7 @@ foreach ($r in (Get-Content (Join-Path $SourceDir 'layout-renames.json') -Raw | 
 $origBytesModel = Read-ZipEntryBytes $Original 'DataModelSchema'
 $hasBom = ($origBytesModel[0] -eq 0xFF -and $origBytesModel[1] -eq 0xFE)
 function To-Utf16([string]$s) { $b = [Text.Encoding]::Unicode.GetBytes($s); if ($hasBom) { return ,([byte[]](0xFF, 0xFE) + $b) } else { return ,$b } }
-$replacements = @{ 'DataModelSchema' = (To-Utf16 $modelJson); 'Report/Layout' = (To-Utf16 $layout) }
+$replacements = @{ 'DataModelSchema' = (To-Utf16 $modelJson); 'Report/Layout' = (To-Utf16 $layout); 'UnappliedChanges' = (To-Utf16 $persisted.ToJsonString($opts)) }
 
 New-Item -ItemType Directory -Force (Split-Path -Parent $Output) | Out-Null
 if (Test-Path $Output) { Remove-Item $Output -Force }

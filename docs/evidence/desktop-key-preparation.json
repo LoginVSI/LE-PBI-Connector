@@ -1,18 +1,51 @@
 {
-  "preparedUtc": "2026-10-22T19:58:35.700684+00:00",
-  "path": ".cache/desktop-acceptance-20261021/LE-acceptance-key.pbit",
-  "sha256": "FFCC38AE9D6C4EB1EB13A2DB586F263D386C68CA3AC61BF8873C33ADA710F44E",
-  "baseCandidateSha256": "77E9FB6A53787A9A2D1C92351BF36DC25D7BE4237CFA18DEF2BC8EC7799BCD50",
-  "callsMigrated": 12,
-  "tokenParameterRemoved": true,
-  "credentialsOrHostCopied": false,
-  "desktopOpened": false,
-  "acceptance": "prepared only; credential UI, scope and two refreshes not executed",
-  "rollback": "Original legacy PBIX remains untouched; reopen it for legacy authentication.",
-  "fixedWindowDefaults": {
-    "DaysBack": 7,
-    "UseDateRange": true,
-    "StartDateParam": "2026-09-18",
-    "EndDateParam": "2026-09-24"
+  "initialAttempt": {
+    "preparedUtc": "2026-10-22T19:58:35.700684+00:00",
+    "path": ".cache/desktop-acceptance-20261021/LE-acceptance-key.pbit",
+    "sha256": "FFCC38AE9D6C4EB1EB13A2DB586F263D386C68CA3AC61BF8873C33ADA710F44E",
+    "baseCandidateSha256": "77E9FB6A53787A9A2D1C92351BF36DC25D7BE4237CFA18DEF2BC8EC7799BCD50",
+    "callsMigrated": 12,
+    "tokenParameterRemoved": true,
+    "credentialsOrHostCopied": false,
+    "desktopOpened": false,
+    "acceptance": "prepared only; credential UI, scope and two refreshes not executed",
+    "rollback": "Original legacy PBIX remains untouched; reopen it for legacy authentication.",
+    "fixedWindowDefaults": {
+      "DaysBack": 7,
+      "UseDateRange": true,
+      "StartDateParam": "2026-09-18",
+      "EndDateParam": "2026-09-24"
+    }
+  },
+  "initialDesktopResult": {
+    "status": "failed before Load",
+    "reportedUtc": "2026-10-22T20:59:19Z",
+    "message": "Lineage tag was not found or references a model object that is not statically defined by a query.",
+    "object": "removed APIToken parameter",
+    "cause": "UnappliedChanges retained a persisted query referencing the removed model expression",
+    "failedFilePreserved": true,
+    "authenticationAcceptance": "not established by the pre-load failure"
+  },
+  "retry": {
+    "path": ".cache/desktop-acceptance-20261021/LE-acceptance-key-retry.pbit",
+    "sha256": "03CF922CC1A4F9B92A6466D73F1B309FE177598B72E4272769DE4B076AFF1B4E",
+    "baseCandidateSha256": "2D61BB75A86775BD79BFBB1DD353BF813CD9C9AC753EADCECA5CC4C0EBDF675E",
+    "preparedBy": "template/acceptance/Prepare-KeyCopy.ps1",
+    "modelAndPersistedQueryParity": "passed",
+    "orphanTokenLineageAbsentFromAllEntries": true,
+    "metadataRegressionsPassed": 6,
+    "desktopResult": "failed before Load: nested loaded-query metadata was raw M instead of JSON",
+    "reportedUtc": "2026-10-22T21:05:49Z",
+    "failedFilePreserved": true
+  },
+  "retry2": {
+    "path": ".cache/desktop-acceptance-20261021/LE-acceptance-key-retry2.pbit",
+    "sha256": "04ABA3D6BCEAF7BD8382B9FFDB7969AB3C99C80D0DD6B62350A2A9F792CF8BEE",
+    "baseCandidateSha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F",
+    "modelPersistedParity": "passed; 17 queries",
+    "installedDesktopNewtonsoftParsed": 12,
+    "nestedSchemaChecks": "passed",
+    "metadataRegressionChecks": 7,
+    "desktopResult": "pending owner retry"
   }
 }

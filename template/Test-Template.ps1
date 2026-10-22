@@ -21,7 +21,7 @@ $zo = [IO.Compression.ZipFile]::OpenRead($Original); $zc = [IO.Compression.ZipFi
 $on = @($zo.Entries.FullName); $cn = @($zc.Entries.FullName)
 $zo.Dispose(); $zc.Dispose()
 if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order" } else { Fail 'entry list differs from original' }
-$allowedChanged = @('DataModelSchema', 'Report/Layout')
+$allowedChanged = @('DataModelSchema', 'Report/Layout', 'UnappliedChanges')
 foreach ($e in $on) {
     $a = Read-ZipEntryBytes $Original $e; $b = Read-ZipEntryBytes $Candidate $e
     $same = ($a.Length -eq $b.Length) -and ([Linq.Enumerable]::SequenceEqual([byte[]]$a, [byte[]]$b))
@@ -31,6 +31,10 @@ Ok "all entries other than $($allowedChanged -join ', ') are byte-identical"
 
 # --- model compatibility ---------------------------------------------------------
 $mo = Read-PbitModel $Original; $mc = Read-PbitModel $Candidate
+$persisted = [System.Text.Json.Nodes.JsonNode]::Parse((ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Candidate 'UnappliedChanges')))
+$persistedProblems = @(Get-PersistedQueryProblems $mc $persisted)
+foreach ($problem in $persistedProblems) { Fail $problem }
+if (-not $persistedProblems.Count) { Ok 'persisted query lineage, M and descriptions match the model' }
 function Items($a) { if ($null -eq $a) { return ,@() } else { return ,@($a) } }
 function Names($arr) { @($arr | ForEach-Object { [string]$_['name'] }) }
 $tabO = Names $mo['model']['tables']; $tabC = Names $mc['model']['tables']

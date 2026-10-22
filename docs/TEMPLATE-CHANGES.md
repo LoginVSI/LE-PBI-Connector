@@ -2,14 +2,14 @@
 
 `template/Login Enterprise.pbit` (353 337 bytes, 9 pages, 34 tables, 70 measures, 33 relationships) is **unchanged**.
 `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` is derived from it by `template/Build-Template.ps1`, patching only
-`DataModelSchema` (measures, one M partition, one annotation) and `Report/Layout` (exact-string renames). Tables, columns, relationships,
+`DataModelSchema` (measures, one M partition, date help and one annotation), `Report/Layout` (exact-string renames), and `UnappliedChanges` (matching persisted M, nested loaded-query JSON and date help). Tables, columns, relationships,
 pages, visual geometry, resources, `Settings`, `Connections`, `SecurityBindings` and the rest are byte-identical (checked by `template/Test-Template.ps1`).
 
-> **Status: structurally derived, statically checked, NOT opened in Power BI Desktop, DAX NOT executed.**
+> **Status: the legacy working candidate refreshed and passed the recorded actual DAX/source cases. The final persisted-query metadata repair and Key retry still need Desktop acceptance. Static checks do not establish that acceptance.**
 > `SecurityBindings` (358 bytes) is copied unchanged; if Desktop rejects or re-prompts on it, rebuild by opening the original, applying `template/source`, and saving from Desktop.
 > No customer data or token is in either file (the `APIToken` parameter is null).
 
-Editable sources: `template/source/measures/<Table>/<Measure>.dax`, `template/source/partitions/<Table>.m`, `template/source/layout-renames.json`.
+Editable sources: `template/source/measures/<Table>/<Measure>.dax`, `template/source/partitions/<Table>.m`, `template/source/layout-renames.json`, and `template/source/parameter-descriptions.json`.
 Round trip: `Export-TemplateSource.ps1` (baseline from a .pbit) → edit → `Build-Template.ps1` → `Test-Template.ps1`.
 
 ## Rules the template now follows

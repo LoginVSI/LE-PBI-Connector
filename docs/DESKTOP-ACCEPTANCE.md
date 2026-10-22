@@ -25,11 +25,13 @@ Public evidence: [per-check results](evidence/desktop-acceptance-results.json), 
 
 ## Remaining acceptance
 
-- Selected successful and failed run screenshots on Logon Metrics are requested to verify interactive selection and the Distinct Accounts card. Current screenshots establish rendering at All selection only.
-- Separate Key template prepared at `.cache/desktop-acceptance-20261021/LE-acceptance-key.pbit`: 12 calls use ContentsKey, APIToken removed, accepted dates prefilled, no appliance or credential copied. It is preparation only. Key dialog, FQDN-only scope, two refreshes, source parity and rollback to the legacy PBIX need actual Desktop checks.
+- Selected successful and failed Logon screenshots now pass: successful Distinct Accounts=1, Failed User Sessions=0 and populated logon values; the failed run remains selectable, with No Data and blank gauges. Test (B) remains All/No Data. Remaining page-specific cross-filter and A/B combinations were not inferred from this check.
+- The initial Key copy failed on an orphan APIToken lineage in UnappliedChanges. The first repair then failed because nested loaded-query JSON was written as raw M. Both failed files are preserved. The corrected `.cache/desktop-acceptance-20261021/LE-acceptance-key-retry2.pbit` has 17 consistent queries, 12 migrated calls, no token parameter and valid nested JSON. The installed Desktop parser rejects all 12 first-retry fields and accepts all 12 corrected fields. Seven metadata regressions pass. Actual retry, Key scope, two refreshes and legacy rollback are pending.
 - No existing 1.1.0 PBIX was available. The original legacy PBIT is staged; legacy signature and the current legacy-function report refresh are verified, but compatibility with an older saved model is not established.
 - Connector discovery entries, intentional wrong-credential UI, explicit visual move, Desktop export of the final PBIT and the revised tooltip display remain unobserved.
 - Summary donut retains a zero-valued BLANK legend category from the model's unknown member. It does not change the reconciled counts.
+
+The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt candidate needs a fresh Desktop retry; earlier populated DAX evidence describes the previously refreshed legacy copy. See [metadata diagnosis](evidence/template-persisted-metadata.json).
 
 Disposition: **partial acceptance; not merge-ready**. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
 

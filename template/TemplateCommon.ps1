@@ -16,6 +16,7 @@ function Read-PbitModel([string]$pbit) {
     return ,[JsonNode]::Parse((ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $pbit 'DataModelSchema')))
 }
 function Join-Lines($expr) {
+    if ($null -eq $expr) { return '' }
     if ($expr -is [JsonArray]) { return (($expr | ForEach-Object { $_.GetValue[string]() }) -join "`n") }
     return $expr.GetValue[string]()
 }
@@ -46,4 +47,72 @@ function Set-JsonProp($obj, [string]$name, $value) {
     if ($value -is [string]) { $value = [JsonValue]::Create([string]$value) }
     [void]$obj.Remove($name)
     $obj.Add($name, [JsonNode]$value)
+}
+
+# Desktop restores query metadata from UnappliedChanges as well as DataModelSchema.
+# Keep the two representations consistent without logging expressions or parameter values.
+function Get-ModelQueryMap($model) {
+    $map = @{}
+    foreach ($table in $model['model']['tables']) {
+        $parts = @($table['partitions'] | Where-Object { [string]$_['source']['type'] -eq 'm' })
+        if ($parts.Count -gt 1) { throw 'Multiple M partitions are not supported by this template builder.' }
+        if ($parts.Count -eq 1) {
+            $map[[string]$table['name']] = @{ owner = $table; expression = $parts[0]['source']['expression'] }
+        }
+    }
+    foreach ($expression in $model['model']['expressions']) {
+        $map[[string]$expression['name']] = @{ owner = $expression; expression = $expression['expression'] }
+    }
+    return $map
+}
+function Normalize-QueryText($expression) { return ((Join-Lines $expression) -replace "`r`n", "`n").TrimEnd("`n") }
+function Get-PersistedQueryProblems($model, $persisted) {
+    $map = Get-ModelQueryMap $model
+    $issues = [Collections.Generic.List[string]]::new(); $seen = @{}
+    foreach ($query in $persisted['queries']) {
+        $name = [string]$query['name']
+        if ($seen.ContainsKey($name)) { $issues.Add("Duplicate persisted query: $name"); continue }
+        $seen[$name] = $true
+        if (-not $map.ContainsKey($name)) { $issues.Add("Persisted query has no model owner: $name"); continue }
+        $item = $map[$name]
+        if ([string]$query['lineageTag'] -cne [string]$item.owner['lineageTag']) { $issues.Add("Persisted lineage differs: $name") }
+        $expected = Normalize-QueryText $item.expression
+        if ((Normalize-QueryText $query['text']) -cne $expected) { $issues.Add("Persisted M differs: $name") }
+        if ($query.ContainsKey('lastLoadedAsTableFormulaText')) {
+            try {
+                $loaded = [JsonNode]::Parse([string]$query['lastLoadedAsTableFormulaText'])
+                if ($loaded -isnot [JsonObject] -or $null -eq $loaded['RootFormulaText'] -or $loaded['ReferencedQueriesFormulaText'] -isnot [JsonObject]) { throw 'Invalid nested formula schema.' }
+                [void]$loaded['RootFormulaText'].GetValue[string]()
+                [void]$loaded['IncludesReferencedQueries'].GetValue[bool]()
+                if ((Normalize-QueryText $loaded['RootFormulaText']) -cne $expected) { $issues.Add("Persisted loaded M differs: $name") }
+            } catch { $issues.Add("Persisted loaded JSON invalid: $name") }
+        }
+        if ($null -ne $item.owner['description'] -and (Join-Lines $query['description']) -cne (Join-Lines $item.owner['description'])) { $issues.Add("Persisted description differs: $name") }
+    }
+    foreach ($name in $map.Keys) { if (-not $seen.ContainsKey($name)) { $issues.Add("Model query missing persisted metadata: $name") } }
+    return $issues.ToArray()
+}
+function Sync-PersistedQueries($model, $persisted, [string[]]$RemovedQueryNames = @()) {
+    $map = Get-ModelQueryMap $model
+    foreach ($query in @($persisted['queries'])) {
+        $name = [string]$query['name']
+        if (-not $map.ContainsKey($name)) {
+            if ($name -cnotin $RemovedQueryNames) { throw "Unexpected orphan persisted query: $name" }
+            [void]$persisted['queries'].Remove($query); continue
+        }
+        $item = $map[$name]; $text = Normalize-QueryText $item.expression
+        if ([string]$query['lineageTag'] -cne [string]$item.owner['lineageTag']) { throw "Unexpected lineage change: $name" }
+        Set-JsonProp $query 'text' (Split-ToJsonArray $text)
+        if ($query.ContainsKey('lastLoadedAsTableFormulaText')) {
+            $loaded = [JsonNode]::Parse([string]$query['lastLoadedAsTableFormulaText'])
+            if ($loaded -isnot [JsonObject] -or $null -eq $loaded['RootFormulaText'] -or $loaded['ReferencedQueriesFormulaText'] -isnot [JsonObject]) { throw "Invalid nested loaded-query metadata: $name" }
+            [void]$loaded['RootFormulaText'].GetValue[string]()
+            [void]$loaded['IncludesReferencedQueries'].GetValue[bool]()
+            Set-JsonProp $loaded 'RootFormulaText' $text
+            Set-JsonProp $query 'lastLoadedAsTableFormulaText' $loaded.ToJsonString()
+        }
+        if ($null -ne $item.owner['description']) { Set-JsonProp $query 'description' (Join-Lines $item.owner['description']) }
+    }
+    $issues = @(Get-PersistedQueryProblems $model $persisted)
+    if ($issues.Count) { throw ($issues -join '; ') }
 }
