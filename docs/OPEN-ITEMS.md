@@ -3,7 +3,7 @@
 Independent review and repairs: [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md). This is a staged candidate, not a Desktop-accepted release.
 
 1. Revoke/rotate the credential-like literal in public history (`089200f` and earlier). It was not used for this audit. Removing it from the tree does not revoke it; history was not rewritten. The owner must decide separately whether history should be rewritten.
-2. Finish [Desktop acceptance](ACCEPTANCE.md). Populated-model DAX, representative source reconciliation, six-page measurement retrieval, real zero handling and nine-page rendering at All selection are verified. Selected Logon successful/failed interactions pass. Other page interactions, Key UI/scope/two refreshes/rollback, older PBIX compatibility and final Desktop template export remain open. Two Key import failures exposed metadata defects; the corrected retry2 and final persisted-query rebuild await Desktop validation. No existing legacy PBIX was found. Native UI automation remains unavailable.
+2. Finish [Desktop acceptance](ACCEPTANCE.md). Key import/Load/Refresh and exact fixed-window model parity pass, including all 11,549 measurements and all 83 measures. Key moved-visual save/reopen/refresh passes. Remaining other interactions, older saved-model compatibility and final Desktop export are tracked separately. Direct Desktop source-path display is unavailable: label hides it and PBIDS export is unsupported; SDK FQDN-only scope evidence is separate. No older PBIX was available. Native UI control remains unavailable.
 3. Confirm licensing/ownership. No LICENSE file exists; the Toolkit's licence was not copied here.
 4. Establish each aggregate `count` population from authoritative implementation/vendor evidence or raw-to-bucket reconciliation on existing results. Weighted measures return BLANK until then.
 5. Extend read-only appliance coverage to populated EUX/session aggregates, Continuous results, platform metrics and large stable multi-page results. Swagger supplies no `count` maximum. Size 1000 was accepted on sampled endpoints, not proven universal. Tied ordering and snapshot consistency are not guaranteed.
@@ -12,7 +12,7 @@ The elapsed guard is a 300-second cooperative request budget, not a hard overall
 
 Application-test aggregated session metrics remain unimplemented because no matching endpoint exists in the reviewed contract. Raw min/max cannot be inferred from aggregate buckets. Legacy CPU/Memory averages remain unweighted bucket means with legacy labels; Desktop acceptance should confirm units and label extrema as bucket extrema.
 
-The legacy token parameter remains in the template for compatibility and is stored in clear text. The additive Key path has isolated SDK evidence only. Gateway deployment, Service scheduled refresh, incremental ingestion and other optional integrations stay in the backlog.
+The legacy token parameter remains in the template for compatibility and is stored in clear text. The additive Key path now has actual Desktop Load/Refresh and fixed-window parity evidence as well as SDK checks. Gateway deployment, Service scheduled refresh, incremental ingestion and other optional integrations stay in the backlog.
 
 ## Current acceptance gate
 

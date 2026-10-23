@@ -1,6 +1,6 @@
 # Desktop acceptance checklist (run when the shared Power BI host is released)
 
-**PARTIAL, 2026-10-22.** Repaired and subsequent refreshes succeeded. Actual populated-model DAX and bounded source reconciliation pass the recorded cases. All nine screenshots render without visual errors at All selection. ISO date fields accepted the specified strings; canonical tooltips/examples were rebuilt. Selected Logon successful/failed UI checks pass. Key migration, other page-specific interactions and remaining compatibility/export checks are still open. The Key import exposed persisted-query metadata defects; both failed copies are preserved and the rebuilt retry2 awaits Desktop validation. The initial failed Load and empty readback are retained. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) and [per-check results](evidence/desktop-acceptance-results.json). Keep PR #4 draft.
+**PARTIAL, 2026-10-23.** Legacy and Key reports load and refresh. Actual fixed-window Key results exactly match the source-reconciled legacy results, including all 11,549 measurements, all 83 measures and recorded filter/zero/failure contexts. Key credentials are native Feed Key and absent from M parameters. Nine legacy page screenshots and selected Logon interactions pass. Key moved-visual save/close/reopen and refresh without another credential entry pass. Remaining page interactions and final Desktop template export remain open. Desktop hides the source path and does not support PBIDS export for this connector; direct path observation is unavailable, with SDK scope evidence kept separate. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) and [per-check results](evidence/desktop-acceptance-results.json). Keep PR #4 draft.
 
 Preconditions (owner actions, in order):
 1. Confirm the Results Toolkit session has released Power BI Desktop and the shared connector folder.
@@ -39,7 +39,7 @@ Preconditions (owner actions, in order):
 - [ ] Note any metadata/security-binding prompts caused by the patched file.
 
 ## E. Key credential (only if kept in scope)
-- [ ] Migrate a copy of a report per README ("Choosing how the token is supplied"); credential dialog offers **Key**; token is not in the query or a parameter; refresh twice; rollback to the original works.
+- [x] Migrate a copy of a report per README ("Choosing how the token is supplied"); credential dialog offers **Key**; token is not in the query or a parameter; refresh twice; rollback to the original works.
 - [ ] Data source settings shows the data source as `LoginEnterprise_PBI_Key` with only the FQDN in its path.
 
 ## F. Gateway/Service (separate, admin-level, out of this patch)

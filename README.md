@@ -17,7 +17,7 @@ This connector helps you transform Login Enterprise performance data into action
 
 **Current package:** `LE-PBI-Connector.mez`, connector version **1.1.0.2** (release candidate, see [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) for what is still unverified in Power BI Desktop). Changes: [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
-The owner reports that the repaired report refreshed and displayed data, and that a saved edit survived closing and reopening. Populated-model DAX and representative source reconciliation now pass, and all nine pages render in the supplied screenshots. Selected-run interactions, Key migration and remaining compatibility checks are still open. See [the acceptance record](docs/DESKTOP-ACCEPTANCE.md) for the evidence and current dependency.
+The owner reports that the repaired report refreshed and displayed data, and that a saved edit survived closing and reopening. Populated-model DAX and representative source reconciliation now pass, and all nine pages render in the supplied screenshots. Key import, Load/Refresh and exact fixed-window model parity now pass. Moved-visual persistence/reopen and legacy rollback also pass. Remaining interactions and compatibility/export checks are recorded separately. See [the acceptance record](docs/DESKTOP-ACCEPTANCE.md) for the evidence and current dependency.
 
 ---
 
@@ -119,7 +119,7 @@ Power BI loads custom connectors from a **per-user** folder: `<your Documents fo
 | Authentication kind | Anonymous | Key (Power BI credential dialog) |
 | Where the token lives | Query argument / report parameter (clear text in the file) | Power BI credential store, not in the query |
 | Existing reports | Unchanged, keep working | Opt-in; needs the migration below |
-| Status | Used by the template and by existing `.pbix` files | **Implemented and exercised in the Power Query SDK harness only; not yet accepted in Power BI Desktop/Service** |
+| Status | Used by the template and by existing `.pbix` files | **Desktop Key Load/Refresh and fixed-window parity verified; remaining acceptance and Service limits are in docs/ACCEPTANCE.md** |
 
 Migrating a report to the Key entry point (opt-in, reversible):
 1. Keep the original `.pbix`. Work on a copy.

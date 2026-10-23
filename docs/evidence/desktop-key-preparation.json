@@ -46,6 +46,17 @@
     "installedDesktopNewtonsoftParsed": 12,
     "nestedSchemaChecks": "passed",
     "metadataRegressionChecks": 7,
-    "desktopResult": "pending owner retry"
+    "desktopResult": "passed import, Load and Refresh; saved Key report inspected on 2026-10-23",
+    "effectiveScopeOnFirstRead": "Rolling 30 days because parameter DefaultValue metadata retained 30/false"
+  },
+  "fixedDefaultRepair": {
+    "tool": "template/acceptance/Prepare-KeyCopy.ps1",
+    "regression": "template/acceptance/Test-KeyCopy.ps1",
+    "oldCopyRejectedFields": [
+      "DaysBack",
+      "UseDateRange"
+    ],
+    "correctedCopyStaticCheck": "passed",
+    "existingReportsModifiedByTool": false
   }
 }

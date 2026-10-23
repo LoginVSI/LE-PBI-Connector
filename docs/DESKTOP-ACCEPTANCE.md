@@ -1,6 +1,18 @@
 # Desktop acceptance: populated model reconciled, final UI gates open
 
-Updated 22 October 2026. Draft PR #4 remains draft. The connector retains the Desktop slot; no Toolkit project was opened or changed.
+Updated 23 October 2026. Draft PR #4 remains draft. The connector retains the Desktop slot; no Toolkit project was opened or changed.
+
+## Key retry2 results, 23 October 2026
+
+Retry2 imported, loaded and refreshed successfully. The saved report is open and its actual model has 12 Key calls, zero legacy calls and no APIToken parameter. All 12 loaded partition definitions match canonical M after the authentication-call migration, so the persisted-query repair is verified in Desktop.
+
+The first comparison exposed a preparation defect: although dates were populated, the effective settings were DaysBack=30 and UseDateRange=False. Parameter DefaultValue metadata still held those original values. This rolling report has 36,615 measurements and 655 sessions; those are not same-window parity figures. The preparer now sets both initial values and defaults consistently. The new static check rejects the old copy for both defaults and accepts a corrected fresh copy; CI runs it. The original rolling Key PBIX is preserved.
+
+The owner created a separate fixed-window copy and explicitly set DaysBack=7, UseDateRange=True and 18 through 24 September 2026. Actual DAX verifies the scope. Every result multiset equals the earlier legacy result across ModelChecks, nine context queries, relationship checks, all 83 measures, zero/missing cases and observation-detail queries. This includes all 11,549 observation rows, 223 sessions, the real zero aggregate and the 95% Application success rate. No additional appliance requests were needed to repeat those comparisons.
+
+The owner screenshot confirms the Key connector and Feed Key credential type, with the token masked. Its label hides the path, and Desktop refuses PBIDS export for this source type. Direct Desktop path observation is therefore unavailable. FQDN-only scope remains supported by the function signature and isolated SDK discovery in evidence/sdk-runtime.json; it is not claimed observed in the Desktop path display. No permission or credential change was requested for this inspection.
+
+Evidence: [Key acceptance](evidence/desktop-key-acceptance.json). Raw rows, source expressions, reports and screenshots remain outside Git. Key moved-visual persistence/reopen/refresh passed: the owner confirmed the moved Summary chart persisted and refresh needed no new credential entry. The reopened model retained 11,549 measurements, 223 sessions and DaysBack=7. Windows hid the model command line after reopening; the read-only helper now uses the unique loopback listener of the named acceptance Desktop process, retaining catalog/table guards. Legacy rollback now passes: the original report refreshed after Key migration, and its counts/ModelChecks equal the baseline.
 
 ## Completed checks
 
@@ -26,12 +38,12 @@ Public evidence: [per-check results](evidence/desktop-acceptance-results.json), 
 ## Remaining acceptance
 
 - Selected successful and failed Logon screenshots now pass: successful Distinct Accounts=1, Failed User Sessions=0 and populated logon values; the failed run remains selectable, with No Data and blank gauges. Test (B) remains All/No Data. Remaining page-specific cross-filter and A/B combinations were not inferred from this check.
-- The initial Key copy failed on an orphan APIToken lineage in UnappliedChanges. The first repair then failed because nested loaded-query JSON was written as raw M. Both failed files are preserved. The corrected `.cache/desktop-acceptance-20261021/LE-acceptance-key-retry2.pbit` has 17 consistent queries, 12 migrated calls, no token parameter and valid nested JSON. The installed Desktop parser rejects all 12 first-retry fields and accepts all 12 corrected fields. Seven metadata regressions pass. Actual retry, Key scope, two refreshes and legacy rollback are pending.
+- The initial Key copy failed on an orphan APIToken lineage in UnappliedChanges. The first repair then failed because nested loaded-query JSON was written as raw M. Both failed files are preserved. The corrected `.cache/desktop-acceptance-20261021/LE-acceptance-key-retry2.pbit` has 17 consistent queries, 12 migrated calls, no token parameter and valid nested JSON. The installed Desktop parser rejects all 12 first-retry fields and accepts all 12 corrected fields. Seven metadata regressions pass. Actual retry2 import, Load, Refresh, fixed-window data parity, Key persistence/reopen and legacy rollback now pass. Direct Desktop path display is unavailable as described above.
 - No existing 1.1.0 PBIX was available. The original legacy PBIT is staged; legacy signature and the current legacy-function report refresh are verified, but compatibility with an older saved model is not established.
 - Connector discovery entries, intentional wrong-credential UI, explicit visual move, Desktop export of the final PBIT and the revised tooltip display remain unobserved.
 - Summary donut retains a zero-valued BLANK legend category from the model's unknown member. It does not change the reconciled counts.
 
-The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt candidate needs a fresh Desktop retry; earlier populated DAX evidence describes the previously refreshed legacy copy. See [metadata diagnosis](evidence/template-persisted-metadata.json).
+The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt metadata imported through Key retry2, and the fixed-window Key model matches the legacy results exactly. The public legacy-template Desktop export remains outstanding. See [metadata diagnosis](evidence/template-persisted-metadata.json).
 
 Disposition: **partial acceptance; not merge-ready**. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
 

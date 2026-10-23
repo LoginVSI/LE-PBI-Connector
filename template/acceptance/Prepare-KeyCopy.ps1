@@ -41,7 +41,14 @@ if ($StartDate -or $EndDate) {
         if ($values.ContainsKey($name)) {
             $parts = (Join-Lines $expression['expression']) -split ' meta ', 2
             if ($parts.Count -ne 2) { throw 'Unexpected parameter expression.' }
-            Set-JsonProp $expression 'expression' ($values[$name] + ' meta ' + $parts[1])
+            $metadata = $parts[1]
+            if ($name -in @('DaysBack', 'UseDateRange')) {
+                $defaults = [regex]::Matches($metadata, '\bDefaultValue\s*=\s*(?:true|false|\d+)')
+                if ($defaults.Count -ne 1) { throw "Expected one default value for $name." }
+                $match = $defaults[0]
+                $metadata = $metadata.Remove($match.Index, $match.Length).Insert($match.Index, ('DefaultValue=' + $values[$name]))
+            }
+            Set-JsonProp $expression 'expression' ($values[$name] + ' meta ' + $metadata)
         }
     }
 }

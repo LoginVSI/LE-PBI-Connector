@@ -307,11 +307,11 @@
   ],
   "remainingChecks": [
     "Separate existing 1.1.0 PBIX compatibility (none available)",
-    "Key UI, credential scope, two refreshes and rollback on prepared separate copy",
     "Explicit visual edit type and Desktop-saved PBIT export",
     "Exact-midnight/DST populated cases unavailable; retain M-engine coverage",
     "Full populated Platform and Load checks unavailable in selected scope",
-    "Remaining page-specific cross-filter and A/B interactions beyond tested Logon A selections"
+    "Remaining page-specific cross-filter and A/B interactions beyond tested Logon A selections",
+    "Direct Desktop credential path unavailable: static label hides it and custom source PBIDS export is unsupported; SDK scope evidence is separate"
   ],
   "preservation": {
     "reportWrittenByAgent": false,
@@ -368,11 +368,13 @@
     "scope": "Test (A) successful and failed selections on Logon Metrics; other page interactions not inferred"
   },
   "finalTemplateMetadataRepair": {
-    "status": "rebuilt; Desktop retry pending",
+    "status": "passed actual Key retry2 import/Load/Refresh and partition-source comparison",
     "reason": "Key copy deletion left APIToken lineage in UnappliedChanges; canonical builder also left stale Filtered Test Runs M and date help there",
     "repair": "Synchronize model and persisted query lineage, M and descriptions; remove only explicitly removed parameters in Key copy",
     "regressionChecks": 7,
-    "priorDesktopEvidenceScope": "Previously refreshed legacy copy; updated persisted-query template still requires actual Desktop retry",
+    "priorDesktopEvidenceScope": "Legacy and fixed-window Key results now match exactly across all recorded result sets and observation rows.",
     "nestedJsonParser": "failed first metadata repair reproduced 12 JSON rejections; corrected retry2 parses all 12 with installed Desktop Newtonsoft"
-  }
+  },
+  "keyAcceptanceEvidence": "desktop-key-acceptance.json",
+  "keyAcceptanceSummary": "Key import/Load/Refresh, exact fixed-window parity, moved-visual persistence/reopen/refresh and legacy rollback passed; direct Desktop path unavailable."
 }

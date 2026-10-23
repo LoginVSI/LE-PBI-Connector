@@ -4,6 +4,8 @@ Audited on 2026-10-20 (Pacific), continuing draft PR #4 on `fix/connector-repair
 
 ## Findings and dispositions
 
+This records the 20 October audit baseline. Subsequent Desktop work verifies legacy and Key Load/Refresh, fixed-window DAX/source parity, Key visual-edit persistence and rollback. See [current acceptance](DESKTOP-ACCEPTANCE.md) and [Key evidence](evidence/desktop-key-acceptance.json) for later repairs and remaining limits. Historical statements below about unexecuted Desktop work describe the audit date.
+
 | Severity | Independent finding | Repair / evidence |
 |---|---|---|
 | High | A capped short page without `totalCount` truncated successfully. Low/negative totals and wrong offsets were trusted. | Read through an empty terminator; validate whole-result totals, offsets and object rows. Reject changing totals and compare complete pages for non-progress. `06_independent_regressions.pq`. |

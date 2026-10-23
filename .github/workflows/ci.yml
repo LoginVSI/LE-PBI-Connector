@@ -44,6 +44,7 @@ jobs:
           ./template/Test-Template.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
           ./template/Test-PersistedQueries.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
           ./template/acceptance/Prepare-KeyCopy.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit" -Output "$env:RUNNER_TEMP/key-acceptance.pbit" -StartDate 2026-09-18 -EndDate 2026-09-24
+          ./template/acceptance/Test-KeyCopy.ps1 -Candidate "$env:RUNNER_TEMP/key-acceptance.pbit" -StartDate 2026-09-18 -EndDate 2026-09-24
       - name: Print checksums
         shell: pwsh
         run: Get-FileHash bin/AnyCPU/Debug/LE-PBI-Connector.mez, "$env:RUNNER_TEMP/candidate.pbit" -Algorithm SHA256 | Format-Table -AutoSize

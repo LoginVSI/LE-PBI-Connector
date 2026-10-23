@@ -4,15 +4,26 @@ $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
 if(-not $QueryFile){$QueryFile=Join-Path $root 'template/acceptance/ModelChecks.dax'}
 if(-not $OutputPath){$OutputPath=Join-Path $root '.cache/desktop-acceptance-20261021/modelchecks.raw.json'}
-$servers=@(Get-CimInstance Win32_Process -Filter "name='msmdsrv.exe'" | Where-Object {$_.CommandLine -like '*AnalysisServicesWorkspace*'})
+$allServers=@(Get-CimInstance Win32_Process -Filter "name='msmdsrv.exe'")
+$desktopIds=@(Get-Process PBIDesktop -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -like 'LE-acceptance-*'} | ForEach-Object {$_.Id})
+$ownedServers=@($allServers | Where-Object {$_.ParentProcessId -in $desktopIds})
+$servers=if($ownedServers.Count){$ownedServers}else{@($allServers | Where-Object {$_.CommandLine -like '*AnalysisServicesWorkspace*'})}
 if($servers.Count -ne 1){Write-Output 'Waiting for exactly one open Desktop model; no query executed.';exit 2}
 $match=[regex]::Match($servers[0].CommandLine,'-s "([^"]+)"')
-if(-not $match.Success){throw 'Desktop workspace could not be identified; no model queried.'}
-$portFile=Join-Path $match.Groups[1].Value 'msmdsrv.port.txt'
-$portBytes=[IO.File]::ReadAllBytes($portFile)
-$port=if($portBytes.Length -gt 1 -and $portBytes[1] -eq 0){[Text.Encoding]::Unicode.GetString($portBytes)}else{[Text.Encoding]::UTF8.GetString($portBytes)}
-$port=$port.Trim([char]0).Trim().Trim([char]0xFEFF)
-if($port -notmatch '^\d+$'){throw 'Unexpected local model port file.'}
+if($match.Success){
+ $portFile=Join-Path $match.Groups[1].Value 'msmdsrv.port.txt'
+ $portBytes=[IO.File]::ReadAllBytes($portFile)
+ $port=if($portBytes.Length -gt 1 -and $portBytes[1] -eq 0){[Text.Encoding]::Unicode.GetString($portBytes)}else{[Text.Encoding]::UTF8.GetString($portBytes)}
+ $port=$port.Trim([char]0).Trim().Trim([char]0xFEFF)
+}else{
+ # Some Desktop processes hide CommandLine. Only use a loopback listener whose
+ # server is the unique child of a named acceptance window. Never select an unrelated model.
+ if($ownedServers.Count -ne 1){throw 'Desktop workspace could not be identified; no model queried.'}
+ $ports=@(Get-NetTCPConnection -State Listen -OwningProcess $servers[0].ProcessId | Where-Object {$_.LocalAddress -in @('127.0.0.1','::1')} | Select-Object -ExpandProperty LocalPort -Unique)
+ if($ports.Count -ne 1){throw 'Expected one loopback model listener; no model queried.'}
+ $port=[string]$ports[0]
+}
+if($port -notmatch '^\d+$'){throw 'Unexpected local model port.'}
 [Reflection.Assembly]::LoadFrom('C:/Program Files/Microsoft Power BI Desktop/bin/Microsoft.PowerBI.AdomdClient.dll') | Out-Null
 $connection=New-Object Microsoft.AnalysisServices.AdomdClient.AdomdConnection("Data Source=localhost:$port")
 try{

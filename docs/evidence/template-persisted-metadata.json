@@ -23,7 +23,7 @@
   "canonicalQueryCount": 18,
   "keyCopyQueryCount": 17,
   "staticModelPersistedParity": "passed",
-  "desktopResult": "retry2 pending; static parsing is not Desktop acceptance",
+  "desktopResult": "retry2 import, Load and Refresh passed; all 12 actual Key partition definitions match canonical M after call migration",
   "canonicalCandidateSha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F",
   "originalLegacyReportModifiedByRepair": false,
   "mezChanged": false
