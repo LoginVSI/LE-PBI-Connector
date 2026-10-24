@@ -92,5 +92,13 @@
   },
   "modelChecks": "Actual final legacy ModelChecks and counts match the reconciled baseline; raw rows remain ignored.",
   "artifactBuild": "Pinned native base; PBIR/resources unchanged; editable M/DAX/help applied; deterministic stored ZIP; source parity check passed",
-  "acceptanceLimit": "Not every UI interaction/negative case was observed; direct Desktop credential path unavailable. Gateway and Service unexecuted."
+  "acceptanceLimit": "Not every UI interaction/negative case was observed; direct Desktop credential path unavailable. Gateway and Service unexecuted.",
+  "discovery": {
+    "status": "passed; owner observed",
+    "legacyEntries": 1,
+    "keyEntries": 1,
+    "duplicates": 0,
+    "newConnectionCreated": false
+  },
+  "disposition": "qualified acceptance for exercised Desktop scope; remaining limits explicit"
 }

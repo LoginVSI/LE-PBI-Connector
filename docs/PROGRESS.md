@@ -76,3 +76,7 @@ Legacy rollback passed: owner saved/closed the fixed Key copy, opened the preser
 ## Final native Desktop round trip
 
 Final legacy Load/Refresh and ModelChecks match baseline; 12 loaded M partitions and both date descriptions match canonical sources. A genuine Desktop PBIT export resets all six parameter values to null and passes known connection/result-value privacy scans. Re-exported editable sources retain all 83 DAX expressions and 12 M partitions; empty header whitespace is normalized. Pin the native PBIR base and deterministically rebuild the candidate, preserving nine pages/220 visuals and all original identifiers/relationships. Desktop adds one automatic date table/relationship and refines nine Tests field types to the connector's types; no shipped measure or visual query uses those fields. See evidence/desktop-roundtrip.json and template/source/desktop-base.json. Original reports, failed evidence, original template and installed connectors remain preserved.
+
+## Qualified closeout
+
+Owner confirmed one legacy and one Key Get Data entry, without duplicates, and cancelled without connecting. Final legacy Load/Refresh/export and native rebaseline are complete. Qualified acceptance applies to the exercised scope; unobserved UI permutations, unsupported direct Desktop path display and unavailable data cases remain explicit. Recommend merge after owner reviews MERGE-HANDOFF.md and final-head CI; keep draft PR #4 for review. No merge, release or message to others. Desktop remains open under connector ownership for Josh.

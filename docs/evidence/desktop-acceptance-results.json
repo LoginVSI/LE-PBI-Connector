@@ -1,6 +1,6 @@
 {
   "dateUtc": "2026-10-22T19:59:22.718263+00:00",
-  "disposition": "partial; Key migration and remaining interactive acceptance pending",
+  "disposition": "qualified acceptance for exercised Desktop scope; owner review of recorded limits required",
   "ownerObserved": {
     "repairRefresh": "passed; data displayed",
     "subsequentRefreshAndSave": "passed; owner completed requested refresh, save and leave-open",
@@ -382,5 +382,11 @@
   },
   "keyAcceptanceEvidence": "desktop-key-acceptance.json",
   "keyAcceptanceSummary": "Key import/Load/Refresh, exact fixed-window parity, moved-visual persistence/reopen/refresh and legacy rollback passed; direct Desktop path unavailable.",
-  "desktopRoundtripEvidence": "desktop-roundtrip.json"
+  "desktopRoundtripEvidence": "desktop-roundtrip.json",
+  "connectorDiscovery": {
+    "legacyEntries": 1,
+    "keyEntries": 1,
+    "duplicates": 0,
+    "evidence": "owner Get Data > More observation"
+  }
 }

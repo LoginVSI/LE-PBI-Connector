@@ -1,6 +1,6 @@
 # Desktop acceptance record and checklist
 
-**PARTIAL, 2026-10-23.** Legacy and Key reports load and refresh. Actual fixed-window Key results exactly match the source-reconciled legacy results, including all 11,549 measurements, all 83 measures and recorded filter/zero/failure contexts. Key credentials are native Feed Key and absent from M parameters. Nine legacy page screenshots and selected Logon interactions pass. Key moved-visual save/close/reopen and refresh without another credential entry pass. Final legacy Load/Refresh, native PBIT export and reproducible rebaseline pass. Not every interaction/negative UI case is observed; unavailable cases are recorded separately. Desktop hides the source path and does not support PBIDS export for this connector; direct path observation is unavailable, with SDK scope evidence kept separate. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) and [per-check results](evidence/desktop-acceptance-results.json). Keep PR #4 draft.
+**QUALIFIED ACCEPTANCE, 2026-10-23 (Pacific).** Legacy and Key reports load and refresh. Actual fixed-window Key results exactly match the source-reconciled legacy results, including all 11,549 measurements, all 83 measures and recorded filter/zero/failure contexts. Key credentials are native Feed Key and absent from M parameters. Nine legacy page screenshots and selected Logon interactions pass. Key moved-visual save/close/reopen and refresh without another credential entry pass. Final legacy Load/Refresh, native PBIT export and reproducible rebaseline pass. Not every interaction/negative UI case is observed; unavailable cases are recorded separately. Desktop hides the source path and does not support PBIDS export for this connector; direct path observation is unavailable, with SDK scope evidence kept separate. See [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md) and [per-check results](evidence/desktop-acceptance-results.json). Core exercised checks pass; unobserved cases below are not claimed passed. Recommend merge after owner review of these limits and final-head CI. Keep PR #4 draft for that review.
 
 Preparation history (completed for this host; do not reinstall into an open session):
 1. Confirm the Results Toolkit session has released Power BI Desktop and the shared connector folder.
@@ -10,7 +10,7 @@ Preparation history (completed for this host; do not reinstall into an open sess
 5. Use a bounded scope: a lab appliance, a read-only token, Days Back 7 (then a fixed range), no tests/settings/workloads/results created or changed.
 
 ## A. Discovery and compatibility
-- [ ] Get Data lists "Login Enterprise" (and "Login Enterprise (Key credential)"). No duplicate entries.
+- [x] Get Data lists "Login Enterprise" (and "Login Enterprise (Key credential)"). No duplicate entries.
 - [ ] An **existing** `.pbix` built on 1.1.0 opens, refreshes, and keeps its tables/relationships/measures (legacy entry point, unchanged signature).
 - [ ] Wrong FQDN → new error text (transport message). Wrong token → "HTTP 401 … Authentication failed".
 
@@ -21,7 +21,7 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - [ ] A Continuous run that started before the window and is still running: present for every in-window day.
 - [ ] Boundary: an observation at exactly 00:00Z appears once.
 - [ ] Reversed range, blank End Date with Use Date Range = true → explanatory error.
-- [ ] Time zones: record the machine's UTC offset; confirm table timestamps are local time while the window is UTC (README "Date windows").
+- [x] Time zones: record the machine's UTC offset; confirm table timestamps are local time while the window is UTC (README "Date windows").
 
 ## C. Empty / error / zero / failure behaviour
 - [ ] A window with no runs → empty typed tables, no error.

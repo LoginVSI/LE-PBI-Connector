@@ -15,6 +15,8 @@ Qualified acceptance for the exercised Desktop scope. The material acquisition, 
 
 The native export adds an automatic date table/relationship for Tests.created and refines nine Tests fields to connector-defined native types. All original column/measure identifiers and relationship semantics remain checked. No shipped measure or visual query uses the refined fields. See template/source/desktop-base.json.
 
+Connector discovery also passes: exactly one legacy and one Key entry were observed, without duplicates.
+
 ## Limits to retain
 
 - Direct Desktop credential-path observation is unavailable: the custom label hides it and PBIDS export is unsupported. FQDN-only scope has separate required-parameter/SDK-runtime evidence; it is not claimed observed in the Desktop path display.

@@ -1,4 +1,4 @@
-# Desktop acceptance: populated model reconciled, final UI gates open
+# Desktop acceptance: qualified closeout
 
 Updated 23 October 2026. Draft PR #4 remains draft. The connector retains the Desktop slot; no Toolkit project was opened or changed.
 
@@ -55,7 +55,9 @@ Public evidence: [per-check results](evidence/desktop-acceptance-results.json), 
 
 The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt metadata imported through Key retry2, and the fixed-window Key model matches the legacy results exactly. The final legacy-template Desktop export and native-base rebaseline are now complete. See [metadata diagnosis](evidence/template-persisted-metadata.json).
 
-Disposition: **partial acceptance; not merge-ready**. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
+Discovery now passes: owner observed exactly one legacy and one Key entry, without duplicates.
+
+Disposition: **qualified acceptance for exercised Desktop scope**. Recommend merge after owner review of recorded limits and final-head CI. PR #4 remains draft; no merge or release was performed. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
 
 ## Historical preparation and first failure
 
