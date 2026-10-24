@@ -1,7 +1,7 @@
 -- table: Applications
 -- name: Show No Data Message (Name Count)
--- format: 
--- description: 
+-- format:
+-- description:
 VAR NameCount =
     CALCULATE (
         COUNTROWS ( 'Applications' ),

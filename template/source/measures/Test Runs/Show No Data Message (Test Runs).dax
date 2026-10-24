@@ -1,7 +1,7 @@
 -- table: Test Runs
 -- name: Show No Data Message (Test Runs)
--- format: 
--- description: 
+-- format:
+-- description:
 IF (
     COUNTROWS('Test Runs') = 0,
     "No Data",

@@ -17,7 +17,13 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $model = Read-PbitModel $Pbit
 function Safe([string]$n) { ($n -replace '[\/:*?"<>|]', '_').Trim() }
-foreach ($d in 'measures', 'partitions') { $p = Join-Path $OutDir $d; if (Test-Path $p) { Remove-Item $p -Recurse -Force }; New-Item -ItemType Directory -Force $p | Out-Null }
+$exportRoot = [IO.Path]::GetFullPath($OutDir).TrimEnd([IO.Path]::DirectorySeparatorChar)
+foreach ($d in 'measures', 'partitions') {
+    $p = [IO.Path]::GetFullPath((Join-Path $exportRoot $d))
+    if (-not $p.StartsWith($exportRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Export cleanup escaped the named output directory.' }
+    if (Test-Path -LiteralPath $p) { Remove-Item -LiteralPath $p -Recurse -Force }
+    New-Item -ItemType Directory -Force $p | Out-Null
+}
 
 foreach ($t in $model['model']['tables']) {
     $tn = [string]$t['name']
@@ -31,7 +37,9 @@ foreach ($t in $model['model']['tables']) {
     if ($t['measures']) {
         $dir = Join-Path $OutDir "measures/$(Safe $tn)"; New-Item -ItemType Directory -Force $dir | Out-Null
         foreach ($m in $t['measures']) {
-            $hdr = "-- table: $tn`n-- name: $($m['name'])`n-- format: $(if ($m['formatString']) { $m['formatString'] })`n-- description: $(if ($m['description']) { $m['description'] })`n"
+            $format = if ($m['formatString']) { ' ' + [string]$m['formatString'] } else { '' }
+            $description = if ($m['description']) { ' ' + (Join-Lines $m['description']) } else { '' }
+            $hdr = "-- table: $tn`n-- name: $($m['name'])`n-- format:$format`n-- description:$description`n"
             Write-LfFile (Join-Path $dir "$(Safe ([string]$m['name'])).dax") ($hdr + (Join-Lines $m['expression']).Trim("`n") + "`n")
         }
     }

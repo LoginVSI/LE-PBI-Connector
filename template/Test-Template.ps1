@@ -7,7 +7,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Original = (Join-Path $PSScriptRoot 'Login Enterprise.pbit'),
+    [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
     [string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit')
 )
 $ErrorActionPreference = 'Stop'
@@ -47,6 +47,36 @@ foreach ($t in $mc['model']['tables']) { foreach ($c in (Items $t['columns'])) {
 if (($colsO -join '|') -eq ($colsC -join '|')) { Ok "$($colsC.Count) columns unchanged" } else { Fail 'columns changed' }
 $lost = @($measO.Keys | Where-Object { -not $measC.ContainsKey($_) })
 if ($lost.Count -eq 0) { Ok "all $($measO.Count) original measure identifiers retained; $($measC.Count - $measO.Count) added" } else { Fail "original measures missing: $($lost -join ', ')" }
+# The native Desktop base adds an automatic date table; also retain the original customer schema.
+$legacy = Read-PbitModel (Join-Path $PSScriptRoot 'Login Enterprise.pbit')
+$currentTables = @{}; foreach ($t in $mc['model']['tables']) { $currentTables[[string]$t['name']] = $t }
+$legacyColumns = 0; $legacyMeasures = 0
+$typeRefinements = @((Get-Content (Join-Path $PSScriptRoot 'source/desktop-base.json') -Raw | ConvertFrom-Json).columnTypeRefinements)
+foreach ($t in $legacy['model']['tables']) {
+    $name = [string]$t['name']
+    if (-not $currentTables.ContainsKey($name)) { Fail "legacy table missing: $name"; continue }
+    foreach ($column in $t['columns']) {
+        $matches = @($currentTables[$name]['columns'] | Where-Object { [string]$_['name'] -ceq [string]$column['name'] })
+        if ($matches.Count -ne 1) { Fail "legacy column missing: $name.$($column['name'])" }
+        elseif ([string]$matches[0]['dataType'] -cne [string]$column['dataType']) {
+            $approved = @($typeRefinements | Where-Object { $_.table -ceq $name -and $_.column -ceq [string]$column['name'] -and $_.before -ceq [string]$column['dataType'] -and $_.after -ceq [string]$matches[0]['dataType'] })
+            if ($approved.Count -ne 1) { Fail "unexpected legacy column type change: $name.$($column['name'])" }
+        }
+        $legacyColumns++
+    }
+    foreach ($measure in $t['measures']) { if (-not $measC.ContainsKey("$name.$($measure['name'])")) { Fail "legacy measure missing: $name.$($measure['name'])" }; $legacyMeasures++ }
+}
+function Semantic-Rels($model) {
+    foreach ($r in $model['model']['relationships']) {
+        $cross = if ($null -eq $r['crossFilteringBehavior']) { 'oneDirection' } else { [string]$r['crossFilteringBehavior'] }
+        $active = if ($null -eq $r['isActive']) { $true } else { $r['isActive'].GetValue[bool]() }
+        "$($r['fromTable']).$($r['fromColumn'])>$($r['toTable']).$($r['toColumn'])|$cross|$active"
+    }
+}
+$currentRels = @(Semantic-Rels $mc)
+foreach ($rel in @(Semantic-Rels $legacy)) { if ($rel -cnotin $currentRels) { Fail 'Original relationship semantics changed.' } }
+Ok "legacy schema checked: $legacyColumns columns, $legacyMeasures measures and original relationships retained"
+Ok "$($typeRefinements.Count) documented native type refinements checked against the original schema"
 $dupes = @($measC.Keys | Group-Object { ($_ -split '\.', 2)[1] } | Where-Object Count -gt 1)
 if ($dupes.Count -eq 0) { Ok 'measure names unique across tables' } else { Fail "duplicate measure names: $($dupes.Name -join ', ')" }
 
@@ -108,8 +138,23 @@ foreach ($t in $mc['model']['tables']) {
 if ($daxProblems -eq 0) { Ok "DAX static checks passed for $($measC.Count) measures (brackets balanced, all table/column/measure references resolve)" }
 
 # --- layout bindings -------------------------------------------------------------
-$layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Candidate 'Report/Layout')
-$props = [regex]::Matches($layout, '\\"Measure\\":\{\\"Expression\\":\{\\"SourceRef\\":\{\\"(?:Source|Entity)\\":\\"[^\\]+\\"\}\},\\"Property\\":\\"([^\\]+)\\"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+$zip = [IO.Compression.ZipFile]::OpenRead($Candidate)
+try { $hasLegacyLayout = $null -ne $zip.GetEntry('Report/Layout'); $visualEntries = @($zip.Entries.FullName | Where-Object { $_ -match '^Report/definition/pages/[^/]+/visuals/[^/]+/visual.json$' }); $pageEntries = @($zip.Entries.FullName | Where-Object { $_ -match '^Report/definition/pages/[^/]+/page.json$' }) } finally { $zip.Dispose() }
+if ($hasLegacyLayout) {
+    $layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Candidate 'Report/Layout')
+    $props = [regex]::Matches($layout, '\\"Measure\\":\{\\"Expression\\":\{\\"SourceRef\\":\{\\"(?:Source|Entity)\\":\\"[^\\]+\\"\}\},\\"Property\\":\\"([^\\]+)\\"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
+} else {
+    if ($pageEntries.Count -ne 9 -or $visualEntries.Count -ne 220) { Fail 'PBIR page/visual inventory changed' } else { Ok 'PBIR contains 9 pages and 220 visuals' }
+    function Find-MeasureBindings($node) {
+        if ($node -is [System.Text.Json.Nodes.JsonObject]) {
+            foreach ($item in $node) {
+                if ($item.Key -eq 'Measure' -and $null -ne $item.Value['Property']) { [string]$item.Value['Property'] }
+                Find-MeasureBindings $item.Value
+            }
+        } elseif ($node -is [System.Text.Json.Nodes.JsonArray]) { foreach ($item in $node) { Find-MeasureBindings $item } }
+    }
+    $props = @($visualEntries | ForEach-Object { $json = [Text.Encoding]::UTF8.GetString((Read-ZipEntryBytes $Candidate $_)).TrimStart([char]0xFEFF); Find-MeasureBindings ([System.Text.Json.Nodes.JsonNode]::Parse($json)) } | Sort-Object -Unique)
+}
 $missing = @($props | Where-Object { -not $measSet.ContainsKey($_) })
 if ($missing.Count -eq 0) { Ok "all $($props.Count) measures bound by visuals exist in the model" } else { Fail "visuals bind to missing measures: $($missing -join ', ')" }
 

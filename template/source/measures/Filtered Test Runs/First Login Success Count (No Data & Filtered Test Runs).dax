@@ -1,7 +1,7 @@
 -- table: Filtered Test Runs
 -- name: First Login Success Count (No Data & Filtered Test Runs)
--- format: 
--- description: 
+-- format:
+-- description:
 VAR FirstValue =
     CALCULATE(
         SELECTEDVALUE('Filtered Test Runs'[login_successCount], 1)

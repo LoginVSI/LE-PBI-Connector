@@ -1,7 +1,7 @@
 -- table: User Session Metrics
 -- name: Avg CPU Display
--- format: 
--- description: 
+-- format:
+-- description:
 VAR CPUValues =
     FILTER (
         'User Session Metrics',

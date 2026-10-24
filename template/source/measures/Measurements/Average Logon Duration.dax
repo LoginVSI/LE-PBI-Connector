@@ -1,7 +1,7 @@
 -- table: Measurements
 -- name: Average Logon Duration
--- format: 
--- description: 
+-- format:
+-- description:
 VAR AvgLogon =
     CALCULATE(
         AVERAGE('Measurements'[duration_seconds]),

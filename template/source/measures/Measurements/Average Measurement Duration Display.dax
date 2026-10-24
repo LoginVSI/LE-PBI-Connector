@@ -1,7 +1,7 @@
 -- table: Measurements
 -- name: Average Measurement Duration Display
--- format: 
--- description: 
+-- format:
+-- description:
 VAR AvgDuration =
     CALCULATE(
         AVERAGE('Measurements'[duration_seconds])

@@ -1,7 +1,7 @@
 -- table: Events
 -- name: Show No Data (Events Card)
--- format: 
--- description: 
+-- format:
+-- description:
 VAR EventCount =
     COUNTROWS ( 'Events' )
 RETURN

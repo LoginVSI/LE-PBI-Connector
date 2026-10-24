@@ -14,6 +14,16 @@ The owner screenshot confirms the Key connector and Feed Key credential type, wi
 
 Evidence: [Key acceptance](evidence/desktop-key-acceptance.json). Raw rows, source expressions, reports and screenshots remain outside Git. Key moved-visual persistence/reopen/refresh passed: the owner confirmed the moved Summary chart persisted and refresh needed no new credential entry. The reopened model retained 11,549 measurements, 223 sessions and DaysBack=7. Windows hid the model command line after reopening; the read-only helper now uses the unique loopback listener of the named acceptance Desktop process, retaining catalog/table guards. Legacy rollback now passes: the original report refreshed after Key migration, and its counts/ModelChecks equal the baseline.
 
+## Final legacy export and reproducible native base
+
+The owner loaded and refreshed the final legacy candidate. Actual ModelChecks and counts equal the reconciled baseline; all 12 loaded M partitions and both date descriptions match canonical sources. The initial file ending `.pbit.pbix` was a report and was preserved. The subsequent File > Export > Power BI template produced a genuine PBIT.
+
+Desktop cleared all six parameter values in both model and persisted query metadata. In-memory checks found no live host/token, known run/account IDs or private test names in the exported entries. Generic names already present in the public baseline were excluded from private-name matching. Native templates can retain data in metadata, so this check supplements the parameter checks ([Microsoft template guidance](https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-templates)). Raw values and the private working files were not logged or committed.
+
+The native PBIR export contains nine pages and 220 visuals. All 83 DAX expressions and 12 M partitions are unchanged. Desktop added an automatic date table/relationship for Tests.created and refined nine Tests fields from placeholder strings to their connector-defined date/integer/Boolean types. No shipped measure or visual query references those nine fields. The original 319 column identifiers, 70 measure identifiers and relationship semantics remain checked separately.
+
+The privacy-checked export is pinned as `template/base/Login Enterprise Desktop 2026-10.pbit`. The builder applies editable sources and writes a deterministic candidate, preserving all PBIR/resources byte-for-byte. Text sources were re-exported; only empty header whitespace normalized. The private export remains untouched. See [round-trip evidence](evidence/desktop-roundtrip.json) and [base manifest](../template/source/desktop-base.json).
+
 ## Completed checks
 
 | Check | Result and evidence |
@@ -40,10 +50,10 @@ Public evidence: [per-check results](evidence/desktop-acceptance-results.json), 
 - Selected successful and failed Logon screenshots now pass: successful Distinct Accounts=1, Failed User Sessions=0 and populated logon values; the failed run remains selectable, with No Data and blank gauges. Test (B) remains All/No Data. Remaining page-specific cross-filter and A/B combinations were not inferred from this check.
 - The initial Key copy failed on an orphan APIToken lineage in UnappliedChanges. The first repair then failed because nested loaded-query JSON was written as raw M. Both failed files are preserved. The corrected `.cache/desktop-acceptance-20261021/LE-acceptance-key-retry2.pbit` has 17 consistent queries, 12 migrated calls, no token parameter and valid nested JSON. The installed Desktop parser rejects all 12 first-retry fields and accepts all 12 corrected fields. Seven metadata regressions pass. Actual retry2 import, Load, Refresh, fixed-window data parity, Key persistence/reopen and legacy rollback now pass. Direct Desktop path display is unavailable as described above.
 - No existing 1.1.0 PBIX was available. The original legacy PBIT is staged; legacy signature and the current legacy-function report refresh are verified, but compatibility with an older saved model is not established.
-- Connector discovery entries, intentional wrong-credential UI, explicit visual move, Desktop export of the final PBIT and the revised tooltip display remain unobserved.
+- Connector discovery entries, intentional wrong-credential UI, negative credential UI and remaining interaction combinations are not all observed. Explicit Key visual move/persistence, final legacy export and loaded date-help metadata now pass.
 - Summary donut retains a zero-valued BLANK legend category from the model's unknown member. It does not change the reconciled counts.
 
-The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt metadata imported through Key retry2, and the fixed-window Key model matches the legacy results exactly. The public legacy-template Desktop export remains outstanding. See [metadata diagnosis](evidence/template-persisted-metadata.json).
+The Key failure also exposed stale Filtered Test Runs M and old date help in the canonical UnappliedChanges entry. The builder now synchronizes it with DataModelSchema, including nested RootFormulaText. The rebuilt metadata imported through Key retry2, and the fixed-window Key model matches the legacy results exactly. The final legacy-template Desktop export and native-base rebaseline are now complete. See [metadata diagnosis](evidence/template-persisted-metadata.json).
 
 Disposition: **partial acceptance; not merge-ready**. Preserve the current report and leave Desktop in the connector slot until the UI handoff is complete. Gateway, Service scheduling and incremental ingestion remain deferred.
 

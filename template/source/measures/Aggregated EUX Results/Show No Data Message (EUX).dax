@@ -1,7 +1,7 @@
 -- table: Aggregated EUX Results
 -- name: Show No Data Message (EUX)
--- format: 
--- description: 
+-- format:
+-- description:
 IF (
     COUNT ( 'Aggregated EUX Results'[score] ) = 0,
     "No Data",

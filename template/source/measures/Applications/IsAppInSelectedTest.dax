@@ -1,7 +1,7 @@
 -- table: Applications
 -- name: IsAppInSelectedTest
 -- format: 0
--- description: 
+-- description:
 VAR SelectedTestIds = VALUES('Tests'[id])
 VAR CurrentAppId = SELECTEDVALUE('Applications'[id])
 

@@ -1,7 +1,7 @@
 -- table: Measurements
 -- name: Total Login Time No Data
--- format: 
--- description: 
+-- format:
+-- description:
 VAR FilteredCount =
     CALCULATE (
         COUNTROWS ( 'Measurements' ),

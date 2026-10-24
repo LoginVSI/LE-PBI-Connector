@@ -1,18 +1,17 @@
 <#
 .SYNOPSIS
-  Builds a CANDIDATE .pbit from the original binary plus the reviewed text source in template/source.
+  Builds a reproducible .pbit from the pinned Desktop export and editable template/source.
 .DESCRIPTION
-  The original template/Login Enterprise.pbit is never modified. The candidate patches only:
+  The original template/Login Enterprise.pbit is preserved as a compatibility reference. The default input is the privacy-checked Desktop PBIR export pinned by source/desktop-base.json. The candidate patches:
     * DataModelSchema: measure expressions/new measures from source/measures/**.dax M partitions from source/partitions/*.m, and date help from source/parameter-descriptions.json
     * Report/Layout: exact-string renames from source/layout-renames.json (counts asserted)
     * UnappliedChanges: M, lineage and help synchronized with DataModelSchema
   Everything else (relationships, columns, pages, visual layout, resources, SecurityBindings, Settings, ...) is copied byte-for-byte.
-  This is a structurally derived file, NOT a Desktop-validated one. Open it in Power BI Desktop, check, and re-save
-  (see docs/ACCEPTANCE.md); then re-baseline with Export-TemplateSource.ps1.
+  The Desktop base was loaded/refreshed and exported by Desktop. Source changes still require the affected acceptance checks in docs/ACCEPTANCE.md.
 #>
 [CmdletBinding()]
 param(
-    [string]$Original = (Join-Path $PSScriptRoot 'Login Enterprise.pbit'),
+    [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
     [string]$SourceDir = (Join-Path $PSScriptRoot 'source'),
     [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit'),
     [switch]$Check
@@ -31,6 +30,11 @@ if ($Check) {
 }
 . (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
 Add-Type -AssemblyName System.IO.Compression
+$baseManifest = Join-Path $SourceDir 'desktop-base.json'
+if ([IO.Path]::GetFullPath($Original) -eq [IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'))) {
+    $manifest = Get-Content -LiteralPath $baseManifest -Raw | ConvertFrom-Json
+    if ((Get-FileHash -LiteralPath $Original).Hash -ne $manifest.sha256) { throw 'Desktop base checksum mismatch.' }
+}
 
 $model = Read-PbitModel $Original
 $tables = @{}
@@ -90,8 +94,13 @@ foreach ($f in Get-ChildItem (Join-Path $SourceDir 'partitions') -Filter *.m) {
         }
     }
 }
-$ann = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $ann 'name' 'LE-PBI-Connector.TemplateCandidate'; Set-JsonProp $ann 'value' '1.1.0.2-candidate (structurally derived; not Desktop-validated)'
-[void]$model['model']['annotations'].Add([JsonNode]$ann)
+$ann = @($model['model']['annotations'] | Where-Object { [string]$_['name'] -eq 'LE-PBI-Connector.TemplateCandidate' })
+if ($ann.Count -gt 1) { throw 'Duplicate candidate annotation.' }
+if ($ann.Count -eq 0) {
+    $node = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $node 'name' 'LE-PBI-Connector.TemplateCandidate'
+    [void]$model['model']['annotations'].Add([JsonNode]$node); $ann = @($node)
+}
+Set-JsonProp $ann[0] 'value' '1.1.0.2-candidate (Desktop round-trip base; editable sources applied; see ACCEPTANCE.md)'
 
 $opts = [System.Text.Json.JsonSerializerOptions]::new(); $opts.WriteIndented = $true
 $opts.Encoder = [System.Text.Encodings.Web.JavaScriptEncoder]::UnsafeRelaxedJsonEscaping
@@ -100,18 +109,23 @@ $persisted = [JsonNode]::Parse((ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Orig
 Sync-PersistedQueries $model $persisted
 
 # ---- layout ----------------------------------------------------------------
-$layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Original 'Report/Layout')
-foreach ($r in (Get-Content (Join-Path $SourceDir 'layout-renames.json') -Raw | ConvertFrom-Json)) {
-    $count = ([regex]::Matches($layout, [regex]::Escape($r.old))).Count
-    if ($count -ne $r.expected) { throw "Layout rename '$($r.old)' matched $count times, expected $($r.expected)" }
-    $layout = $layout.Replace($r.old, $r.new)
-}
+$container = [IO.Compression.ZipFile]::OpenRead($Original)
+try { $legacyLayout = $null -ne $container.GetEntry('Report/Layout'); $pbir = $null -ne $container.GetEntry('Report/definition/report.json') } finally { $container.Dispose() }
+if ($legacyLayout) {
+    $layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Original 'Report/Layout')
+    foreach ($r in (Get-Content (Join-Path $SourceDir 'layout-renames.json') -Raw | ConvertFrom-Json)) {
+        $count = ([regex]::Matches($layout, [regex]::Escape($r.old))).Count
+        if ($count -ne $r.expected) { throw "Layout rename '$($r.old)' matched $count times, expected $($r.expected)" }
+        $layout = $layout.Replace($r.old, $r.new)
+    }
+} elseif (-not $pbir) { throw 'Template has neither a legacy layout nor PBIR definitions.' }
 
 # ---- write package -----------------------------------------------------------
 $origBytesModel = Read-ZipEntryBytes $Original 'DataModelSchema'
 $hasBom = ($origBytesModel[0] -eq 0xFF -and $origBytesModel[1] -eq 0xFE)
 function To-Utf16([string]$s) { $b = [Text.Encoding]::Unicode.GetBytes($s); if ($hasBom) { return ,([byte[]](0xFF, 0xFE) + $b) } else { return ,$b } }
-$replacements = @{ 'DataModelSchema' = (To-Utf16 $modelJson); 'Report/Layout' = (To-Utf16 $layout); 'UnappliedChanges' = (To-Utf16 $persisted.ToJsonString($opts)) }
+$replacements = @{ 'DataModelSchema' = (To-Utf16 $modelJson); 'UnappliedChanges' = (To-Utf16 $persisted.ToJsonString($opts)) }
+if ($legacyLayout) { $replacements['Report/Layout'] = To-Utf16 $layout }
 
 New-Item -ItemType Directory -Force (Split-Path -Parent $Output) | Out-Null
 if (Test-Path $Output) { Remove-Item $Output -Force }
@@ -128,5 +142,5 @@ try {
     }
 } finally { $dst.Dispose(); $src.Dispose() }
 Write-Host "Candidate written: $Output"
-Write-Host "  measures changed=$changed added=$added; partitions changed=$partChanged; layout renames applied"
+Write-Host "  measures changed=$changed added=$added; partitions changed=$partChanged; report format=$(if($legacyLayout){'legacy'}else{'PBIR'})"
 Write-Host "  size $((Get-Item $Output).Length) bytes (original $((Get-Item $Original).Length))"

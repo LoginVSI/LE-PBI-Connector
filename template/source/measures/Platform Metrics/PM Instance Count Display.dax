@@ -1,7 +1,7 @@
 -- table: Platform Metrics
 -- name: PM Instance Count Display
--- format: 
--- description: 
+-- format:
+-- description:
 VAR InstanceCount =
     DISTINCTCOUNT('Platform Metrics'[instance])
 RETURN

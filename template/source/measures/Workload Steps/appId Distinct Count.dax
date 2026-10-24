@@ -1,7 +1,7 @@
 -- table: Workload Steps
 -- name: appId Distinct Count
--- format: 
--- description: 
+-- format:
+-- description:
 VAR AppIdCount =
     CALCULATE (
         DISTINCTCOUNT ( 'Workload Steps'[appId] ),

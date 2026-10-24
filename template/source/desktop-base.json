@@ -1,0 +1,69 @@
+{
+  "path": "template/base/Login Enterprise Desktop 2026-10.pbit",
+  "sha256": "E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4",
+  "bytes": 509423,
+  "desktopVersion": "2.159.883.0",
+  "provenance": "Native File > Export > Power BI template after successful final legacy Load and Refresh; all parameter values reset to null by Desktop.",
+  "privacy": "Known connection values, run IDs, account IDs and private test names absent; report metadata reviewed. Generic names present in the prior public baseline are not private data.",
+  "format": "PBIR",
+  "pages": 9,
+  "visuals": 220,
+  "autoDateAddition": "One generated date table/relationship for Tests.created; original tables, columns, measures and relationships retained.",
+  "columnTypeRefinements": [
+    {
+      "table": "Tests",
+      "column": "created",
+      "before": "string",
+      "after": "dateTime"
+    },
+    {
+      "table": "Tests",
+      "column": "numberOfSessions",
+      "before": "string",
+      "after": "int64"
+    },
+    {
+      "table": "Tests",
+      "column": "rampUpDurationInMinutes",
+      "before": "string",
+      "after": "int64"
+    },
+    {
+      "table": "Tests",
+      "column": "testDurationInMinutes",
+      "before": "string",
+      "after": "int64"
+    },
+    {
+      "table": "Tests",
+      "column": "rampDownDurationInMinutes",
+      "before": "string",
+      "after": "int64"
+    },
+    {
+      "table": "Tests",
+      "column": "euxEnabled",
+      "before": "string",
+      "after": "boolean"
+    },
+    {
+      "table": "Tests",
+      "column": "sessionMetricsEnabled",
+      "before": "string",
+      "after": "boolean"
+    },
+    {
+      "table": "Tests",
+      "column": "sessionMetricScheduleRate",
+      "before": "string",
+      "after": "int64"
+    },
+    {
+      "table": "Tests",
+      "column": "engineStartTimeout",
+      "before": "string",
+      "after": "int64"
+    }
+  ],
+  "columnTypeReason": "Native Desktop aligns nine Tests fields with the typed connector output; identifiers remain unchanged. No reviewed DAX measure uses these fields."
+}

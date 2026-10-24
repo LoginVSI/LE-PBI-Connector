@@ -1,7 +1,7 @@
 -- table: User Session Metrics
 -- name: Min Memory (MB) Display
--- format: 
--- description: 
+-- format:
+-- description:
 VAR MemoryValues =
     FILTER (
         'User Session Metrics',

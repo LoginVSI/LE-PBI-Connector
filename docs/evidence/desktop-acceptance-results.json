@@ -307,11 +307,11 @@
   ],
   "remainingChecks": [
     "Separate existing 1.1.0 PBIX compatibility (none available)",
-    "Explicit visual edit type and Desktop-saved PBIT export",
     "Exact-midnight/DST populated cases unavailable; retain M-engine coverage",
     "Full populated Platform and Load checks unavailable in selected scope",
     "Remaining page-specific cross-filter and A/B interactions beyond tested Logon A selections",
-    "Direct Desktop credential path unavailable: static label hides it and custom source PBIDS export is unsupported; SDK scope evidence is separate"
+    "Direct Desktop credential path unavailable: static label hides it and custom source PBIDS export is unsupported; SDK scope evidence is separate",
+    "Not every cross-page interaction or isolated wrong-credential Desktop case observed; unavailable source cases remain documented."
   ],
   "preservation": {
     "reportWrittenByAgent": false,
@@ -328,13 +328,18 @@
     },
     {
       "path": "template/candidate/Login Enterprise 1.1.0.2-candidate.pbit",
-      "bytes": 4939809,
-      "sha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F"
+      "bytes": 4210661,
+      "sha256": "0E22BF675BE20D7084B34908B12C0C2CF966FEA68C20DE549402B4D394B74ADD"
     },
     {
       "path": "template/Login Enterprise.pbit",
       "bytes": 353337,
       "sha256": "4529178FFBE8AB5021FE4188F1683945012C362C82E4658CD8F1B554FD5B0D12"
+    },
+    {
+      "path": "template/base/Login Enterprise Desktop 2026-10.pbit",
+      "bytes": 509423,
+      "sha256": "E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4"
     }
   ],
   "computerUse": "native pipe unavailable after reset and retry",
@@ -376,5 +381,6 @@
     "nestedJsonParser": "failed first metadata repair reproduced 12 JSON rejections; corrected retry2 parses all 12 with installed Desktop Newtonsoft"
   },
   "keyAcceptanceEvidence": "desktop-key-acceptance.json",
-  "keyAcceptanceSummary": "Key import/Load/Refresh, exact fixed-window parity, moved-visual persistence/reopen/refresh and legacy rollback passed; direct Desktop path unavailable."
+  "keyAcceptanceSummary": "Key import/Load/Refresh, exact fixed-window parity, moved-visual persistence/reopen/refresh and legacy rollback passed; direct Desktop path unavailable.",
+  "desktopRoundtripEvidence": "desktop-roundtrip.json"
 }

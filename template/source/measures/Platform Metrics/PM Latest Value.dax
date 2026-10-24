@@ -1,7 +1,7 @@
 -- table: Platform Metrics
 -- name: PM Latest Value
--- format: 
--- description: 
+-- format:
+-- description:
 VAR LatestTs =
     CALCULATE(
         MAX( 'Platform Metrics'[timestamp] ),

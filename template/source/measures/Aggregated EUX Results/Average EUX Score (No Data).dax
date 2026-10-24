@@ -1,7 +1,7 @@
 -- table: Aggregated EUX Results
 -- name: Average EUX Score (No Data)
--- format: 
--- description: 
+-- format:
+-- description:
 VAR AvgScore =
     AVERAGEX(
         'Aggregated EUX Results',

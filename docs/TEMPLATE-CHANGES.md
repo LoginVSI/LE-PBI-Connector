@@ -1,13 +1,11 @@
 # Template changes (candidate 1.1.0.2)
 
 `template/Login Enterprise.pbit` (353 337 bytes, 9 pages, 34 tables, 70 measures, 33 relationships) is **unchanged**.
-`template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` is derived from it by `template/Build-Template.ps1`, patching only
-`DataModelSchema` (measures, one M partition, date help and one annotation), `Report/Layout` (exact-string renames), and `UnappliedChanges` (matching persisted M, nested loaded-query JSON and date help). Tables, columns, relationships,
-pages, visual geometry, resources, `Settings`, `Connections`, `SecurityBindings` and the rest are byte-identical (checked by `template/Test-Template.ps1`).
+`template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` now builds from the privacy-checked native Desktop export in `template/base/`, pinned by `source/desktop-base.json`. The builder applies editable measures, M partitions and date help, synchronizes persisted query metadata and preserves PBIR/resources. The original PBIT remains a compatibility reference.
 
-> **Status: the legacy working candidate refreshed and passed the recorded actual DAX/source cases. The final persisted-query metadata repair and Key retry still need Desktop acceptance. Static checks do not establish that acceptance.**
-> `SecurityBindings` (358 bytes) is copied unchanged; if Desktop rejects or re-prompts on it, rebuild by opening the original, applying `template/source`, and saving from Desktop.
-> No customer data or token is in either file (the `APIToken` parameter is null).
+The native export has 35 tables, 326 columns and 34 relationships. Its added automatic calendar serves Tests.created. Nine Tests fields use native date/integer/Boolean types matching the connector output instead of the old placeholder string types. All original 319 column identifiers, 70 measure identifiers and relationship semantics are retained and checked. No reviewed measure or visual query uses the nine refined fields. All 83 DAX expressions and 12 M partitions survived Desktop export unchanged.
+
+Actual final legacy and Key Load/Refresh, model/source comparisons, Key persistence and rollback are in DESKTOP-ACCEPTANCE.md. Static checks remain separate from those runtime results. Parameter values are null in the native base and rebuilt candidate; privacy scans and native-export provenance are recorded in evidence/desktop-roundtrip.json.
 
 Editable sources: `template/source/measures/<Table>/<Measure>.dax`, `template/source/partitions/<Table>.m`, `template/source/layout-renames.json`, and `template/source/parameter-descriptions.json`.
 Round trip: `Export-TemplateSource.ps1` (baseline from a .pbit) → edit → `Build-Template.ps1` → `Test-Template.ps1`.

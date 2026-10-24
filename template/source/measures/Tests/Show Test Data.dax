@@ -1,7 +1,7 @@
 -- table: Tests
 -- name: Show Test Data
 -- format: 0
--- description: 
+-- description:
 IF(
     HASONEFILTER(Tests[name]),
     1,

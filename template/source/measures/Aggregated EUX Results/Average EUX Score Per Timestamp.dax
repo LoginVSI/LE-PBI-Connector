@@ -1,7 +1,7 @@
 -- table: Aggregated EUX Results
 -- name: Average EUX Score Per Timestamp
--- format: 
--- description: 
+-- format:
+-- description:
 AVERAGEX (
     VALUES ( 'Aggregated EUX Results'[timestamp] ),
     CALCULATE ( AVERAGE ( 'Aggregated EUX Results'[score] ) )

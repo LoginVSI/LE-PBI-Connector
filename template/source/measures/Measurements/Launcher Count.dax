@@ -1,7 +1,7 @@
 -- table: Measurements
 -- name: Launcher Count
--- format: 
--- description: 
+-- format:
+-- description:
 VAR CountLaunchers =
     DISTINCTCOUNT('Measurements'[launcherName])
 RETURN

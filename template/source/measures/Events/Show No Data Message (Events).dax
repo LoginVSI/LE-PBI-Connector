@@ -1,7 +1,7 @@
 -- table: Events
 -- name: Show No Data Message (Events)
--- format: 
--- description: 
+-- format:
+-- description:
 IF (
     COUNTROWS(Events) = 0,
     "No Data",

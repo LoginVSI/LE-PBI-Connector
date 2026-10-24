@@ -1,7 +1,7 @@
 -- table: Platform Metrics
 -- name: EnvironmentHasPlatformMetrics
 -- format: 0
--- description: 
+-- description:
 VAR PMCount =
     CALCULATE(
         COUNTROWS('Platform Metrics')

@@ -1,7 +1,7 @@
 -- table: Test Runs
 -- name: First Login Total Count (No Data)
--- format: 
--- description: 
+-- format:
+-- description:
 VAR FirstValue =
     CALCULATE(
         FIRSTNONBLANK('Test Runs'[login_totalCount], 1)

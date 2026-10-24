@@ -1,5 +1,5 @@
 -- table: Platform Metrics
 -- name: PM Has One Environment
 -- format: 0
--- description: 
+-- description:
 IF( HASONEVALUE( Environments[id] ), 1, 0 )

@@ -1,7 +1,7 @@
 -- table: Measurements
 -- name: Max Measurement Duration Display
--- format: 
--- description: 
+-- format:
+-- description:
 VAR MaxDuration =
     MAX ( 'Measurements'[duration_seconds] )
 RETURN
