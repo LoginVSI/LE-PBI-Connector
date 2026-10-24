@@ -1,0 +1,9 @@
+-- table: Measurements
+-- name: Show No Data Message (Measurements)
+-- format:
+-- description:
+IF (
+    COUNT ( Measurements[duration] ) = 0,
+    "No Data",
+    ""
+)

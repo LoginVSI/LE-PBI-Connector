@@ -1,0 +1,158 @@
+{
+  "requests": [
+    {
+      "route": "v7-preview/openapi.json",
+      "status": 200,
+      "countRequested": null
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 200,
+      "countRequested": 1,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 1,
+      "total": 70
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 200,
+      "countRequested": 1000,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 70,
+      "total": 70
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 200,
+      "countRequested": 1001,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 70,
+      "total": 70
+    },
+    {
+      "route": "v7-preview/applications",
+      "status": 200,
+      "countRequested": 1,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 1,
+      "total": 116
+    },
+    {
+      "route": "v7-preview/applications",
+      "status": 200,
+      "countRequested": 1000,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 116,
+      "total": 116
+    },
+    {
+      "route": "v7-preview/applications",
+      "status": 200,
+      "countRequested": 1001,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 116,
+      "total": 116
+    },
+    {
+      "route": "v7-preview/environments",
+      "status": 200,
+      "countRequested": 1,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 1,
+      "total": 16
+    },
+    {
+      "route": "v7-preview/environments",
+      "status": 200,
+      "countRequested": 1000,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 16,
+      "total": 16
+    },
+    {
+      "route": "v7-preview/environments",
+      "status": 200,
+      "countRequested": 1001,
+      "shape": "dict",
+      "fields": [
+        "items",
+        "totalCount",
+        "offset"
+      ],
+      "rows": 16,
+      "total": 16
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 400,
+      "countRequested": 1
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 400,
+      "countRequested": 1000
+    },
+    {
+      "route": "v7-preview/tests",
+      "status": 400,
+      "countRequested": 1001
+    },
+    {
+      "route": "v7/openapi.json",
+      "status": 200,
+      "countRequested": null
+    }
+  ],
+  "notes": [
+    {
+      "contract": "v7-preview",
+      "sha256": "b4c0a613899844886fc53903e516db0ab81a979680b07648954fed1696839fc8",
+      "paths": 137
+    },
+    {
+      "contract": "v7",
+      "sha256": "b4c0a613899844886fc53903e516db0ab81a979680b07648954fed1696839fc8",
+      "paths": 137
+    }
+  ]
+}

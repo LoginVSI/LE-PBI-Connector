@@ -1,0 +1,200 @@
+{
+  "dateUtc": "2026-10-21T21:31:50.405894+00:00",
+  "route": "/publicApi/v7-preview/tests/test-runs",
+  "desktopFailure": {
+    "ownerReported": true,
+    "blockedQueries": 13,
+    "status": 500,
+    "attempts": 3,
+    "accepted": false
+  },
+  "dateParametersSentOnThisRoute": false,
+  "cases": [
+    {
+      "type": "applicationTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {},
+      "status": 200,
+      "snapshotNonNull": false,
+      "snapshotFieldNames": [],
+      "workloadSteps": 0
+    },
+    {
+      "type": "applicationTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "testRunConfigurationSnapshot"
+      },
+      "status": 500
+    },
+    {
+      "type": "applicationTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "all"
+      },
+      "status": 500
+    },
+    {
+      "type": "applicationTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {},
+      "status": 200,
+      "snapshotNonNull": false,
+      "snapshotFieldNames": [],
+      "workloadSteps": 0
+    },
+    {
+      "type": "applicationTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "testRunConfigurationSnapshot"
+      },
+      "status": 200,
+      "snapshotNonNull": true,
+      "snapshotFieldNames": [
+        "accountGroups",
+        "connector",
+        "emailRecipient",
+        "includeSuccessfulApplications",
+        "isEmailEnabled",
+        "launcherGroups",
+        "name",
+        "restartOnComplete",
+        "sessionMetricDefinition",
+        "testId",
+        "thresholds",
+        "workload"
+      ],
+      "workloadSteps": 2
+    },
+    {
+      "type": "applicationTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "all"
+      },
+      "status": 200,
+      "snapshotNonNull": true,
+      "snapshotFieldNames": [
+        "accountGroups",
+        "connector",
+        "emailRecipient",
+        "includeSuccessfulApplications",
+        "isEmailEnabled",
+        "launcherGroups",
+        "name",
+        "restartOnComplete",
+        "sessionMetricDefinition",
+        "testId",
+        "thresholds",
+        "workload"
+      ],
+      "workloadSteps": 2
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {},
+      "status": 200,
+      "snapshotNonNull": false,
+      "snapshotFieldNames": [],
+      "workloadSteps": 0
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "testRunConfigurationSnapshot"
+      },
+      "status": 500
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "asc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "all"
+      },
+      "status": 500
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {},
+      "status": 200,
+      "snapshotNonNull": false,
+      "snapshotFieldNames": [],
+      "workloadSteps": 0
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "testRunConfigurationSnapshot"
+      },
+      "status": 200,
+      "snapshotNonNull": true,
+      "snapshotFieldNames": [
+        "accountGroups",
+        "applicationDebugModeEnabled",
+        "connector",
+        "environmentKey",
+        "environmentName",
+        "euxEnabled",
+        "launcherGroups",
+        "name",
+        "numberOfSessions",
+        "rampDownDurationInMinutes",
+        "rampUpDurationInMinutes",
+        "sessionMetricDefinition",
+        "sessionMetricScheduleRate",
+        "sessionMetricsEnabled",
+        "testDurationInMinutes",
+        "testId",
+        "workload"
+      ],
+      "workloadSteps": 2
+    },
+    {
+      "type": "loadTest",
+      "recordSelection": "desc",
+      "route": "/publicApi/v7-preview/test-runs/{id}",
+      "query": {
+        "include": "all"
+      },
+      "status": 200,
+      "snapshotNonNull": true,
+      "snapshotFieldNames": [
+        "accountGroups",
+        "applicationDebugModeEnabled",
+        "connector",
+        "environmentKey",
+        "environmentName",
+        "euxEnabled",
+        "launcherGroups",
+        "name",
+        "numberOfSessions",
+        "rampDownDurationInMinutes",
+        "rampUpDurationInMinutes",
+        "sessionMetricDefinition",
+        "sessionMetricScheduleRate",
+        "sessionMetricsEnabled",
+        "testDurationInMinutes",
+        "testId",
+        "workload"
+      ],
+      "workloadSteps": 2
+    }
+  ]
+}

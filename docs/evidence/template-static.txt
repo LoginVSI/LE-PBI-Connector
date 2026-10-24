@@ -1,0 +1,11 @@
+ok:   same 22 entries in the same order
+ok:   all entries other than DataModelSchema, Report/Layout are byte-identical
+ok:   34 tables unchanged (names/order)
+ok:   33 relationships unchanged
+ok:   319 columns unchanged
+ok:   all 70 original measure identifiers retained; 13 added
+ok:   measure names unique across tables
+ok:   DAX static checks passed for 83 measures (brackets balanced, all table/column/measure references resolve)
+ok:   all 59 measures bound by visuals exist in the model
+
+Static template checks passed (NOT a Desktop validation).

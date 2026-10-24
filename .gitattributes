@@ -1,0 +1,13 @@
+# Normalise text so the MEZ built from source is byte-reproducible on any OS.
+*.pq      text eol=lf
+*.resx    text eol=lf
+*.proj    text eol=lf
+*.ps1     text eol=lf
+*.md      text eol=lf
+*.yml     text eol=lf
+*.json    text eol=lf
+*.dax     text eol=lf
+*.png     binary
+*.pbit    binary
+*.mez     binary
+*.m       text eol=lf

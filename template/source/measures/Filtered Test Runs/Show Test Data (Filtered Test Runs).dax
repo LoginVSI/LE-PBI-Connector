@@ -1,0 +1,9 @@
+-- table: Filtered Test Runs
+-- name: Show Test Data (Filtered Test Runs)
+-- format: 0
+-- description:
+IF(
+    HASONEVALUE ( 'Filtered Test Runs'[id] ),
+    1,
+    0
+)

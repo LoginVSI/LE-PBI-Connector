@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Canonical package: bin/AnyCPU/Debug/LE-PBI-Connector.mez (the path the README and Power Query SDK settings use).
+  The MEZ is produced by build/Build-Mez.ps1 so it is byte-reproducible; this project simply invokes that script
+  and is the single source of truth for which files go into the package (MezContent items).
+-->
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="BuildMez">
   <PropertyGroup>
     <OutputPath Condition="'$(OutputPath)' == ''">$(MSBuildProjectDirectory)\bin\AnyCPU\Debug\</OutputPath>
-    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</IntermediateOutputPath>
-    <MezIntermediatePath>$(IntermediateOutputPath)MEZ\</MezIntermediatePath>
-    <MezOutputPath>$(OutputPath)$(MsBuildProjectName).mez</MezOutputPath>
+    <MezOutputPath>$(OutputPath)LE-PBI-Connector.mez</MezOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <MezContent Include="LoginEnterprise_PBI.pq" />
@@ -19,14 +22,10 @@
     <MezContent Include="LE_32_New.png" />
     <MezContent Include="resources.resx" />
   </ItemGroup>
-  <Target Name="BuildMez" AfterTargets="Build" Inputs="@(MezContent)" Outputs="$(MezOutputPath)">
-    <RemoveDir Directories="$(MezIntermediatePath)" />
-    <Copy SourceFiles="@(MezContent)" DestinationFolder="$(MezIntermediatePath)" />
-    <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
-    <ZipDirectory SourceDirectory="$(MezIntermediatePath)" DestinationFile="$(MezOutputPath)" Overwrite="true" />
+  <Target Name="BuildMez" AfterTargets="Build">
+    <Exec Command="pwsh -NoProfile -File &quot;$(MSBuildProjectDirectory)\build\Build-Mez.ps1&quot; -Output &quot;$(MezOutputPath)&quot;" />
   </Target>
   <Target Name="Clean">
-    <RemoveDir Directories="$(MezIntermediatePath)" />
     <Delete Files="$(MezOutputPath)" />
   </Target>
 </Project>

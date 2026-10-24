@@ -1,0 +1,12 @@
+-- table: Platform Metrics
+-- name: PM Metric Count Display
+-- format:
+-- description:
+VAR MetricCount =
+    DISTINCTCOUNT('Platform Metrics'[displayName])
+RETURN
+    IF(
+        NOT HASONEVALUE(Environments[id]) || MetricCount = 0,
+        "No Data",
+        FORMAT(MetricCount, "#,0")
+    )

@@ -1,0 +1,5 @@
+-- table: Filtered Test Runs
+-- name: Show Hybrid Slicer Item (Run Evidence)
+-- format: 0
+-- description: NEW 1.1.0.2. Replaces the Measurements-only rule in slicer visual filters: keeps failed/no-measurement Application and Load runs selectable; Continuous runs still need retained evidence.
+IF ( [Eligible Test Runs (Filtered Test Runs)] > 0, 1, 0 )

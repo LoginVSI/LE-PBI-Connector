@@ -1,0 +1,104 @@
+{
+  "dateUtc": "2026-10-24T00:46:22.153343+00:00",
+  "desktopVersion": "2.159.883.0",
+  "ownerObserved": "Final legacy candidate Load, Refresh and File > Export > Power BI template completed",
+  "initialSavedReport": "A .pbit.pbix was a PBIX report; retained privately and not renamed or committed.",
+  "nativeExportSha256": "E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4",
+  "nativeBasePath": "template/base/Login Enterprise Desktop 2026-10.pbit",
+  "candidateSha256": "0E22BF675BE20D7084B34908B12C0C2CF966FEA68C20DE549402B4D394B74ADD",
+  "privacy": {
+    "allSixParametersNullInModelAndPersistedMetadata": true,
+    "liveHostOrTokenMatchesAcrossDecodedZipEntries": 0,
+    "knownRunIdAndAccountIdMatches": 0,
+    "privateTestNameMatches": 0,
+    "genericPublicBaselineNamesExcludedFromPrivateScan": true,
+    "rawValuesLogged": false,
+    "dataModelPayloadAbsent": true
+  },
+  "sourceParity": {
+    "loadedLegacyPartitionsMatchingCanonical": 12,
+    "loadedDateDescriptionsMatchingCanonical": 2,
+    "nativeMPartitionsUnchanged": 12,
+    "nativeDaxExpressionsUnchanged": 83,
+    "textReExport": "completed; empty metadata-header whitespace normalized only"
+  },
+  "structure": {
+    "pages": 9,
+    "visuals": 220,
+    "tables": 35,
+    "columns": 326,
+    "relationships": 34,
+    "legacyColumnsRetained": 319,
+    "legacyMeasuresRetained": 70,
+    "measuresTotal": 83,
+    "nativeDateTableAdded": 1,
+    "nativeDateRelationshipAdded": 1,
+    "documentedTypeRefinements": [
+      {
+        "table": "Tests",
+        "column": "created",
+        "before": "string",
+        "after": "dateTime"
+      },
+      {
+        "table": "Tests",
+        "column": "numberOfSessions",
+        "before": "string",
+        "after": "int64"
+      },
+      {
+        "table": "Tests",
+        "column": "rampUpDurationInMinutes",
+        "before": "string",
+        "after": "int64"
+      },
+      {
+        "table": "Tests",
+        "column": "testDurationInMinutes",
+        "before": "string",
+        "after": "int64"
+      },
+      {
+        "table": "Tests",
+        "column": "rampDownDurationInMinutes",
+        "before": "string",
+        "after": "int64"
+      },
+      {
+        "table": "Tests",
+        "column": "euxEnabled",
+        "before": "string",
+        "after": "boolean"
+      },
+      {
+        "table": "Tests",
+        "column": "sessionMetricsEnabled",
+        "before": "string",
+        "after": "boolean"
+      },
+      {
+        "table": "Tests",
+        "column": "sessionMetricScheduleRate",
+        "before": "string",
+        "after": "int64"
+      },
+      {
+        "table": "Tests",
+        "column": "engineStartTimeout",
+        "before": "string",
+        "after": "int64"
+      }
+    ]
+  },
+  "modelChecks": "Actual final legacy ModelChecks and counts match the reconciled baseline; raw rows remain ignored.",
+  "artifactBuild": "Pinned native base; PBIR/resources unchanged; editable M/DAX/help applied; deterministic stored ZIP; source parity check passed",
+  "acceptanceLimit": "Not every UI interaction/negative case was observed; direct Desktop credential path unavailable. Gateway and Service unexecuted.",
+  "discovery": {
+    "status": "passed; owner observed",
+    "legacyEntries": 1,
+    "keyEntries": 1,
+    "duplicates": 0,
+    "newConnectionCreated": false
+  },
+  "disposition": "qualified acceptance for exercised Desktop scope; remaining limits explicit"
+}

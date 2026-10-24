@@ -1,0 +1,5 @@
+-- table: Platform Metrics
+-- name: PM Selected Environment
+-- format:
+-- description:
+SELECTEDVALUE( Environments[name], "Select an Environment" )

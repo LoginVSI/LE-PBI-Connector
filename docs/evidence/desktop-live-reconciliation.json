@@ -1,0 +1,25 @@
+{
+  "dateUtc": "2026-10-22T19:53:04.330145+00:00",
+  "status": "passed",
+  "requests": 7,
+  "readOnly": true,
+  "profileOrTrustModified": false,
+  "largeRun": {
+    "sourceRawRows": 5601,
+    "sourceHalfOpenRows": 5601,
+    "modelRows": 5601,
+    "pages": 6,
+    "totalCountStable": true,
+    "reportedTotalCount": 5601,
+    "observationKeyDurationAccountMultisetMatches": true,
+    "rawRowsOutsideHalfOpenWindow": 0
+  },
+  "zeroMetric": {
+    "sourceResponseShape": "array",
+    "matchingSourceObservations": 1,
+    "modelMeasurement": 0,
+    "modelAndSourceCountMatch": true,
+    "modelNumericCount": 1,
+    "noDataMessage": ""
+  }
+}

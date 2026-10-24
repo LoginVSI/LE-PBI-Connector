@@ -1,0 +1,42 @@
+{
+  "dateUtc": "2026-10-21T20:51:10.349305Z",
+  "windowStartUtc": "2026-09-18T00:00:00Z",
+  "windowEndExclusiveUtc": "2026-09-25T00:00:00Z",
+  "daysBack": 7,
+  "requests": 6,
+  "status": "source-read-complete",
+  "representatives": [
+    {
+      "alias": "representative-1",
+      "type": "ApplicationTest",
+      "finished": true,
+      "result": "successful",
+      "measurementRows": 8,
+      "zeroDurationRows": 0,
+      "durationSecondsMean": 0.80775,
+      "distinctNonblankAccountIds": 1
+    },
+    {
+      "alias": "representative-2",
+      "type": "ApplicationTest",
+      "finished": true,
+      "result": "internalError",
+      "measurementRows": 0,
+      "zeroDurationRows": 0,
+      "durationSecondsMean": null,
+      "distinctNonblankAccountIds": 0
+    }
+  ],
+  "mode": "fixed retained-results range",
+  "startDate": "2026-09-18",
+  "endDate": "2026-09-24",
+  "allRunCount": 1608,
+  "overlappingRunCounts": {
+    "applicationtest": 20,
+    "loadtest": 0,
+    "continuoustest": 29
+  },
+  "finishedDenominator": 20,
+  "successfulCount": 19,
+  "successRate": 0.95
+}

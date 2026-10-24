@@ -1,0 +1,9 @@
+-- table: Events
+-- name: Show No Data Message (appFailure)
+-- format:
+-- description:
+IF (
+    CALCULATE(COUNTROWS(Events), Events[eventType] = "applicationFailure") = 0,
+    "No Data",
+    ""
+)

@@ -1,0 +1,12 @@
+-- table: Filtered Test Runs
+-- name: Run Evidence Rows
+-- format: 0
+-- description: NEW 1.1.0.2. Rows of retained evidence (measurements, events, user sessions, session metrics, aggregated EUX) for the runs in the current filter context. Helper for eligibility rules.
+VAR n =
+    COUNTROWS ( 'Measurements' )
+        + COUNTROWS ( 'Events' )
+        + COUNTROWS ( 'User Sessions' )
+        + COUNTROWS ( 'User Session Metrics' )
+        + COUNTROWS ( 'Aggregated EUX Results' )
+RETURN
+    COALESCE ( n, 0 )

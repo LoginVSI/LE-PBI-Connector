@@ -1,0 +1,23 @@
+{
+  "dateUtc": "2026-10-21T22:03:14.2456617Z",
+  "phase": "repaired connector installed; refresh retry pending",
+  "candidateCommit": "9c9cdcf7d9bc8acc3a32bb6af509a2fcd0c58ef4",
+  "installationEvidence": "desktop-installation-8B7EAC70A460.json",
+  "savedReportPreserved": true,
+  "desktopWindow": "LE-acceptance-in-progress",
+  "desktopResponding": true,
+  "computerUse": "Native pipe unavailable; essential Refresh action requires owner",
+  "preRetryModelChecks": {
+    "executed": true,
+    "resultSetRowCounts": [
+      0,
+      0,
+      0,
+      1
+    ],
+    "privateEvidence": ".cache/desktop-acceptance-20261021/pre-retry-modelchecks.raw.json",
+    "disposition": "Pre-retry empty model; not successful retrieval or acceptance"
+  },
+  "refreshRetried": false,
+  "desktopAcceptance": "pending"
+}

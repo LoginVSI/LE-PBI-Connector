@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'fix/**']
+
+permissions:
+  contents: read
+
+jobs:
+  connector:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Secret scan
+        shell: pwsh
+        run: ./tools/Test-NoSecrets.ps1
+      - name: Package equals source build (byte-for-byte)
+        shell: pwsh
+        run: ./build/Build-Mez.ps1 -Check
+      - name: M tests on the Power Query engine (PQTest, hash-pinned SDK tools)
+        shell: pwsh
+        run: ./tests/Run-Tests.ps1
+      - name: Deliberate M failure must be detected
+        shell: pwsh
+        run: |
+          & pwsh -NoProfile -File ./tests/Run-Tests.ps1 -ProbeFailure
+          if ($LASTEXITCODE -ne 1) { throw 'Deliberate M failure was not detected.' }
+          $global:LASTEXITCODE = 0
+      - name: Real Web.Contents cache and retry probe (loopback only)
+        shell: pwsh
+        run: |
+          ./build/Build-Mez.ps1 -Test -Output "$env:RUNNER_TEMP/http-retry.test.mez"
+          python ./tests/support/http_retry_probe.py --pqtest ./.cache/sdktools/tools/PQTest.exe --mez "$env:RUNNER_TEMP/http-retry.test.mez" --output "$env:RUNNER_TEMP/http-retry-cache.json"
+      - name: Template candidate builds and passes static checks
+        shell: pwsh
+        run: |
+          ./template/Build-Template.ps1 -Check
+          ./template/Build-Template.ps1 -Output "$env:RUNNER_TEMP/candidate.pbit"
+          ./template/Test-Template.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
+          ./template/Test-PersistedQueries.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit"
+          ./template/acceptance/Prepare-KeyCopy.ps1 -Candidate "$env:RUNNER_TEMP/candidate.pbit" -Output "$env:RUNNER_TEMP/key-acceptance.pbit" -StartDate 2026-09-18 -EndDate 2026-09-24
+          ./template/acceptance/Test-KeyCopy.ps1 -Candidate "$env:RUNNER_TEMP/key-acceptance.pbit" -StartDate 2026-09-18 -EndDate 2026-09-24
+      - name: Print checksums
+        shell: pwsh
+        run: Get-FileHash bin/AnyCPU/Debug/LE-PBI-Connector.mez, "$env:RUNNER_TEMP/candidate.pbit" -Algorithm SHA256 | Format-Table -AutoSize

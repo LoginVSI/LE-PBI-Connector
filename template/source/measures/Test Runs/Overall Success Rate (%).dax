@@ -1,0 +1,8 @@
+-- table: Test Runs
+-- name: Overall Success Rate (%)
+-- format:
+-- description: Success rate for loaded-window runs, intersected with any selection on the legacy Test Runs table.
+CALCULATE (
+    [Overall Success Rate (% & Filtered Test Runs)],
+    KEEPFILTERS ( TREATAS ( VALUES ( 'Test Runs'[id] ), 'Filtered Test Runs'[id] ) )
+)

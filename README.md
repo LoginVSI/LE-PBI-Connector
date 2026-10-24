@@ -2,7 +2,7 @@
 
 ## Summary
 
-This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom report connector** and also details on the Power BI Template file that is available to leverage dor your Login Enterprise data. You’ll learn how to:
+This guide provides step-by-step instructions for setting up and using the **Login Enterprise Power BI custom report connector** and also details on the Power BI Template file that is available to use with your Login Enterprise data. You’ll learn how to:
 
 - Install and configure Power BI Desktop
 - Download and install the `.mez` connector file
@@ -11,7 +11,22 @@ This guide provides step-by-step instructions for setting up and using the **Log
 
 This connector helps you transform Login Enterprise performance data into actionable insights in Power BI.
 
-> NOTE: The connector is currently setup to use the v7-preview Public API. This API resolves to the same v7 endpoints which is currently the LoginVSI recommended Public API version.
+> **Unsupported community/reference tooling.** This connector and template are provided as reference tooling that you can adapt to your environment. They are not a supported Login VSI product and are not covered by product support. Test changes against your own appliance before relying on the numbers, and see [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) for what has and has not been verified.
+
+> NOTE: The connector uses the `v7-preview` Public API route (`https://<fqdn>/publicApi/v7-preview/...`). It has not been migrated to a newer API target. A bounded read-only check verified the matching appliance Swagger and production page size on sampled routes. Endpoint maxima are not specified by that Swagger; see [the independent audit](docs/INDEPENDENT-AUDIT.md) for exact coverage and limitations.
+
+## Recommended downloads: tested community preview 1.1.0.2
+
+Use this connector and template together for new reports. Both have qualified Desktop acceptance under the [documented coverage limits](docs/MERGE-HANDOFF.md).
+
+| File | Download | Purpose |
+|---|---|---|
+| `LE-PBI-Connector.mez` | [Download connector](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | Canonical connector, version 1.1.0.2. Install this file in your per-user Custom Connectors folder. |
+| `Login Enterprise 1.1.0.2-candidate.pbit` | [Download tested template](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) | Recommended template, rebuilt from the tested native Desktop PBIR export. The `candidate` filename is retained for continuity. Open it after installing the connector. |
+
+Verify downloads against [SHA256SUMS.txt](docs/SHA256SUMS.txt). Repository paths are `bin/AnyCPU/Debug/LE-PBI-Connector.mez` and `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit`. The [original template](template/Login%20Enterprise.pbit) is preserved for compatibility/history. The pinned file in `template/base/` is a build input. Neither is the recommended starting template.
+
+Legacy and Key Load/Refresh, fixed-window model/source parity, nine-page rendering, selected Logon interactions, Key visual-edit persistence and legacy rollback passed the recorded checks. The final template completed a native Desktop export and reproducible rebaseline. See [acceptance evidence](docs/DESKTOP-ACCEPTANCE.md) and [changelog](docs/CHANGELOG.md). Unobserved or unavailable cases remain explicit; gateway and Service acceptance are deferred.
 
 ---
 
@@ -19,9 +34,9 @@ This connector helps you transform Login Enterprise performance data into action
 
 Ensure the following before starting:
 
-- [Power BI Desktop](https://powerbi.microsoft.com/desktop) is installed
-- A valid Login Enterprise API Token
-- Your Login Enterprise FQDN (e.g., `demolab.loginvsi.com`)
+- [Power BI Desktop](https://powerbi.microsoft.com/desktop) is installed. **No administrator rights, gateway or service install are needed for ordinary Desktop use**; the connector is a per-user file.
+- A valid Login Enterprise API token (read access to tests, test runs, measurements, events, user sessions, applications, environments)
+- Your Login Enterprise FQDN, host name only (e.g., `demolab.loginvsi.com`; HTTPS only, no `https://` path or query)
 - To successfully extract data from the Login Enterprise API, the SSL certificate used by the Login Enterprise web interface must be trusted by the machine performing the extraction.
 If you are using the default self-signed certificate, you can manually trust the root certificate provided by Login Enterprise.
 
@@ -32,23 +47,28 @@ If you are using the default self-signed certificate, you can manually trust the
    Be sure to replace `<appliance>` with the actual FQDN of your Login Enterprise appliance. Once downloaded, install the certificate into the Trusted Root Certification Authorities store on the machine running Power BI and/or the on-prem data gateway machine if performing scheduled refreshes.
 
 
-## Step 1: Download the Connector
+## Step 1: Download the tested pair
 
-1. Download the `.mez` file from /bin/AnyCPU/Debug : **[LoginEnterprise_PBI.mez](https://github.com/LoginVSI/LE-PBI-Connector/blob/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez)**  
-2. Save the file somewhere accessible (e.g., `Downloads`)
+1. Download both files from [Recommended downloads](#recommended-downloads-tested-community-preview-1102), preserving their `.mez` and `.pbit` extensions.
+2. Save them to a local folder such as Downloads. In a source checkout, use the exact repository paths listed above.
+3. Run `Get-FileHash` on each downloaded file and compare the complete SHA256 with [SHA256SUMS.txt](docs/SHA256SUMS.txt).
 
+## Step 2: Install only the LE connector
 
-## Step 2: Move `.mez` to the Power BI Custom Connectors Folder
+Power BI loads custom connectors from `<your Documents folder>\Power BI Desktop\Custom Connectors`. Windows may redirect Documents to OneDrive. Resolve the actual folder in PowerShell without elevation:
 
-Power BI requires custom report connectors to be stored in a specific folder.
+```powershell
+$connectorFolder = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Power BI Desktop\Custom Connectors'
+$connectorFolder
+New-Item -ItemType Directory -Force $connectorFolder | Out-Null
+Get-ChildItem -LiteralPath $connectorFolder
+```
 
-1. Open File Explorer
-2. Navigate to:
-   - `Documents\Power BI Desktop\Custom Connectors`
-   - _or_, if using OneDrive, try: `OneDrive\Documents\Power BI Desktop\Custom Connectors`
-3. If the folder doesn't exist, create it manually
-4. Move or copy `LoginEnterprise_PBI.mez` into that folder
-5. Restart Power BI Desktop if it was open
+1. Save your reports and fully close all Power BI Desktop windows.
+2. Back up the existing LE connector outside Custom Connectors. Preserve other installed connectors.
+3. Copy the downloaded `LE-PBI-Connector.mez` into the resolved folder with that exact filename. Move any duplicate/obsolete LE connector, such as `LoginEnterprise_PBI.mez`, into the backup folder. Keep exactly one installed LE connector.
+4. Verify the installed file's SHA256 against [SHA256SUMS.txt](docs/SHA256SUMS.txt), then restart Desktop. Connector discovery happens at startup.
+5. In Get Data > More, search for Login Enterprise. Expect one legacy entry and one Login Enterprise (Key credential) entry, without duplicates. Continue with the security prerequisite below if extensions are not already enabled.
 
 
 ## Step 3: Enable Custom Connector Support
@@ -60,6 +80,8 @@ Power BI requires custom report connectors to be stored in a specific folder.
    - `⚠️ (Not Recommended) Allow any extension to load without validation`
 5. Click **OK**
 6. Restart Power BI when prompted
+
+> This is a Power BI-wide security setting that weakens extension validation for **every** custom connector. It is shown here because it is the documented way to run an unsigned `.mez`; your IT/security team may prefer a different approach (for example a signed connector with a trusted thumbprint). This project does not change that setting for you.
 
 
 ## Step 4: Connect to Login Enterprise
@@ -76,12 +98,13 @@ Power BI requires custom report connectors to be stored in a specific folder.
 4. When prompted:
    - Enter your **FQDN** (e.g., `demolab.loginvsi.com`)
    - Enter your **Login Enterprise API Token** (View documentation [HERE](https://support.loginvsi.com/hc/en-us/articles/360009534760-Public-API) on how to add API access token)
-   - Select the **Days Back** from the choices (1, 3, 7, 30, 60, 90). This determines how back data is retrieved by the connector. For example, if selecting 30 days, data will be retrieved going back 30 days to the current date
-   - **Use Date Range** – Select TRUE if you want to ignore Days Back and instead use a custom date range.
-   - **Start Date** – The beginning date of your custom range (only used if Use Date Range is TRUE).
-   - **End Date** – The ending date of your custom range (only used if Use Date Range is TRUE).
+   - Select the **Days Back** (a whole number from 1 to 365; the drop-down suggests 1, 7, 30, 60, 90). Rolling window: **today plus that many previous days**, in UTC.
+   - **Use Date Range** – Select TRUE to ignore Days Back and use a fixed range instead.
+   - **Start Date** / **End Date** – first and last day to include (both required when Use Date Range is TRUE; the whole End Date day is included).
 
-   > Note: Either Days Back or Use Date Range must be specified. If both are left blank or set incorrectly, the connector defaults to 30 days.
+   > Note: see [Date windows](#date-windows). Leaving Days Back blank means 30. If Use Date Range is TRUE and either date is missing, or Start is after End, the refresh fails with an explanatory message instead of silently using a different range.
+
+   > **Token storage (legacy entry point).** The connection above passes the token as a function argument. Power BI stores it with the query/data source path (and in a `.pbix`/`.pbit` parameter), i.e. **in clear text inside the report**. Treat reports built this way as containing a secret, and see [Choosing how the token is supplied](#choosing-how-the-token-is-supplied) for the Key-credential alternative.
 
 ![FQDN and API Token](images/readme_18.png)
 
@@ -97,6 +120,22 @@ Power BI requires custom report connectors to be stored in a specific folder.
 ![Load Tables](images/readme_5.png)
 
 > ⏳ Data may take between 5-10 minutes to load depending on volume
+
+### Choosing how the token is supplied
+
+| | `LoginEnterprise_PBI.Contents(FQDN, ApiToken, ...)` (original) | `LoginEnterprise_PBI.ContentsKey(FQDN, ...)` (new in 1.1.0.2) |
+|---|---|---|
+| Authentication kind | Anonymous | Key (Power BI credential dialog) |
+| Where the token lives | Query argument / report parameter (clear text in the file) | Power BI credential store, not in the query |
+| Existing reports | Unchanged, keep working | Opt-in; needs the migration below |
+| Status | Used by the template and by existing `.pbix` files | **Desktop Key Load/Refresh and fixed-window parity verified; remaining acceptance and Service limits are in docs/ACCEPTANCE.md** |
+
+Migrating a report to the Key entry point (opt-in, reversible):
+1. Keep the original `.pbix`. Work on a copy.
+2. In each query's Advanced Editor change `LoginEnterprise_PBI.Contents(FQDN, APIToken, DaysBack, UseDateRange, StartDateParam, EndDateParam)` to `LoginEnterprise_PBI.ContentsKey(FQDN, DaysBack, UseDateRange, StartDateParam, EndDateParam)`.
+3. When prompted, choose **Key** and paste the token into the credential dialog (not into a parameter). Delete the `APIToken` parameter (or leave it empty).
+4. Refresh twice (first full refresh and a second refresh) and compare row counts with the original report.
+5. **Rollback:** open the original `.pbix`; nothing about it changed. The old connector entry point is still in the same `.mez`.
 
 ---
 
@@ -124,7 +163,7 @@ Understanding how the Login Enterprise tables relate to each other is key to bui
 
 ## On-Premise Data Gateway
 
-If you choose to publish the Power BI report to the Power BI Service and enable incremental data refresh, you will need to set up an [on-premise data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem) to allow secure communication between the Power BI Service and your Login Enterprise virtual appliance. This requirement exists because the connector is currently a custom (non-certified) connector, which the Power BI Service cannot access directly without a gateway.
+**Not needed for Power BI Desktop.** Only if you publish the report to the Power BI Service and want scheduled refresh do you need an [on-premise data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem), because this is a custom (non-certified) connector the Service cannot run by itself. That is a separate, administrator-level setup (install the gateway, enable custom connectors in its settings, place the `.mez` in the gateway's connector folder, add the data source and credentials) with its own acceptance test. **This project has not demonstrated gateway or Service refresh.** The connector now defines `TestConnection` in the documented `dataSourcePath` form and the test performs a real small API request, but that is not evidence that a gateway works.
 
 You can find step-by-step instructions for downloading, installing, and configuring the on-premises data gateway [HERE](https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-install).
 
@@ -134,9 +173,13 @@ You can find step-by-step instructions for downloading, installing, and configur
 
 ## Login Enterprise Power BI Template
 
-This Power BI template enables Login Enterprise users to effortlessly visualize and analyze key performance metrics across continuous, load, and application testing. It connects directly to the Login Enterprise API through the custom Power BI connector and delivers ready-to-use dashboards for executive summaries, operational monitoring, and troubleshooting. The report comes fully pre-built with a structured data model, defined schema, and a comprehensive set of interactive visualizations whichc eliminates the need for manual setup. The `.pbit` file can be found in the [/template](https://github.com/LoginVSI/LE-PBI-Connector/tree/main/template) folder
+Open the [tested template download](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) after installing the canonical connector above. Its repository path is `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit`. The original `template/Login Enterprise.pbit` remains a historical compatibility reference.
 
-When opening the `.pbit` file, you will be prompted to enter the FQDN (e.g., demolab.loginvsi.com) of the Login Enterprise virtual appliance, an API Token (e.g., Xg0yWyQLAz...) generated from the appliance, and either a Days Back value to retrieve data from a set number of days ago up to the current date, or enable Use Date Range and provide both a Start Date and End Date for a specific time period.
+The template prompts for `FQDN`, `APIToken`, `DaysBack`, `UseDateRange`, `StartDateParam` and `EndDateParam`. This template uses the legacy entry point, so enter the approved appliance and token locally and treat populated reports as containing a secret. The separate [Key migration](#choosing-how-the-token-is-supplied) avoids storing the token in M parameters while preserving the original report.
+
+Save your populated working report as `.pbix`. To create a reusable template from Desktop, use **File > Export > Power BI template** and verify the save type is `.pbit`. A report named `.pbit.pbix` is still a report.
+
+For a fixed range, set `UseDateRange` to True and enter dates as **YYYY-MM-DD**. For example, `StartDateParam = 2026-09-18` and `EndDateParam = 2026-09-24` select 18 through 24 September 2026. The end date includes the **entire UTC day** of 24 September, with an exclusive boundary at `2026-09-25T00:00:00Z`. Keep these parameter identifiers unchanged. ISO entry was accepted in the Desktop Date fields on the acceptance host with en-US regional settings. Other cultures have M parsing coverage, not Desktop control acceptance.
 
 ![Template Prompt](images/readme_17.png)
 
@@ -239,3 +282,53 @@ The template report is fully customizable, allowing customers to tailor it to th
 - Learn how to establish [scheduled data refreshes on the semantic model](https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-scheduled-refresh)
 
 > NOTE: As mentioned previously, the on-premise data gateway will need to be established in order for the published template report to run on its scheduled refresh
+---
+
+## Date windows
+
+Point observations use this UTC-day policy; run/session tables have interval semantics described below:
+
+- A "day" is a **UTC calendar day**. The window is `[Start 00:00Z, End+1 00:00Z)`, so the selected end day (including today) is fully included and an observation exactly at midnight belongs to one day only.
+- **Rolling (Use Date Range off):** end = today (UTC), start = today minus *Days Back*. `Days Back = 1` therefore covers today and yesterday.
+- **Fixed (Use Date Range on):** Start and End are both required, Start must not be after End, and the span is limited to 366 days.
+- Rolling Days Back is 1..365 (plus today); fixed ranges are at most 366 days. Invalid input is an error, never silently widened or swapped. Omitted Days Back defaults to 30.
+- The window does not depend on the refreshing machine's time zone or daylight saving. **However**, Power Query converts the API's UTC timestamps to the *local time of the machine that refreshes* when it types `datetime` columns (verified on the Power Query engine). Desktop on a UTC-7 laptop and the Service (UTC) therefore show the same instants as different clock times, and a report's "today" in DAX is local. Keep that in mind when reconciling with the Login Enterprise UI.
+- Test Runs retains an unfiltered metadata catalog. Configuration snapshots and derived workload steps are retrieved only for overlapping Application/Load runs; out-of-window catalog rows have null snapshots. A selected snapshot retrieval failure fails refresh. The template uses Filtered Test Runs for loaded-window reporting. Sessions are active intervals, so a session spanning adjacent windows can appear in both. Count distinct IDs across their union. For acquisition, per-run data (measurements, sessions, EUX, metrics) is only fetched for runs whose start/finish overlaps the window, which includes runs that are still running (for example long-lived Continuous tests).
+
+## What the connector now does differently (1.1.0.2)
+
+- Paged lists are read through an empty terminator, including capped pages without totals (`count`/`offset` added exactly once; offsets and totals cross-checked). Previously measurements were truncated at 1000 rows per run per day, applications sent duplicate paging parameters, and environments read one page.
+- A failed request is an error with context (HTTP status, route, hint) instead of an empty table. The token is never included in error text. Transient statuses (408/429/5xx) get at most three attempts with 1/2-second retry delays. Requests have 30-second timeouts and paged reads stop at 1000 pages. A shared 300-second cooperative request budget is checked before attempts and after bodies; it cannot interrupt an in-flight request or decoding and is not a hard overall refresh deadline. Separate evaluations have separate budgets. See [audit limitations](docs/INDEPENDENT-AUDIT.md). Queried-route 404s fail refresh; absent data must be an empty success response.
+- A `Test Runs In Window` navigation item was added (used by the 1.1.0.2 template so failed runs without data stay visible). Existing navigation items, tables and columns are unchanged.
+
+## Troubleshooting
+
+| Symptom | Likely cause | What to do |
+|---|---|---|
+| Login Enterprise is not in Get Data | `.mez` not in the per-user folder, wrong folder, or Desktop not fully restarted | Re-run the folder commands in Step 2 and restart Desktop completely |
+| Old behaviour after upgrade | Two connector files in the folder | Remove the older `.mez` (see Step 2) |
+| "Could not complete the request ... never disables certificate validation" | DNS/network problem or the appliance certificate is not trusted | Verify the FQDN in a browser; install the appliance CA (see Prerequisites). Do not disable TLS checks |
+| "HTTP 401 ... Authentication failed" | Token missing/expired/revoked | Create a new token in the appliance and update the parameter/credential |
+| "HTTP 403" | Token's user lacks permission | Use a token with the required read access |
+| "HTTP 400 ... rejected the request parameters" | Appliance API differs from the v7-preview contract this connector targets | Note the appliance version and the route in the message; open an issue with that text (no token) |
+| "Pagination made no progress" / "Incomplete result" | Appliance ignores or caps paging | Report the route in the message; refresh will not publish a partial table |
+| "Use Date Range is enabled but Start Date and End Date are not both set" | Partial fixed range | Set both dates or turn Use Date Range off |
+| Prompt for credentials on every refresh | Anonymous legacy entry point cached with a token that changed | Edit the parameter and clear/re-apply permissions in Data source settings |
+
+**Diagnostics:** in Desktop use *Home > Transform data > View > Query Diagnostics* or the Power Query trace options, and capture the error text. Redact FQDNs and never share tokens.
+
+## Upgrade and rollback
+
+1. Close Power BI Desktop. 2. Move the old `.mez` out of `Custom Connectors` to a backup folder (keep it for rollback). 3. Copy the new `LE-PBI-Connector.mez` in. 4. Start Desktop, open your report and **Refresh**. 5. Compare row counts for Test Runs, Measurements, User Sessions and Events with the previous refresh (Measurements will increase if you previously hit the 1000-row truncation).
+
+Rollback: close Desktop, delete the new `.mez`, copy the old one back, restart. Reports are unchanged by the connector upgrade (the entry point and table schemas are the same).
+
+To rebuild the package from source (PowerShell 7): `pwsh build/Build-Mez.ps1`; the build is byte-reproducible and CI checks `bin/AnyCPU/Debug/LE-PBI-Connector.mez` against the source. Tests: `pwsh tests/Run-Tests.ps1` (downloads the pinned Power Query SDK test tool from NuGet; no Power BI Desktop involved).
+
+## Template changes in 1.1.0.2
+
+The original `template/Login Enterprise.pbit` is unchanged. A candidate with measure fixes is at `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` and is **not yet opened or validated in Power BI Desktop**. What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
+
+### First-load snapshot failure
+
+On the acceptance appliance, expanding some older stored run snapshots returns HTTP 500 even for count 1. The candidate now enumerates run metadata without expansion and retrieves snapshots for overlapping Application/Load runs through the verified v7-preview single-run route. This preserves workload steps for the selected window while avoiding expansion of unrelated broken history. Selected-run failures remain errors. See [the failed Desktop attempt and verified workaround](docs/DESKTOP-LOAD-FAILURE.md). Desktop acceptance is still pending a successful retry; there is no accepted full refresh yet.

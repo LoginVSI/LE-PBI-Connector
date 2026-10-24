@@ -1,0 +1,8 @@
+-- table: Filtered Test Runs
+-- name: Overall Success Rate Value (Filtered Test Runs)
+-- format: 0.0%
+-- description: NEW 1.1.0.2. Numeric success ratio (0..1). BLANK when no finished eligible run exists; a genuine 0% stays 0.
+VAR Denominator = [Eligible Success Denominator (Filtered Test Runs)]
+VAR Successful = [Successful Test Runs (Filtered Test Runs)]
+RETURN
+    IF ( Denominator > 0, DIVIDE ( Successful, Denominator ) )

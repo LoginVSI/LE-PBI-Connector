@@ -1,0 +1,290 @@
+{
+  "dateUtc": "2026-10-21T21:30:12.807781+00:00",
+  "route": "/publicApi/v7-preview/tests/test-runs",
+  "desktopFailure": {
+    "ownerReported": true,
+    "blockedQueries": 13,
+    "status": 500,
+    "attempts": 3,
+    "accepted": false
+  },
+  "dateParametersSentOnThisRoute": false,
+  "cases": [
+    {
+      "label": "minimal-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=applicationTest&count=1&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 205,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "connector-exact-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "omit-include-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 205,
+      "totalCount": 205,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "snapshot-count1-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "minimal-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=loadTest&count=1&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 1374,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "connector-exact-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "omit-include-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 1000,
+      "totalCount": 1374,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "snapshot-count1-loadTest",
+      "query": {
+        "testType": "loadTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=loadTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "minimal-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=continuousTest&count=1&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "connector-exact-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 29,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "omit-include-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true",
+      "status": 200,
+      "rows": 29,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "snapshot-count1-continuousTest",
+      "query": {
+        "testType": "continuousTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=continuousTest&orderBy=created&direction=asc&count=1&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 200,
+      "rows": 1,
+      "totalCount": 29,
+      "offset": 0,
+      "snapshotPresent": false
+    },
+    {
+      "label": "count100-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "100",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=100&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "order-testName-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "testName",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=testName&direction=asc&count=1000&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "direction-desc-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "desc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=desc&count=1000&offset=0&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "include-none-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "true",
+        "include": "none"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=true&include=none",
+      "status": 200,
+      "rows": 205,
+      "totalCount": 205,
+      "offset": 0,
+      "snapshotPresent": true
+    },
+    {
+      "label": "no-total-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "0",
+        "includeTotalCount": "false",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1000&offset=0&includeTotalCount=false&include=testRunConfigurationSnapshot",
+      "status": 500
+    },
+    {
+      "label": "offset1-applicationTest",
+      "query": {
+        "testType": "applicationTest",
+        "orderBy": "created",
+        "direction": "asc",
+        "count": "1000",
+        "offset": "1",
+        "includeTotalCount": "true",
+        "include": "testRunConfigurationSnapshot"
+      },
+      "encodedQuery": "testType=applicationTest&orderBy=created&direction=asc&count=1000&offset=1&includeTotalCount=true&include=testRunConfigurationSnapshot",
+      "status": 500
+    }
+  ]
+}

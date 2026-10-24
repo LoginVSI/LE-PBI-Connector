@@ -1,0 +1,7 @@
+-- table: User Session Metrics
+-- name: Avg Memory (MB) (Weighted) Display
+-- format:
+-- description: NEW 1.1.0.2. Display text of Avg Memory Weighted Value; requires a single selected run. The (MB) label is the legacy label; the unit is whatever the API reports and is not converted.
+VAR v = [Avg Memory Weighted Value]
+RETURN
+    IF ( NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( v ), "No Data", FORMAT ( v, "#,0.00" ) )

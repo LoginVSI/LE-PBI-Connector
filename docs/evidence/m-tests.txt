@@ -1,0 +1,11 @@
+Built <isolated temporary artifact> (103149 bytes) sha256 5A8B5006D5A6D6E0D331FF2651FB416041904CC37B9BC88C47AC989C8E763625
+PASS  00_smoke.pq  PASS 2 checks
+PASS  01_window.pq  PASS 30 checks
+PASS  02_paging_errors.pq  PASS 30 checks
+PASS  03_measurements_core.pq  PASS 22 checks
+PASS  04_entrypoints.pq  PASS 6 checks
+PASS  05_template_partition.pq  PASS 3 checks
+PASS  06_independent_regressions.pq  PASS 15 checks
+PASS  07_elapsed_budget.pq  PASS 3 checks
+
+8/8 test files passed

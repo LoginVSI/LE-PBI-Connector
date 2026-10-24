@@ -1,0 +1,30 @@
+-- table: Applications
+-- name: CountOfAppsInSelectedTest
+-- format: 0
+-- description:
+VAR SelectedTestIds = VALUES('Tests'[id])
+
+VAR FilteredTestRunIds =
+    SELECTCOLUMNS (
+        FILTER (
+            'Test Runs',
+            'Test Runs'[testId] IN SelectedTestIds
+        ),
+        "id", 'Test Runs'[id]
+    )
+
+VAR MatchingAppIds =
+    CALCULATETABLE (
+        DISTINCT('Measurements'[applicationId]),
+        'Measurements',
+        'Measurements'[testRunId] IN FilteredTestRunIds
+    )
+
+RETURN
+    CALCULATE (
+        DISTINCTCOUNT('Applications'[id]),
+        FILTER (
+            'Applications',
+            'Applications'[id] IN MatchingAppIds
+        )
+    )

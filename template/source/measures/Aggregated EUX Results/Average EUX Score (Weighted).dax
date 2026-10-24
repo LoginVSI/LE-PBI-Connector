@@ -1,0 +1,7 @@
+-- table: Aggregated EUX Results
+-- name: Average EUX Score (Weighted)
+-- format:
+-- description: NEW 1.1.0.2. Display text of Average EUX Score Weighted Value. Deferred: the numeric value returns BLANK until count population is established. Legacy averages remain available.
+VAR v = [Average EUX Score Weighted Value]
+RETURN
+    IF ( ISBLANK ( v ), "No Data", FORMAT ( v, "0.00" ) )

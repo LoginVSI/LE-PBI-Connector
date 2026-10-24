@@ -1,0 +1,5 @@
+-- table: User Session Metrics
+-- name: Avg CPU Weighted Value
+-- format: 0.00
+-- description: DEFERRED. Returns BLANK until the population represented by API count is independently established. Swagger describes count only as Count; it does not establish observation weights. Legacy unweighted bucket measures remain available.
+BLANK ()

@@ -1,0 +1,22 @@
+[
+  {
+    "credential": "synthetic only; isolated PQTest cache",
+    "pathFields": "FQDN",
+    "sourceKind": "LoginEnterprise_PBI_Key",
+    "host": "invalid.invalid",
+    "credentialSetup": "Success",
+    "entryPoint": "key",
+    "transportErrorWrapped": true,
+    "testConnection": "Failure"
+  },
+  {
+    "credential": "synthetic only; isolated PQTest cache",
+    "pathFields": "FQDN,ApiToken",
+    "sourceKind": "LoginEnterprise_PBI",
+    "host": "invalid.invalid",
+    "credentialSetup": "Success",
+    "entryPoint": "legacy",
+    "transportErrorWrapped": true,
+    "testConnection": "Failure"
+  }
+]

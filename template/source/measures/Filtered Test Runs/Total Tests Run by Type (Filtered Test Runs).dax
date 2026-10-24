@@ -1,0 +1,5 @@
+-- table: Filtered Test Runs
+-- name: Total Tests Run by Type (Filtered Test Runs)
+-- format: 0
+-- description: CHANGED 1.1.0.2. No longer requires a run to have Measurements, so failed/no-measurement runs are counted. Same identifier as before.
+[Eligible Test Runs (Filtered Test Runs)]

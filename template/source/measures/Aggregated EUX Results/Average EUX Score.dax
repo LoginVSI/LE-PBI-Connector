@@ -1,0 +1,14 @@
+-- table: Aggregated EUX Results
+-- name: Average EUX Score
+-- format:
+-- description:
+VAR AvgScore =
+    CALCULATE(
+        AVERAGE('Aggregated EUX Results'[score])
+    )
+RETURN
+    IF(
+        ISBLANK(AvgScore),
+        "No Data",
+        FORMAT(AvgScore, "0.00")
+    )

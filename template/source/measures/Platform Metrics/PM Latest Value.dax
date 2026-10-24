@@ -1,0 +1,20 @@
+-- table: Platform Metrics
+-- name: PM Latest Value
+-- format:
+-- description:
+VAR LatestTs =
+    CALCULATE(
+        MAX( 'Platform Metrics'[timestamp] ),
+        ALLEXCEPT(
+            'Platform Metrics',
+            'Platform Metrics'[environmentKey],
+            'Platform Metrics'[displayName],
+            'Platform Metrics'[instance],
+            'Platform Metrics'[unit]
+        )
+    )
+RETURN
+    CALCULATE(
+        MAX( 'Platform Metrics'[value] ),
+        'Platform Metrics'[timestamp] = LatestTs
+    )

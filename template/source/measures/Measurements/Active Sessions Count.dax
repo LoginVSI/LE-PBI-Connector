@@ -1,0 +1,12 @@
+-- table: Measurements
+-- name: Active Sessions Count
+-- format:
+-- description: DEPRECATED 1.1.0.2 (kept so existing reports that copied it keep working). Despite the name this is the distinct count of AccountName in measurements, NOT concurrent/active sessions. Use Distinct Accounts (Measurements).
+VAR SessionCount =
+    DISTINCTCOUNT('Measurements'[AccountName])
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) ||SessionCount = 0 || ISBLANK(SessionCount),
+        "No Data",
+        FORMAT(SessionCount, "0")
+    )

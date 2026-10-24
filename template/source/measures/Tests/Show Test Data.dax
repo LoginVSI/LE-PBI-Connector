@@ -1,0 +1,9 @@
+-- table: Tests
+-- name: Show Test Data
+-- format: 0
+-- description:
+IF(
+    HASONEFILTER(Tests[name]),
+    1,
+    0
+)

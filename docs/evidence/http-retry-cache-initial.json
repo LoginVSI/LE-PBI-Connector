@@ -1,0 +1,19 @@
+{
+  "realPowerQueryExecution": true,
+  "productionWebOptionsUsed": true,
+  "loopbackOnly": true,
+  "syntheticCredentialsOnly": true,
+  "status": "failed",
+  "httpRequestCounts": {},
+  "pqtestExit": 0,
+  "credentialSetupExit": 0,
+  "errors": [
+    {
+      "Message": "3 of 3 failed: normal request reuses cached 200 response => raised: 'ManualCredentials' isn't a valid Web.Contents option. Valid options are:\r\nApiKeyName, Content, ExcludedFromCacheKey, Headers, IsRetry, ManualStatusHandling, Query, RelativePath, Timeout || production IsRetry=true bypasses cached 200 response => raised: 'ManualCredentials' isn't a valid Web.Contents option. Valid options are:\r\nApiKeyName, Content, ExcludedFromCacheKey, Headers, IsRetry, ManualStatusHandling, Query, RelativePath, Timeout || production retry makes a second HTTP request after 500 => raised: Could not complete the request to https://test.example.com/publicApi/v7-preview/transient.  -- Check the FQDN, network reachability, and that the appliance TLS certificate is trusted by this machine (this connector never disables certificate validation). See README > Troubleshooting.",
+      "Details": {
+        "Reason": "Test.Failed",
+        "Microsoft.Data.Mashup.ErrorCode": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+-- table: Aggregated EUX Results
+-- name: Min EUX Gauge Values
+-- format:
+-- description: CHANGED 1.1.0.2. BLANK instead of 0 when no single run is selected. Grain: minimum of the aggregated EUX score rows (per-timestamp scores), not of raw per-session scores.
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MIN('Aggregated EUX Results'[score]),
+    BLANK()
+)

@@ -1,0 +1,5 @@
+-- table: Tests
+-- name: HasMeasurements
+-- format: 0
+-- description: Compatibility identifier. Tests filters Filtered Test Runs through the active relationship. Includes failed Application/Load runs without measurements.
+IF ( [Eligible Test Runs (Filtered Test Runs)] > 0, 1, 0 )

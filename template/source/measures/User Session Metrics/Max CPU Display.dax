@@ -1,0 +1,17 @@
+-- table: User Session Metrics
+-- name: Max CPU Display
+-- format:
+-- description:
+VAR CPUValues =
+    FILTER (
+        'User Session Metrics',
+        'User Session Metrics'[displayName] = "CPU"
+    )
+VAR MaxCPU =
+    MAXX ( CPUValues, 'User Session Metrics'[measurement] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( MaxCPU ),
+        "No Data",
+        FORMAT ( MaxCPU, "#,0.00" )
+    )

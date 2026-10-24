@@ -1,0 +1,143 @@
+{
+  "dateUtc": "2026-10-23T21:40:11.331645+00:00",
+  "ownerReport": "retry2 Load and Refresh completed; Key PBIX saved and open",
+  "metadata": {
+    "dateUtc": "2026-10-23T21:37:44.7047842Z",
+    "tokenParameterPresent": false,
+    "keyCalls": 12,
+    "legacyCalls": 0,
+    "rawExpressionsLogged": false,
+    "canonicalKeyPartitionMatches": 12,
+    "partitionMismatches": [],
+    "credentialScope": "requires Desktop Data source settings verification"
+  },
+  "modelChecksResultSetRows": [
+    50,
+    3,
+    71,
+    1
+  ],
+  "all83MeasuresEvaluated": true,
+  "scopeReadback": {
+    "DaysBack": 30,
+    "UseDateRange": false,
+    "StartDateParam": "2026-09-18",
+    "EndDateParam": "2026-09-24",
+    "interpretation": "Rolling scope; fixed date fields inactive. Not a same-window parity result."
+  },
+  "rollingTableCounts": {
+    "[catalogRuns]": 1608,
+    "[filteredRuns]": 49,
+    "[measurements]": 36615,
+    "[tests]": 70,
+    "[sessions]": 655
+  },
+  "representativeContextsEqualLegacy": true,
+  "sameWindowRunIDSet": true,
+  "scopePreparationDefect": {
+    "severity": "medium; comparison scope can silently differ",
+    "cause": "Fixed-window values were set but enum parameter DefaultValue metadata retained 30/false",
+    "repair": "Synchronize DaysBack and UseDateRange values/defaults in Prepare-KeyCopy; add static Key-copy scope check to CI",
+    "regression": "Old retry2 rejected for both contradictory defaults; corrected fresh copy passes",
+    "existingRollingPBIXPreserved": true,
+    "correctedCopySha256": "D2CF756976263C07A6C4E1424C112ECEB1ECD1CB8BD0AF5AEA52A2DCE7BEE9AE"
+  },
+  "fixedWindowParity": {
+    "status": "passed; actual model result multisets match legacy",
+    "scope": {
+      "UseDateRange": "true",
+      "DaysBack": "7"
+    },
+    "dates": [
+      "2026-09-18",
+      "2026-09-24"
+    ],
+    "comparisons": {
+      "ModelChecks": {
+        "resultSets": 4,
+        "rowCounts": [
+          50,
+          3,
+          71,
+          1
+        ],
+        "allResultMultisetsEqual": true
+      },
+      "Contexts": {
+        "resultSets": 9,
+        "rowCounts": [
+          49,
+          23,
+          1,
+          1,
+          1,
+          1,
+          1,
+          3,
+          11549
+        ],
+        "allResultMultisetsEqual": true
+      },
+      "Relationships": {
+        "resultSets": 3,
+        "rowCounts": [
+          1,
+          1,
+          1
+        ],
+        "allResultMultisetsEqual": true
+      },
+      "AllMeasures": {
+        "resultSets": 1,
+        "rowCounts": [
+          1
+        ],
+        "allResultMultisetsEqual": true
+      },
+      "ZeroMissing": {
+        "resultSets": 3,
+        "rowCounts": [
+          1,
+          1,
+          1
+        ],
+        "allResultMultisetsEqual": true
+      },
+      "ObservationDetails": {
+        "resultSets": 2,
+        "rowCounts": [
+          1,
+          11549
+        ],
+        "allResultMultisetsEqual": true
+      }
+    },
+    "sourceReconciliation": "Exact model rows equal the previously source-reconciled legacy rows; no additional appliance requests required.",
+    "modelOnly": "Rendering, credential UI and save/reopen recorded separately."
+  },
+  "credentialScopeUI": "Not directly observable: label hides path and PBIDS export is unsupported. FQDN-only signature/SDK discovery evidence remains in sdk-runtime.json; no direct Desktop path claim.",
+  "rollback": {
+    "status": "passed",
+    "ownerObserved": "preserved legacy report refreshed successfully after Key migration; parameters unchanged",
+    "actualTableCountsEqualFixedKey": true,
+    "actualModelChecksMultisetsEqualLegacyBaseline": true,
+    "scope": "Current preserved legacy PBIX; no older 1.1.0 PBIX available"
+  },
+  "rawRowsAndExpressionsInPublicEvidence": false,
+  "credentialUI": {
+    "screenshotSha256": "34CDC1213C2735E54EE61CF8C8C2DADECC88946F8D9BBCFC04D05A2BD3180D29",
+    "connectorDisplay": "Login Enterprise (Key credential)",
+    "authenticationType": "Feed Key",
+    "tokenMasked": true,
+    "scopePathVisible": false,
+    "scopeExport": "unsupported: Desktop reports this data source type cannot be exported to PBIDS"
+  },
+  "persistence": {
+    "status": "passed",
+    "ownerObserved": "moved Summary chart persisted after save/close/reopen; refresh completed without another credential entry",
+    "postReopenTableCountsEqualFixedWindow": true,
+    "postReopenDaysBack": 7,
+    "scopeEvidence": "Fixed-window data retained; pre-close UseDateRange=True was independently read.",
+    "readOnlyAccess": "Verified acceptance-window parent and unique loopback listener when process command line became unavailable; catalog and LE-table guards retained"
+  }
+}

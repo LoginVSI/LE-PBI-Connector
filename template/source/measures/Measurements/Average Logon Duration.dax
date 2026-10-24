@@ -1,0 +1,15 @@
+-- table: Measurements
+-- name: Average Logon Duration
+-- format:
+-- description:
+VAR AvgLogon =
+    CALCULATE(
+        AVERAGE('Measurements'[duration_seconds]),
+        'Measurements'[measurementId] = "total_login_time"
+    )
+RETURN
+    IF(
+        ISBLANK(AvgLogon),
+        "No Data",
+        FORMAT(AvgLogon, "#,0.00")
+    )

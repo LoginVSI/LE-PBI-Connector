@@ -1,0 +1,12 @@
+-- table: Measurements
+-- name: Launcher Count
+-- format:
+-- description:
+VAR CountLaunchers =
+    DISTINCTCOUNT('Measurements'[launcherName])
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || CountLaunchers = 0 || ISBLANK(CountLaunchers),
+        "No Data",
+        FORMAT(CountLaunchers, "0")
+    )

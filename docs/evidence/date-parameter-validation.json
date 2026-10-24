@@ -1,0 +1,41 @@
+{
+  "hostCulture": "en-US",
+  "hostShortDatePattern": "M/d/yyyy",
+  "templateCulture": "en-US",
+  "typedParameterExpressionUnchanged": true,
+  "mEngine": {
+    "testedInput": "2026-09-24",
+    "expectedDate": "2026-09-24",
+    "culturesPassed": [
+      "en-US",
+      "en-GB",
+      "de-DE",
+      "nl-NL"
+    ],
+    "legacyUsInputAccepted": "9/24/2026",
+    "endExclusiveUtc": "2026-09-25T00:00:00Z",
+    "checksPassed": 6
+  },
+  "desktopControlValidation": {
+    "status": "passed; owner observed",
+    "date": "2026-10-22",
+    "culture": "en-US",
+    "exactStartInput": "2026-09-18",
+    "exactEndInput": "2026-09-24",
+    "result": "Both fields accepted ISO strings without validation error; owner applied unchanged effective dates. No additional refresh claimed from this action."
+  },
+  "sourceMetadataRoundTrip": "passed",
+  "candidatePreflightStatic": "passed after canonical description rebuild",
+  "workingCopySha256": "AF98F740CBAC816080920BCE4C4E741BA67D1A03A73E532CD7A6BBAEF9399565",
+  "workingCopyModifiedByThisChange": false,
+  "rebuiltCandidateSha256": "99EF561F01BE0AB8527220C2926E988AE5EC00F4C3B622D078F0540EBF3A604F",
+  "affectedChecksRerun": {
+    "dateUtc": "2026-10-22T20:42:58.419707+00:00",
+    "mFile": "08_date_parameter_cultures.pq",
+    "realMChecksPassed": 6,
+    "templateStatic": "passed",
+    "templateSourceParity": "passed",
+    "mezSourceParity": "passed"
+  },
+  "persistedDateDescriptionsMatchModel": true
+}

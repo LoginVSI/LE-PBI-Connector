@@ -1,0 +1,12 @@
+-- table: Platform Metrics
+-- name: PM Latest Timestamp Display
+-- format:
+-- description:
+VAR LatestTs =
+    MAX('Platform Metrics'[timestamp])
+RETURN
+    IF(
+        NOT HASONEVALUE(Environments[id]) || ISBLANK(LatestTs),
+        "No Data",
+        FORMAT(LatestTs, "m/d/yyyy h:mm:ss AM/PM")
+    )

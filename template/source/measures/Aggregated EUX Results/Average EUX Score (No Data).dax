@@ -1,0 +1,15 @@
+-- table: Aggregated EUX Results
+-- name: Average EUX Score (No Data)
+-- format:
+-- description:
+VAR AvgScore =
+    AVERAGEX(
+        'Aggregated EUX Results',
+        'Aggregated EUX Results'[score]
+    )
+RETURN
+    IF(
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK(AvgScore),
+        "No Data",
+        FORMAT(AvgScore, "0.00")
+    )

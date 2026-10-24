@@ -1,0 +1,21 @@
+-- table: Filtered Test Runs
+-- name: Eligible Test Runs (Filtered Test Runs)
+-- format: 0
+-- description: NEW 1.1.0.2. Numeric. Application and Load runs in the loaded window (including failed runs that produced no measurements) plus Continuous runs that have retained evidence. Honours the current selection (KEEPFILTERS on type).
+VAR NonContinuous =
+    CALCULATE (
+        COUNTROWS ( 'Filtered Test Runs' ),
+        KEEPFILTERS ( 'Filtered Test Runs'[type] IN { "applicationtest", "loadtest" } )
+    )
+VAR ContinuousWithEvidence =
+    COUNTROWS (
+        FILTER (
+            CALCULATETABLE (
+                'Filtered Test Runs',
+                KEEPFILTERS ( 'Filtered Test Runs'[type] = "continuoustest" )
+            ),
+            [Run Evidence Rows] > 0
+        )
+    )
+RETURN
+    COALESCE ( NonContinuous, 0 ) + COALESCE ( ContinuousWithEvidence, 0 )

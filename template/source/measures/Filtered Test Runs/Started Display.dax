@@ -1,0 +1,12 @@
+-- table: Filtered Test Runs
+-- name: Started Display
+-- format:
+-- description:
+VAR StartedValue =
+    SELECTEDVALUE ( 'Filtered Test Runs'[started] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( StartedValue ),
+        "No Data",
+        FORMAT ( StartedValue, "mm/dd/yy hh:mm AM/PM" )
+    )

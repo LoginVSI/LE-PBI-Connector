@@ -1,0 +1,5 @@
+-- table: Test Runs
+-- name: Total Test Runs
+-- format: 0
+-- description: CHANGED 1.1.0.2. Previously hard-coded the last 30 days and used Started <= TODAY(), which dropped most of today. Now follows the loaded window (Days Back / Date Range) via Filtered Test Runs and the report selection.
+[Total Tests Run by Type (Filtered Test Runs)]

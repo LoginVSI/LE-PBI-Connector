@@ -1,0 +1,7 @@
+-- table: Filtered Test Runs
+-- name: Overall Success Rate (% & Filtered Test Runs)
+-- format:
+-- description: CHANGED 1.1.0.2. Display text. Denominator = finished Application/Load runs in the selection, including failed runs with no measurements (previously runs without Measurements vanished). Numeric value: [Overall Success Rate Value (Filtered Test Runs)].
+VAR Rate = [Overall Success Rate Value (Filtered Test Runs)]
+RETURN
+    IF ( ISBLANK ( Rate ), "No Data", FORMAT ( Rate * 100, "0.0" ) )

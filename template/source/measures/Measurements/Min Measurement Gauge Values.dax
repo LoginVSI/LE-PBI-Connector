@@ -1,0 +1,9 @@
+-- table: Measurements
+-- name: Min Measurement Gauge Values
+-- format:
+-- description: CHANGED 1.1.0.2. BLANK (empty gauge) instead of 0 when no single run is selected. A genuine 0 stays 0.
+IF(
+    HASONEVALUE('Filtered Test Runs'[id]),
+    MIN(Measurements[duration_seconds]),
+    BLANK()
+)

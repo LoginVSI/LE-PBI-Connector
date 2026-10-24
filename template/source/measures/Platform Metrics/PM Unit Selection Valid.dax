@@ -1,0 +1,5 @@
+-- table: Platform Metrics
+-- name: PM Unit Selection Valid
+-- format: 0
+-- description:
+IF(HASONEVALUE('Platform Metrics'[unit]), 1, 0)

@@ -1,0 +1,17 @@
+-- table: User Session Metrics
+-- name: Avg CPU Display
+-- format:
+-- description:
+VAR CPUValues =
+    FILTER (
+        'User Session Metrics',
+        'User Session Metrics'[displayName] = "CPU"
+    )
+VAR AvgCPU =
+    AVERAGEX ( CPUValues, 'User Session Metrics'[measurement] )
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ) || ISBLANK ( AvgCPU ),
+        "No Data",
+        FORMAT ( AvgCPU, "#,0.00" )
+    )

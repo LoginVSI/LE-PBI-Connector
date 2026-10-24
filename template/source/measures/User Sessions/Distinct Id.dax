@@ -1,0 +1,12 @@
+-- table: User Sessions
+-- name: Distinct Id
+-- format:
+-- description:
+VAR SessionCount =
+    DISTINCTCOUNT('User Sessions'[id])
+RETURN
+    IF(
+        ISBLANK(SessionCount) || SessionCount = 0,
+        "No Data",
+        FORMAT(SessionCount, "#,0")
+    )
