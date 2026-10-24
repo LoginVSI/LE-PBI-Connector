@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0.2 (candidate – not yet accepted in Power BI Desktop)
+## 1.1.0.2 (community preview, qualified Desktop acceptance)
 Connector (`LE-PBI-Connector.mez`)
 - Fixed: measurements were truncated at 1000 rows per run per day; applications received duplicate paging parameters; environments read one page. All lists are now fully paged with `count`/`offset` added once, completeness checked against `totalCount`, non-progress and page-limit protected.
 - Fixed: failed requests no longer become empty/partial tables. Errors carry route/status/hint, never the token. Bounded retry for 408/429/5xx.

@@ -1,6 +1,6 @@
 # Repair progress / handoff (branch `fix/connector-repair-1.1.0.2`)
 
-Resume point for an interrupted session. Updated as phases complete. Owner: Josh. Status values: DONE / PARTIAL / DEFERRED / TODO.
+Current disposition: PR #4 merged as `9eb1ab28097403b478d88d6da88730bb01b69f89` with owner-accepted qualified community-preview coverage. See MERGE-HANDOFF.md for the merge record and CI. Entries below preserve phase history, including superseded draft/pending states. Owner: Josh.
 
 ## Baseline evidence (inspected 2026-10-20)
 - `origin/main` = `089200f0eb2a3a21de872beba4c4c76a3d68b1dc` (unchanged since review; no newer remote fixes). `origin/dev` exists (not used).
@@ -84,3 +84,8 @@ Owner confirmed one legacy and one Key Get Data entry, without duplicates, and c
 ## Authorized merge closeout
 
 Owner accepted MERGE-HANDOFF.md coverage limits and expressly authorized ready/merge of PR #4 after final checks. Repository permits merge, squash and rebase; no active branch protection/rulesets were returned. Use a normal merge commit and preserve the feature branch. Clarify direct recommended MEZ/tested PBIT downloads, resolved install folder, checksum checks and historical-template distinction. No Desktop, credential, Toolkit or private-evidence operations are part of this phase. Final source/privacy/parity and new-head CI precede merging; merged state and main CI follow it.
+
+
+## Merge completed
+
+Marked PR #4 ready and merged the exact verified head `5367cca70396c5efa33aa28a9d8047559ec1ec78` using a merge commit. Local main fast-forwarded safely; feature branch preserved locally and remotely. Final repair-head PR/push CI passed. README's direct main downloads match the recorded MEZ/PBIT hashes. Final source/template/privacy regressions pass; all 170 private acceptance files are unchanged. No Desktop or Toolkit operation, credential change, release or package publication occurred. Merged-main CI passed: https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051773370. Follow-up documentation-head CI is linked in PR #4 after verification.

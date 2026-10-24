@@ -1,0 +1,43 @@
+{
+  "pullRequest": "https://github.com/LoginVSI/LE-PBI-Connector/pull/4",
+  "state": "MERGED",
+  "mergedAtUtc": "2026-10-24T01:52:49Z",
+  "mergeMethod": "merge",
+  "mergeCommit": "9eb1ab28097403b478d88d6da88730bb01b69f89",
+  "repairHead": "5367cca70396c5efa33aa28a9d8047559ec1ec78",
+  "repairHeadCi": {
+    "pr": "https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051441498",
+    "push": "https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051437947",
+    "conclusion": "success"
+  },
+  "mergeCommitCi": {
+    "url": "https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051773370",
+    "conclusion": "success"
+  },
+  "localMainFastForwarded": true,
+  "featureBranchPreservedLocalAndRemote": true,
+  "forcePushOrProtectionBypass": false,
+  "finalLocalChecks": {
+    "secretScan": "pass",
+    "mezByteReproducibility": "pass",
+    "pbitByteReproducibility": "pass",
+    "fourArtifactManifestHashes": "pass",
+    "templateStaticCompatibility": "pass",
+    "persistedQueryRegressions": 7,
+    "separateKeyCopyChecks": "pass",
+    "baseAndCandidateSixModelAndPersistedDefaultsNull": "pass",
+    "populatedModelPayloadAbsent": "pass",
+    "publicMainDownloadChecksums": "pass"
+  },
+  "privateAcceptancePreservation": {
+    "filesHashedBeforeAndAfter": 170,
+    "allUnchanged": true,
+    "inventory": "ignored local evidence only"
+  },
+  "desktopOperationsDuringMergeCloseout": false,
+  "credentialChanges": false,
+  "toolkitOperations": false,
+  "releaseOrPackagePublished": false,
+  "coverage": "Owner accepted MERGE-HANDOFF.md limits; no unavailable cases reopened.",
+  "followupDocumentationHeadCi": "See PR #4 description for final documentation commit and CI; avoids self-reference."
+}

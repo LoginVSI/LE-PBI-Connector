@@ -1,8 +1,8 @@
 # Repair candidate handoff
 
-## Recommendation
+## Final disposition
 
-Qualified acceptance for the exercised Desktop scope. The material acquisition, source/package, date, DAX and template defects are repaired. The owner accepted the recorded limits and authorized PR #4 to be marked ready and merged after final checks. Merge commit and main CI will be recorded after the transaction. No release or package publication is authorized.
+Qualified acceptance for the exercised Desktop scope. The material acquisition, source/package, date, DAX and template defects are repaired. The owner accepted the recorded limits. PR #4 was marked ready and merged with a normal merge commit after final repair-head CI passed. The feature branch is preserved. No release or package was published.
 
 ## Verified
 
@@ -41,4 +41,14 @@ Connector version 1.1.0.2; template version 1.1.0.2-candidate, based on the nati
 
 See DESKTOP-ACCEPTANCE.md, ACCEPTANCE.md, evidence/desktop-roundtrip.json, evidence/desktop-key-acceptance.json and the independent audit. Raw rows, credentials, private appliance details and working reports remain outside Git. Current Desktop report remains open for Josh; the connector retains the slot until he releases it.
 
-Final commit/CI links are kept in draft PR #4's description so the record does not create a self-referential commit loop.
+Final closeout-head CI links are kept in PR #4's description to avoid a self-referential commit loop. The merge result and merged-commit CI are recorded below.
+
+## Merge record
+
+PR #4 merged at 2026-10-24 01:52:49 UTC (23 October, Pacific) as `9eb1ab28097403b478d88d6da88730bb01b69f89`. Parents are original main `089200f0eb2a3a21de872beba4c4c76a3d68b1dc` and final repair head `5367cca70396c5efa33aa28a9d8047559ec1ec78`. Local main fast-forwarded without reset or discarded files. Local and remote `fix/connector-repair-1.1.0.2` remain at the repair head.
+
+Final repair-head [PR CI](https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051441498) and [push CI](https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051437947) passed. [Merged-main CI passed](https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051773370) on the exact merge commit. No protections were bypassed and no history was rewritten.
+
+Final local checks passed: secret scan, MEZ and PBIT byte-for-byte source rebuilds, all four artifact manifest hashes, static native/legacy compatibility, seven persisted-query regressions, separate Key-copy checks, and null exported defaults in both model and persisted metadata with no populated model payload. Static checks remain distinct from the recorded actual Desktop/DAX acceptance. Both README main download URLs returned the expected complete SHA256. All 170 files in the private acceptance folder matched their pre-closeout hashes. Desktop, credentials, installed connectors and Toolkit were not operated during merge closeout.
+
+README recommends the canonical connector and tested candidate template explicitly; the original template and pinned native build input retain separate roles. The accepted limitations above remain in force. Historical credential revocation remains the only outstanding security owner action; optional integrations remain deferred.
