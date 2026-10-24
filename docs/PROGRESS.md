@@ -80,3 +80,7 @@ Final legacy Load/Refresh and ModelChecks match baseline; 12 loaded M partitions
 ## Qualified closeout
 
 Owner confirmed one legacy and one Key Get Data entry, without duplicates, and cancelled without connecting. Final legacy Load/Refresh/export and native rebaseline are complete. Qualified acceptance applies to the exercised scope; unobserved UI permutations, unsupported direct Desktop path display and unavailable data cases remain explicit. Recommend merge after owner reviews MERGE-HANDOFF.md and final-head CI; keep draft PR #4 for review. No merge, release or message to others. Desktop remains open under connector ownership for Josh.
+
+## Authorized merge closeout
+
+Owner accepted MERGE-HANDOFF.md coverage limits and expressly authorized ready/merge of PR #4 after final checks. Repository permits merge, squash and rebase; no active branch protection/rulesets were returned. Use a normal merge commit and preserve the feature branch. Clarify direct recommended MEZ/tested PBIT downloads, resolved install folder, checksum checks and historical-template distinction. No Desktop, credential, Toolkit or private-evidence operations are part of this phase. Final source/privacy/parity and new-head CI precede merging; merged state and main CI follow it.

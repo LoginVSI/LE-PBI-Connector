@@ -2,7 +2,7 @@
 
 ## Recommendation
 
-Qualified acceptance for the exercised Desktop scope. The material acquisition, source/package, date, DAX and template defects are repaired. Recommend merge after owner review of the recorded limits below and final-head CI. PR #4 stays draft for that review; no merge, release or publication was performed.
+Qualified acceptance for the exercised Desktop scope. The material acquisition, source/package, date, DAX and template defects are repaired. The owner accepted the recorded limits and authorized PR #4 to be marked ready and merged after final checks. Merge commit and main CI will be recorded after the transaction. No release or package publication is authorized.
 
 ## Verified
 
