@@ -89,3 +89,7 @@ Owner accepted MERGE-HANDOFF.md coverage limits and expressly authorized ready/m
 ## Merge completed
 
 Marked PR #4 ready and merged the exact verified head `5367cca70396c5efa33aa28a9d8047559ec1ec78` using a merge commit. Local main fast-forwarded safely; feature branch preserved locally and remotely. Final repair-head PR/push CI passed. README's direct main downloads match the recorded MEZ/PBIT hashes. Final source/template/privacy regressions pass; all 170 private acceptance files are unchanged. No Desktop or Toolkit operation, credential change, release or package publication occurred. Merged-main CI passed: https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051773370. Follow-up documentation-head CI is linked in PR #4 after verification.
+
+## Native EUX and gateway preparation (1.2.0.0), 2026-10-28
+
+Branch `feature/native-eux-overview` from main `06854de`. Live bounded read-only GETs established the native/aggregate distinction ([evidence](evidence/native-eux-overview-live.json)). Connector 1.2.0.0 adds `Load Test Overview`; tests 10 pass on PQTest with synthetic fixtures. Template 1.2.0.0-candidate adds the table, relationship, measures and two visual edits; static checks pass and Desktop's own TMSL deserializer accepts the model offline. Not opened in Desktop; measures not executed. Gateway prepared (runbook, preflight, TestConnection) but no runtime. Backlog reconciled in BACKLOG.md. No release, merge, message or infrastructure action taken.

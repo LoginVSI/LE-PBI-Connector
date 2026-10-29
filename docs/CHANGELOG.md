@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0.0 (community preview, additive; Desktop acceptance of the additions pending)
+Connector
+- Added: `Load Test Overview` navigation item (appended last; no existing item, key, table or column changed). Native whole-run `euxScore`, `euxBaseline`, `euxSteadyState`, `vsiMax`, `euxState`, `vsiMaxState` and run identity from `GET load-test-run-overview/{id}`, one request per Load run overlapping the window. Missing or disabled results stay null. See [NATIVE-EUX.md](NATIVE-EUX.md).
+- Version 1.2.0.0. The accepted 1.1.0.2 MEZ is preserved at `bin/archive/1.1.0.2/`.
+- Gateway: read-only readiness preflight and a [GATEWAY.md](GATEWAY.md) runbook. Runtime not validated.
+Template (`Login Enterprise 1.2.0.0-candidate.pbit`)
+- Added table `Load Test Overview` (many to one to `Filtered Test Runs`), 9 native measures, `Aggregate EUX Mean (Window Observations)`, `Newest Source Observation`.
+- Load Testing "EUX Score" card now shows the native value; EUX Overview gauges retitled as aggregate buckets. No visual added or removed. The 1.1.0.2 template is unchanged and remains the Desktop-accepted one.
+Tests: `10_native_overview.pq` (19 checks) on the real Power Query engine; template static checks extended; Key-copy scripts expect 13 calls.
+
 ## 1.1.0.2 (community preview, qualified Desktop acceptance)
 Connector (`LE-PBI-Connector.mez`)
 - Fixed: measurements were truncated at 1000 rows per run per day; applications received duplicate paging parameters; environments read one page. All lists are now fully paged with `count`/`offset` added once, completeness checked against `totalCount`, non-progress and page-limit protected.

@@ -1,0 +1,23 @@
+{
+  "tables": [
+    {
+      "name": "Load Test Overview",
+      "description": "NEW 1.2.0.0. One row per Load run overlapping the loaded window with the appliance's own whole-run EUX results (GET load-test-run-overview). Native scores are whole-run values and are not restricted to the date window. Never sum or average this table across runs.",
+      "relationship": { "fromColumn": "testRunId", "toTable": "Filtered Test Runs", "toColumn": "id" },
+      "columns": [
+        { "name": "testRunId", "dataType": "string", "summarizeBy": "none" },
+        { "name": "testName", "dataType": "string", "summarizeBy": "none" },
+        { "name": "counter", "dataType": "int64", "summarizeBy": "none", "formatString": "0" },
+        { "name": "isBase", "dataType": "boolean", "summarizeBy": "none" },
+        { "name": "state", "dataType": "string", "summarizeBy": "none" },
+        { "name": "testResult", "dataType": "string", "summarizeBy": "none" },
+        { "name": "euxState", "dataType": "string", "summarizeBy": "none" },
+        { "name": "vsiMaxState", "dataType": "string", "summarizeBy": "none" },
+        { "name": "euxScore", "dataType": "double", "summarizeBy": "none", "formatString": "0.0" },
+        { "name": "euxBaseline", "dataType": "double", "summarizeBy": "none", "formatString": "0.0" },
+        { "name": "euxSteadyState", "dataType": "double", "summarizeBy": "none", "formatString": "0.0" },
+        { "name": "vsiMax", "dataType": "double", "summarizeBy": "none", "formatString": "0.0" }
+      ]
+    }
+  ]
+}

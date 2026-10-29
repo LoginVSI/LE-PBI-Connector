@@ -1,0 +1,85 @@
+{
+ "capturedUtc": "2026-10-28",
+ "scope": "Bounded read-only GETs against one appliance using an approved vault profile; runs identified only by hash prefix; no names, ids, host or credentials.",
+ "requestsIssued": 8,
+ "overviewRoutes": {
+  "v7-preview": 200,
+  "v7": 200
+ },
+ "v7AndV7PreviewBodiesIdentical": true,
+ "runs": [
+  {
+   "run": "a6c3b2ac1c",
+   "type": "LoadTest",
+   "state": "completed",
+   "result": "completed",
+   "overviewEntries": 1,
+   "isBase": true,
+   "euxState": "disabled",
+   "vsiMaxState": "disabled",
+   "native": {
+    "eux_steady_state": null,
+    "eux_baseline": null,
+    "eux_score": null,
+    "vsi_max": null
+   },
+   "aggregateBuckets": {
+    "rows": 0,
+    "unweightedMean": null,
+    "min": null,
+    "max": null,
+    "countSum": 0,
+    "countWeightedMean": null
+   }
+  },
+  {
+   "run": "ced8f94bce",
+   "type": "LoadTest",
+   "state": "completed",
+   "result": "completed",
+   "overviewEntries": 1,
+   "isBase": true,
+   "euxState": "completed",
+   "vsiMaxState": "aboveThreshold",
+   "native": {
+    "eux_steady_state": 8.3,
+    "eux_baseline": 8.4,
+    "eux_score": 8.2,
+    "vsi_max": 6.0
+   },
+   "aggregateBuckets": {
+    "rows": 2,
+    "unweightedMean": 8.15,
+    "min": 7.9,
+    "max": 8.4,
+    "countSum": 33,
+    "countWeightedMean": 7.975757575757577
+   }
+  },
+  {
+   "run": "be1d61804d",
+   "type": "LoadTest",
+   "state": "completed",
+   "result": "completed",
+   "overviewEntries": 1,
+   "isBase": true,
+   "euxState": "completed",
+   "vsiMaxState": "aboveThreshold",
+   "native": {
+    "eux_steady_state": 3.1,
+    "eux_baseline": 7.6,
+    "eux_score": 3.3,
+    "vsi_max": 6.0
+   },
+   "aggregateBuckets": {
+    "rows": 2,
+    "unweightedMean": 4.2,
+    "min": 3.1,
+    "max": 5.3,
+    "countSum": 35,
+    "countWeightedMean": 4.231428571428571
+   }
+  }
+ ],
+ "reading": "Native overview values are whole-run results. The aggregate series is hourly buckets; its unweighted mean differs from native eux_score (8.15 vs 8.2; 4.2 vs 3.3) and the count-weighted mean differs again. The scoring formula is not documented; no weighting is inferred. A run with euxState disabled returns null values for every metric."
+}

@@ -32,6 +32,6 @@ foreach ($table in $model['model']['tables']) {
         }
     }
 }
-if ($keyCalls -ne 12 -or $legacyCalls -ne 0) { $issues.Add('Connector call migration is incomplete.') }
+if ($keyCalls -ne 13 -or $legacyCalls -ne 0) { $issues.Add('Connector call migration is incomplete.') }
 if ($issues.Count) { foreach ($issue in $issues) { Write-Host "FAIL: $issue" }; exit 1 }
-Write-Host 'PASS: Key copy has matching persisted metadata, 12 Key calls, no token parameter, and consistent fixed-window values/defaults.'
+Write-Host 'PASS: Key copy has matching persisted metadata, 13 Key calls, no token parameter, and consistent fixed-window values/defaults.'

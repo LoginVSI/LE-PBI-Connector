@@ -7,6 +7,8 @@ The native export has 35 tables, 326 columns and 34 relationships. Its added aut
 
 Actual final legacy and Key Load/Refresh, model/source comparisons, Key persistence and rollback are in DESKTOP-ACCEPTANCE.md. Static checks remain separate from those runtime results. Parameter values are null in the native base and rebuilt candidate; privacy scans and native-export provenance are recorded in evidence/desktop-roundtrip.json.
 
+Template 1.2.0.0-candidate (additive): see [NATIVE-EUX.md](NATIVE-EUX.md). New table `Load Test Overview` from `source/new-tables.json` and `partitions/Load Test Overview.m`; measures under `source/measures/Load Test Overview/`; exact-string visual edits in `source/pbir-edits.json`. Built by `template/Build-Template.ps1` into `template/candidate/Login Enterprise 1.2.0.0-candidate.pbit`. The 1.1.0.2 candidate file is kept as the Desktop-accepted artifact and is no longer rebuilt from source. Not yet opened in Power BI Desktop.
+
 Editable sources: `template/source/measures/<Table>/<Measure>.dax`, `template/source/partitions/<Table>.m`, `template/source/layout-renames.json`, and `template/source/parameter-descriptions.json`.
 Round trip: `Export-TemplateSource.ps1` (baseline from a .pbit) → edit → `Build-Template.ps1` → `Test-Template.ps1`.
 

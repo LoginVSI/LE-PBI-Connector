@@ -1,7 +1,7 @@
 {
   "artifacts": [
     {
-      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "path": "bin/archive/1.1.0.2/LE-PBI-Connector.mez",
       "bytes": 97100,
       "sha256": "8B7EAC70A460A0EF03DEAAE650AF9DCF747849538B70EAA1CEA22E5F5F43D768"
     },
@@ -19,6 +19,18 @@
       "path": "template/base/Login Enterprise Desktop 2026-10.pbit",
       "bytes": 509423,
       "sha256": "E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4"
+    },
+    {
+      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "bytes": 101264,
+      "sha256": "FFF51B3E8F86FB9980B90F19F825DEBFBADCDD2B76818963C2A5511A8ACB68A9",
+      "version": "1.2.0.0"
+    },
+    {
+      "path": "template/candidate/Login Enterprise 1.2.0.0-candidate.pbit",
+      "bytes": 4242198,
+      "sha256": "3FBB2142D113A16C556C2447EB7F870F9ADE560B8726F6CC350BF82366A0A4F9",
+      "version": "1.2.0.0-candidate"
     }
   ],
   "connectorVersion": "1.1.0.2",

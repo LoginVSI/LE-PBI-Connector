@@ -43,7 +43,16 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - [ ] Data source settings shows the data source as `LoginEnterprise_PBI_Key` with only the FQDN in its path.
 
 ## F. Gateway/Service (separate, admin-level, out of this patch)
-- [ ] Not started. Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
+- [ ] Runtime pending (no authorised gateway/tenant). Code, TestConnection, Key scope, setup and preflight are prepared: [GATEWAY.md](GATEWAY.md). Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
+
+## G. 1.2.0.0 additions (native overview), one finite checklist for the Desktop owner
+Not yet performed. Static, offline and real-engine M checks only. Do on copies; do not touch existing reports.
+- [ ] Back up the installed `LE-PBI-Connector.mez`; install 1.2.0.0 (hash in SHA256SUMS.txt); leave `ResultsToolkit.mez` alone; restart Desktop.
+- [ ] Open a copy of the accepted 1.1.0.2 report and refresh: existing visuals and counts unchanged.
+- [ ] Open `template/candidate/Login Enterprise 1.2.0.0-candidate.pbit` (Key copy via `Prepare-KeyCopy.ps1`, or legacy), enter the existing scope, refresh twice. Get Data lists exactly one legacy and one Key entry; `Load Test Overview` appears in the navigator.
+- [ ] Run `template/acceptance/NativeOverviewChecks.dax`; compare per-run `nativeScore/Baseline/Steady` with the appliance overview values; a disabled-EUX run is BLANK/No Data, not 0; multi-run is BLANK/Select one run; no run has two overview rows.
+- [ ] Load Testing page: the EUX Score card equals the Login Enterprise value for one selected run. EUX Overview gauges are titled as aggregate buckets. Capture the two screenshots (redact names and FQDN).
+- [ ] Rollback: reinstall `bin/archive/1.1.0.2/LE-PBI-Connector.mez`; the 1.1.0.2 template still refreshes.
 
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.

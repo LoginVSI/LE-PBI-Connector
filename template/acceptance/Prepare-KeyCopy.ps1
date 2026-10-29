@@ -1,7 +1,7 @@
 # Prepare a separate credential-free Key copy; never modifies an existing report.
 [CmdletBinding()]
 param(
-    [string]$Candidate = (Join-Path $PSScriptRoot '../candidate/Login Enterprise 1.1.0.2-candidate.pbit'),
+    [string]$Candidate = (Join-Path $PSScriptRoot '../candidate/Login Enterprise 1.2.0.0-candidate.pbit'),
     [Parameter(Mandatory)][string]$Output,
     [string]$StartDate,
     [string]$EndDate
@@ -21,7 +21,7 @@ foreach ($table in $model['model']['tables']) {
         Set-JsonProp $partition['source'] 'expression' (Split-ToJsonArray $text.Replace($old, 'LoginEnterprise_PBI.ContentsKey(FQDN, DaysBack, UseDateRange, StartDateParam, EndDateParam)'))
     }
 }
-if ($calls -ne 12) { throw 'Unexpected connector call count; refusing partial migration.' }
+if ($calls -ne 13) { throw 'Unexpected connector call count; refusing partial migration.' }
 $token = @($model['model']['expressions'] | Where-Object { [string]$_['name'] -eq 'APIToken' })
 if ($token.Count -ne 1) { throw 'Expected one token parameter.' }
 $removedTag = [string]$token[0]['lineageTag']; [void]$model['model']['expressions'].Remove($token[0])
@@ -70,4 +70,4 @@ try {
         } finally { $stream.Dispose() }
     }
 } finally { $dst.Dispose(); $src.Dispose() }
-Write-Host 'Prepared separate Key copy: 12 migrated calls; no token parameter or orphan persisted query.'
+Write-Host 'Prepared separate Key copy: 13 migrated calls; no token parameter or orphan persisted query.'
