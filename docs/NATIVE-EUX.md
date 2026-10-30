@@ -19,7 +19,7 @@ The unweighted bucket mean is **not** the native overall score. On the lab appli
 - Both `GET /publicApi/v7/load-test-run-overview/{baseTestRunId}` and `GET /publicApi/v7-preview/load-test-run-overview/{baseTestRunId}` returned 200 with identical bodies on the lab appliance. The appliance's retrieved Swagger lists only the `/v7/` operation (`Data_GetLoadTestResultOverview`, with an optional `testRunIds` comparison list); the connector calls the route under its existing `v7-preview` root, which the appliance accepted. The connector is **not** migrated to v8 and calls no undocumented route.
 - Shape: `results[]` entries with `testRunId`, `testName`, `counter`, `isBase`, `state`, `testResult`, and `results.performance` with `euxState`, `vsiMaxState` and `results[]` of `{resultId, value, differenceFromBase}`. Observed ids: `eux_score`, `eux_baseline`, `eux_steady_state`, `vsi_max`.
 - A Load run with EUX disabled returns `euxState: "disabled"` and `null` for every result. The connector keeps those as null; the template shows `No Data`, never 0.
-- Only Load runs have this endpoint. Application and Continuous runs get no row. A 404 for a Load run gives no row; any other failure fails the refresh.
+- Only Load runs have this endpoint. Application and Continuous runs get no row. A 404 for a Load run gives no row; any other failure fails the refresh. A 404 cannot tell a missing run from an appliance that lacks the route, so an older appliance would show an empty `Load Test Overview` and `No Data` cards that look like disabled-EUX runs. Check `Native Overview Runs` (0 for every run) if that happens.
 
 ## Connector table
 

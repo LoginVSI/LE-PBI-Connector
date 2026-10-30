@@ -7,7 +7,7 @@
   Checks: connector file and optional checksum; whether the gateway service identity (default NT SERVICE\PBIEgwService)
   can read the connector folder; TCP 443 and TLS trust of the appliance as seen from THIS host's certificate store;
   host time zone (Power Query shows UTC timestamps converted to the refreshing machine's zone).
-  It does not prove the gateway, the Service or a refresh works; see docs/GATEWAY.md.
+  It opens one TCP/TLS connection to the appliance FQDN on port 443 and makes no API call. It does not prove the gateway, the Service or a refresh works; see docs/GATEWAY.md.
 #>
 [CmdletBinding()]
 param(
@@ -35,11 +35,13 @@ else {
 # 2. Folder access for the service identity (read-only ACL inspection)
 try {
     $acl = Get-Acl -LiteralPath $ConnectorFolder
-    $readers = @($acl.Access | Where-Object { $_.AccessControlType -eq 'Allow' -and ($_.FileSystemRights -band [Security.AccessControl.FileSystemRights]::ReadAndExecute) -and
+    $readers = @($acl.Access | Where-Object { $_.AccessControlType -eq 'Allow' -and (($_.FileSystemRights -band [Security.AccessControl.FileSystemRights]::ReadAndExecute) -eq [Security.AccessControl.FileSystemRights]::ReadAndExecute) -and
         ($_.IdentityReference.Value -ieq $ServiceAccount -or $_.IdentityReference.Value -in @('BUILTIN\Users', 'NT AUTHORITY\Authenticated Users', 'Everyone')) })
-    if ($readers.Count) { Report ok ("read access is granted through: " + (($readers.IdentityReference.Value | Select-Object -Unique) -join ', ') + ' (confirm the service account is a member or is named; group membership is not resolved here)') }
+    if ($readers.Count) { Report ok ("read access is granted through: " + (($readers.IdentityReference.Value | Select-Object -Unique) -join ', ') + ' (an inherited or group entry only; confirm the service account is named or a member, because membership and Deny entries are not evaluated)') }
+    elseif ($false) { }
     else { Report FAIL "no ACL entry grants read to $ServiceAccount or a broad group; a folder under a user profile is typically not readable by the gateway service" }
-    if ($ConnectorFolder -like '*SERS*') { Report warn 'the folder is under a user profile; Microsoft documents that such folders are usually not accessible to the gateway service' }
+    if (($ConnectorFolder -split '[\/]') -contains 'Users') { Report warn 'the folder is under a user profile; Microsoft documents that such folders are usually not accessible to the gateway service' }
+    if (@($acl.Access | Where-Object { $_.AccessControlType -eq 'Deny' }).Count) { Report warn 'the folder has Deny entries; they are not evaluated here' }
 } catch { Report FAIL "cannot read the folder ACL: $($_.Exception.Message)" }
 
 # 3. Network and TLS as seen from this host

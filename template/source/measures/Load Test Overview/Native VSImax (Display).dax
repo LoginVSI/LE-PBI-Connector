@@ -13,8 +13,8 @@ RETURN
             "No Data",
             IF (
                 VsiState = "aboveThreshold",
-                FORMAT ( NativeValue, "0.#" ) & " (bound, aboveThreshold)",
-                FORMAT ( NativeValue, "0.#" ) & " (" & COALESCE ( VsiState, "state unknown" ) & ")"
+                FORMAT ( NativeValue, "General Number" ) & " (bound, aboveThreshold)",
+                FORMAT ( NativeValue, "General Number" ) & " (" & COALESCE ( VsiState, "state unknown" ) & ")"
             )
         )
     )

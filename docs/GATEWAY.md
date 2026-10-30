@@ -21,6 +21,10 @@ Official guidance used: Microsoft Learn, [Use custom data connectors with the on
 7. Token permissions: read access to tests, test runs, measurements, events, user sessions, applications and environments.
 8. Time zone: datetimes follow the refreshing machine's zone (see README, Date windows). Set the gateway host zone deliberately.
 
+## Refresh cost
+
+The native overview adds one sequential GET per Load run overlapping the window, on top of the existing per-run requests. Large windows make refresh slower, and one failing request fails the whole refresh by design (no partial data). Keep gateway windows bounded.
+
 ## Three different questions
 
 | Question | Where to look | Does not imply |
