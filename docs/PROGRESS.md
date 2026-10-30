@@ -93,3 +93,7 @@ Marked PR #4 ready and merged the exact verified head `5367cca70396c5efa33aa28a9
 ## Native EUX and gateway preparation (1.2.0.0), 2026-10-28
 
 Branch `feature/native-eux-overview` from main `06854de`. Live bounded read-only GETs established the native/aggregate distinction ([evidence](evidence/native-eux-overview-live.json)). Connector 1.2.0.0 adds `Load Test Overview`; tests 10 pass on PQTest with synthetic fixtures. Template 1.2.0.0-candidate adds the table, relationship, measures and two visual edits; static checks pass and Desktop's own TMSL deserializer accepts the model offline. Not opened in Desktop; measures not executed. Gateway prepared (runbook, preflight, TestConnection) but no runtime. Backlog reconciled in BACKLOG.md. No release, merge, message or infrastructure action taken.
+
+## Acceptance attempt, 2026-10-30
+
+Verified installed MEZ hash, backup and Toolkit connector. September 2026 has no Load runs; windows 2025-06-30 and 2025-05-28..29 selected. The packaged MEZ ran on the real Power Query engine against the live appliance and reconciled 15 of 15 runs with direct GETs ([evidence](evidence/native-eux-engine-reconciliation.json)). No Desktop controller exists in this session, so Desktop refresh, DAX, UI selection and rollback cases are unexecuted and listed in ACCEPTANCE.md section G. Added Native VSImax (Display), TOOLKIT-CONTRACT.md and the v8 decision. PR #6 stays unmerged.

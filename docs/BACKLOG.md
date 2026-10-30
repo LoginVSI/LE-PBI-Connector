@@ -6,7 +6,7 @@ Dispositions: **complete**, **implement now** (done in this phase), **assess fea
 
 | # | Item | Customer outcome | Evidence / state | Remaining gap | Disposition | Next acceptance step |
 |---|---|---|---|---|---|---|
-| 1 | Native vs aggregate EUX | Report the score Login Enterprise shows | Live read-only check: native 8.2/8.4/8.3 vs bucket mean 8.15; 3.3 vs 4.2 ([evidence](evidence/native-eux-overview-live.json)). `Load Test Overview` table, 11 measures, tests 10 (19 checks) | Desktop has not opened or refreshed the 1.2.0.0 template; measures not executed; UI/PDF comparison limited to the lab run | **Implement now** (code and tests complete; Desktop pending) | Section G of ACCEPTANCE.md, then `NativeOverviewChecks.dax` |
+| 1 | Native vs aggregate EUX (engine-verified; Desktop pending) | Report the score Login Enterprise shows | Live read-only check: native 8.2/8.4/8.3 vs bucket mean 8.15; 3.3 vs 4.2 ([evidence](evidence/native-eux-overview-live.json)). `Load Test Overview` table, 11 measures, tests 10 (19 checks) | Desktop has not opened or refreshed the 1.2.0.0 template; measures not executed; UI/PDF comparison limited to the lab run | **Implement now** (code and tests complete; Desktop pending) | Section G of ACCEPTANCE.md, then `NativeOverviewChecks.dax` |
 | 2 | Aggregate mean semantics | Honest trend and period statistics | Unweighted mean retained and relabelled; gauges retitled; new `Aggregate EUX Mean (Window Observations)` | Bucket `count` semantics unproven | **Documented limitation**; weighted measures stay BLANK | Vendor definition of `count` or raw-to-bucket reconciliation |
 | 3 | Retrieval, windows, state, template correctness | Complete, correctly windowed data | Complete for the exercised scope: paging, UTC half-open windows, snapshot repair, 83 measures reconcile ([acceptance](DESKTOP-ACCEPTANCE.md)) | Tied or mutable ordering; no server snapshot; Swagger gives no `count` maximum | **Complete** (limits documented) | None |
 | 4 | Compatibility, install, packages | Safe upgrade and rollback | Additive navigation item; old 1.1.0.2 template runs against 1.2.0.0 by design (Filtered Test Runs probes for optional items); 1.1.0.2 MEZ preserved in `bin/archive/1.1.0.2/` | No older saved PBIX was available; 1.2.0.0 MEZ not yet loaded by Desktop | **Documented limitation** for older PBIX; **blocked on owner** for Desktop load | Install 1.2.0.0 (backed up), open a copy of an existing report, refresh |
@@ -23,6 +23,16 @@ Dispositions: **complete**, **implement now** (done in this phase), **assess fea
 | 15 | Licensing | Reuse terms | No LICENSE file | Not a technical blocker | **Deferred** (owner decision) | Owner |
 | 16 | Application-test aggregated session metrics | Per-app CPU/memory | No matching endpoint in the reviewed contract | n/a | **Documented limitation** | New contract |
 | 17 | Grafana / InfluxDB and custom PDF/report generation | Other reporting surfaces | Owned by Results Toolkit | Cross-reference only | **Not here** | Track in LoginEnterprise-ResultsToolkit |
+
+## Update 2026-10-30
+
+- Row 1: the connector now has **actual engine and live-source reconciliation** (15 of 15 runs, two windows, no duplicates, nulls preserved), see [evidence](evidence/native-eux-engine-reconciliation.json). Disposition: implemented, engine-verified, **Desktop-runtime pending** (no controller available; exact cases in ACCEPTANCE.md section G).
+- Added `Native VSImax (Display)`: an `aboveThreshold` value is shown as a bound, never an exact capacity.
+- API versions: compared the appliance's v7-preview and v8-preview contracts for every route used. No native-EUX gap; v8 renames `counter` and reshapes the snapshot. **No v8 adapter; deliberately deferred**, see [TOOLKIT-CONTRACT.md](TOOLKIT-CONTRACT.md) (also the Toolkit coordination contract).
+- Freshness: refresh attempt, last success and newest source observation stay distinct (GATEWAY.md, `Newest Source Observation`). Error paths (401, 404, 500, late-page failure, budget) are covered by real-engine fixtures; stale/recovery behaviour in the Service is runtime-blocked.
+- Gateway/Service: connector identity (`TestConnection`, Key scope), preflight and runbook complete; **environment-blocked**: no authorised gateway, tenant, workspace or cadence.
+- Credential in history: still absent from the tree (secret scan passes); rotation is an owner security action and is **unconfirmed**.
+- Merge: not performed. Material changed Desktop behaviour (new table, card, measures) has no Desktop acceptance yet.
 
 ## Relevance of Results Toolkit work
 

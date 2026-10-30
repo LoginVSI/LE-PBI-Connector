@@ -45,9 +45,19 @@ Preparation history (completed for this host; do not reinstall into an open sess
 ## F. Gateway/Service (separate, admin-level, out of this patch)
 - [ ] Runtime pending (no authorised gateway/tenant). Code, TestConnection, Key scope, setup and preflight are prepared: [GATEWAY.md](GATEWAY.md). Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
 
-## G. 1.2.0.0 additions (native overview), one finite checklist for the Desktop owner
-Not yet performed. Static, offline and real-engine M checks only. Do on copies; do not touch existing reports.
-- [ ] Back up the installed `LE-PBI-Connector.mez`; install 1.2.0.0 (hash in SHA256SUMS.txt); leave `ResultsToolkit.mez` alone; restart Desktop.
+## G. 1.2.0.0 additions (native overview)
+
+### Executed (2026-10-30, no Desktop UI)
+- Installed MEZ full SHA256 equals the built artifact (`fff51b3e...68a9`); the 1.1.0.2 backup (`8b7eac70...d768`) and `ResultsToolkit.mez` (`91dc405a...93e7`) are intact. Desktop was not running.
+- Fixed window 2026-09-18..24 has no Load runs, so it cannot test native EUX. Windows used instead: A = 2025-06-30 (7 Load runs, large native/aggregate gaps) and B = 2025-05-28..29 (8 runs: two `disabled`, one `unavailable`, one null baseline).
+- **Real Power Query engine against the live appliance (read-only, bounded):** the packaged 1.2.0.0 MEZ, `ContentsKey`, both windows. Navigator contains `Load Test Overview`; 7 of 7 and 8 of 8 rows reconcile with separate direct GETs (native values, states, bucket counts and means); no duplicate rows; nulls stay null, no 0 invented. [Evidence](evidence/native-eux-engine-reconciliation.json).
+- Copies prepared in the private acceptance folder: existing-report copy and window-A Key `.pbit` (13 Key calls, static Key-copy check passes).
+
+### NOT executed: Power BI Desktop
+No Desktop controller is available to this session and Desktop was not started. These remain unexecuted and are not claimed: refresh of the existing-report copy with the new connector; opening and refreshing the 1.2.0.0 template and Key copy; one-legacy-and-one-Key navigator check in the Get Data UI; execution of any new DAX measure (`NativeOverviewChecks.dax`); the native card for run counter 77 and the multi-run message; aggregate-gauge titles on screen; window B disabled-run card; save/reopen persistence; rollback with 1.1.0.2. Static template checks and Desktop's offline model-schema reader are not DAX or Desktop validation.
+
+### Finite checklist for the Desktop owner (do on copies; do not touch existing reports)
+- [ ] The 1.2.0.0 MEZ is already installed (hash in SHA256SUMS.txt); `ResultsToolkit.mez` untouched; restart Desktop.
 - [ ] Open a copy of the accepted 1.1.0.2 report and refresh: existing visuals and counts unchanged.
 - [ ] Open `template/candidate/Login Enterprise 1.2.0.0-candidate.pbit` (Key copy via `Prepare-KeyCopy.ps1`, or legacy), enter the existing scope, refresh twice. Get Data lists exactly one legacy and one Key entry; `Load Test Overview` appears in the navigator.
 - [ ] Run `template/acceptance/NativeOverviewChecks.dax`; compare per-run `nativeScore/Baseline/Steady` with the appliance overview values; a disabled-EUX run is BLANK/No Data, not 0; multi-run is BLANK/Select one run; no run has two overview rows.

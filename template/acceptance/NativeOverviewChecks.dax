@@ -9,6 +9,7 @@ SUMMARIZECOLUMNS (
     "nativeScore", [Native EUX Score (Selected Run)],
     "nativeBaseline", [Native EUX Baseline (Selected Run)],
     "nativeSteady", [Native EUX Steady State (Selected Run)],
+    "vsiDisplay", [Native VSImax (Display)],
     "euxState", [Native EUX State (Selected Run)],
     "vsiState", [Native VSImax State (Selected Run)],
     "scoreDisplay", [Native EUX Score (Display)],
