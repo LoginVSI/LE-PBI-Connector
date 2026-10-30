@@ -97,3 +97,7 @@ Branch `feature/native-eux-overview` from main `06854de`. Live bounded read-only
 ## Acceptance attempt, 2026-10-30
 
 Verified installed MEZ hash, backup and Toolkit connector. September 2026 has no Load runs; windows 2025-06-30 and 2025-05-28..29 selected. The packaged MEZ ran on the real Power Query engine against the live appliance and reconciled 15 of 15 runs with direct GETs ([evidence](evidence/native-eux-engine-reconciliation.json)). No Desktop controller exists in this session, so Desktop refresh, DAX, UI selection and rollback cases are unexecuted and listed in ACCEPTANCE.md section G. Added Native VSImax (Display), TOOLKIT-CONTRACT.md and the v8 decision. PR #6 stays unmerged.
+
+## Closeout pass, 2026-10-30 (later)
+
+Re-verified PR #6 at `9c7d89b` (CI connector job passing, mergeable), installed MEZ hash, no Desktop process running. No Desktop controller is available, so no Desktop outcome is claimed. Added the checkpoint helpers `tools/Start-AcceptanceFile.ps1` and `tools/Reconcile-NativeChecks.ps1` (reconcile logic exercised only against synthetic rows built from the private expectations) and extended `NativeOverviewChecks.dax` with testName and counter so rows reconcile with source. Section G now holds one grouped owner checklist. The merge gate is unchanged: Desktop acceptance of the new table, card and measures.

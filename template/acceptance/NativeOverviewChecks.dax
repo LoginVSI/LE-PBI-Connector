@@ -5,6 +5,8 @@ EVALUATE
 SUMMARIZECOLUMNS (
     'Filtered Test Runs'[id],
     'Filtered Test Runs'[type],
+    'Load Test Overview'[testName],
+    'Load Test Overview'[counter],
     "nativeRows", [Native Overview Runs],
     "nativeScore", [Native EUX Score (Selected Run)],
     "nativeBaseline", [Native EUX Baseline (Selected Run)],
