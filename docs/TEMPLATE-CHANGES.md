@@ -7,6 +7,8 @@ The native export has 35 tables, 326 columns and 34 relationships. Its added aut
 
 Actual final legacy and Key Load/Refresh, model/source comparisons, Key persistence and rollback are in DESKTOP-ACCEPTANCE.md. Static checks remain separate from those runtime results. Parameter values are null in the native base and rebuilt candidate; privacy scans and native-export provenance are recorded in evidence/desktop-roundtrip.json.
 
+Template 1.2.0.0-candidate (additive): see [NATIVE-EUX.md](NATIVE-EUX.md). New table `Load Test Overview` from `source/new-tables.json` and `partitions/Load Test Overview.m`; measures under `source/measures/Load Test Overview/`; exact-string visual edits in `source/pbir-edits.json`. Built by `template/Build-Template.ps1` into `template/candidate/Login Enterprise 1.2.0.0-candidate.pbit`. The 1.1.0.2 candidate file is kept as the Desktop-accepted artifact and is no longer rebuilt from source. Opens in Power BI Desktop (parameter dialog reached); see the defect note below. Refresh and the new measures are not yet run in Desktop.
+
 Editable sources: `template/source/measures/<Table>/<Measure>.dax`, `template/source/partitions/<Table>.m`, `template/source/layout-renames.json`, and `template/source/parameter-descriptions.json`.
 Round trip: `Export-TemplateSource.ps1` (baseline from a .pbit) → edit → `Build-Template.ps1` → `Test-Template.ps1`.
 
@@ -39,3 +41,5 @@ Round trip: `Export-TemplateSource.ps1` (baseline from a .pbit) → edit → `Bu
 - `Test Name` slicer behaviour ("All" shows nothing) is unchanged and documented in the README.
 - The independent review also repaired name-slicer helpers to use the active Tests-to-Filtered-Test-Runs relationship, gated the disconnected legacy success measure by loaded-window IDs, excluded historical Continuous runs without in-window evidence, counted nonblank account IDs and distinguished null-only metrics from valid zero. These DAX changes have not been executed.
 - Relationships are single-direction from `Filtered Test Runs`; slicers on fact tables (e.g. `measurementId`) do not filter runs, so they cannot hide failed runs.
+
+**Defect found and fixed in Desktop (2026-10-30).** The first 1.2.0.0-candidate was rejected by Power BI Desktop 2.159 ("file is corrupted or was created by an unrecognized version") on open. Bisecting with Desktop showed the template's `SecurityBindings` part, copied byte-for-byte, no longer matches once PBIR visuals are edited (old visuals with the new model opened; either edited visual alone failed; removing `SecurityBindings` opened the file). `Build-Template.ps1` now drops `SecurityBindings` whenever `pbir-edits.json` edits report files, and `Test-Template.ps1` asserts that. The rebuilt candidate (`468f4dc0…f656`) and a Key copy prepared from it reach Desktop's parameter dialog. Static checks had passed on the broken file, which is why they are not Desktop validation.

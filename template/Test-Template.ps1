@@ -8,7 +8,7 @@
 [CmdletBinding()]
 param(
     [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
-    [string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit')
+    [string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.0.0-candidate.pbit')
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
@@ -20,8 +20,12 @@ function Ok([string]$m) { Write-Host "ok:   $m" }
 $zo = [IO.Compression.ZipFile]::OpenRead($Original); $zc = [IO.Compression.ZipFile]::OpenRead($Candidate)
 $on = @($zo.Entries.FullName); $cn = @($zc.Entries.FullName)
 $zo.Dispose(); $zc.Dispose()
-if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order" } else { Fail 'entry list differs from original' }
-$allowedChanged = @('DataModelSchema', 'Report/Layout', 'UnappliedChanges')
+$pbirEditPath0 = Join-Path $PSScriptRoot 'source/pbir-edits.json'
+if ((Test-Path $pbirEditPath0) -and ($on -contains 'SecurityBindings')) { $on = @($on | Where-Object { $_ -ne 'SecurityBindings' }) }  # intentionally dropped when report files are edited
+if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order (SecurityBindings intentionally absent when report files are edited)" } else { Fail 'entry list differs from original (beyond the intentional SecurityBindings removal)' }
+if ($cn -contains 'SecurityBindings' -and (Test-Path $pbirEditPath0)) { Fail 'SecurityBindings must be absent when PBIR visuals are edited' }
+$pbirEditPath = Join-Path $PSScriptRoot 'source/pbir-edits.json'
+$allowedChanged = @('DataModelSchema', 'Report/Layout', 'UnappliedChanges') + @(if (Test-Path $pbirEditPath) { (Get-Content $pbirEditPath -Raw | ConvertFrom-Json).entry | Select-Object -Unique })
 foreach ($e in $on) {
     $a = Read-ZipEntryBytes $Original $e; $b = Read-ZipEntryBytes $Candidate $e
     $same = ($a.Length -eq $b.Length) -and ([Linq.Enumerable]::SequenceEqual([byte[]]$a, [byte[]]$b))
@@ -38,13 +42,17 @@ if (-not $persistedProblems.Count) { Ok 'persisted query lineage, M and descript
 function Items($a) { if ($null -eq $a) { return ,@() } else { return ,@($a) } }
 function Names($arr) { @($arr | ForEach-Object { [string]$_['name'] }) }
 $tabO = Names $mo['model']['tables']; $tabC = Names $mc['model']['tables']
-if (($tabO -join '|') -eq ($tabC -join '|')) { Ok "$($tabC.Count) tables unchanged (names/order)" } else { Fail 'table list changed' }
+$addedSpec = @((Get-Content (Join-Path $PSScriptRoot 'source/new-tables.json') -Raw | ConvertFrom-Json).tables)
+$addedNames = @($addedSpec | ForEach-Object { $_.name })
+if (($tabO -join '|') + '|' + ($addedNames -join '|') -eq ($tabC -join '|')) { Ok "$($tabO.Count) base tables unchanged (names/order); added: $($addedNames -join ', ')" } else { Fail 'table list differs from base plus documented additions' }
 function Rels($m) { @($m['model']['relationships'] | ForEach-Object { "$($_['fromTable']).$($_['fromColumn'])>$($_['toTable']).$($_['toColumn'])|$($_['crossFilteringBehavior'])|$($_['isActive'])" }) }
-if ((Rels $mo) -join ';' -eq (Rels $mc) -join ';') { Ok "$((Rels $mc).Count) relationships unchanged" } else { Fail 'relationships changed' }
+$addedRels = @($addedSpec | ForEach-Object { "$($_.name).$($_.relationship.fromColumn)>$($_.relationship.toTable).$($_.relationship.toColumn)||" })
+if (((Rels $mo) + $addedRels) -join ';' -eq (Rels $mc) -join ';') { Ok "$((Rels $mo).Count) base relationships unchanged; $($addedRels.Count) added" } else { Fail 'relationships differ from base plus documented additions' }
 $colsO = @(); $colsC = @(); $measO = @{}; $measC = @{}
 foreach ($t in $mo['model']['tables']) { foreach ($c in (Items $t['columns'])) { $colsO += "$($t['name']).$($c['name'])" }; foreach ($x in (Items $t['measures'])) { $measO["$($t['name']).$($x['name'])"] = 1 } }
 foreach ($t in $mc['model']['tables']) { foreach ($c in (Items $t['columns'])) { $colsC += "$($t['name']).$($c['name'])" }; foreach ($x in (Items $t['measures'])) { $measC["$($t['name']).$($x['name'])"] = 1 } }
-if (($colsO -join '|') -eq ($colsC -join '|')) { Ok "$($colsC.Count) columns unchanged" } else { Fail 'columns changed' }
+$addedCols = @($addedSpec | ForEach-Object { $t = $_; $t.columns | ForEach-Object { "$($t.name).$($_.name)" } })
+if (($colsO + $addedCols) -join '|' -eq ($colsC -join '|')) { Ok "$($colsO.Count) base columns unchanged; $($addedCols.Count) added" } else { Fail 'columns differ from base plus documented additions' }
 $lost = @($measO.Keys | Where-Object { -not $measC.ContainsKey($_) })
 if ($lost.Count -eq 0) { Ok "all $($measO.Count) original measure identifiers retained; $($measC.Count - $measO.Count) added" } else { Fail "original measures missing: $($lost -join ', ')" }
 # The native Desktop base adds an automatic date table; also retain the original customer schema.

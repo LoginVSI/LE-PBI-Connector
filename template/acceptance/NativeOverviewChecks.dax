@@ -1,0 +1,37 @@
+-- 1.2.0.0 additions. Run in a refreshed 1.2.0.0 model (Desktop DAX query view or tools/Invoke-DesktopModelChecks.ps1 -QueryFile).
+-- Compare each row with the appliance's GET load-test-run-overview/{id} for the same run (see docs/NATIVE-EUX.md).
+-- Per run: native whole-run values beside the aggregate bucket mean. Rows for runs with no native value must show BLANK, never 0.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Filtered Test Runs'[id],
+    'Filtered Test Runs'[type],
+    'Load Test Overview'[testName],
+    'Load Test Overview'[counter],
+    "nativeRows", [Native Overview Runs],
+    "nativeScore", [Native EUX Score (Selected Run)],
+    "nativeBaseline", [Native EUX Baseline (Selected Run)],
+    "nativeSteady", [Native EUX Steady State (Selected Run)],
+    "vsiDisplay", [Native VSImax (Display)],
+    "euxState", [Native EUX State (Selected Run)],
+    "vsiState", [Native VSImax State (Selected Run)],
+    "scoreDisplay", [Native EUX Score (Display)],
+    "aggregateMean", [Aggregate EUX Mean (Window Observations)],
+    "newestObservation", [Newest Source Observation]
+)
+ORDER BY 'Filtered Test Runs'[id]
+
+-- Multi-run context: every native value must be BLANK and the display must say Select one run.
+EVALUATE
+ROW (
+    "runsWithOverview", [Native Overview Runs],
+    "nativeScoreMulti", [Native EUX Score (Selected Run)],
+    "display", [Native EUX Score (Display)],
+    "aggregateMeanAll", [Aggregate EUX Mean (Window Observations)]
+)
+
+-- Relationship integrity: no run may have more than one overview row.
+EVALUATE
+FILTER (
+    SUMMARIZECOLUMNS ( 'Load Test Overview'[testRunId], "rows", COUNTROWS ( 'Load Test Overview' ) ),
+    [rows] > 1
+)

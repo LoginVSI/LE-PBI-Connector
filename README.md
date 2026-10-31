@@ -15,16 +15,19 @@ This connector helps you transform Login Enterprise performance data into action
 
 > NOTE: The connector uses the `v7-preview` Public API route (`https://<fqdn>/publicApi/v7-preview/...`). It has not been migrated to a newer API target. A bounded read-only check verified the matching appliance Swagger and production page size on sampled routes. Endpoint maxima are not specified by that Swagger; see [the independent audit](docs/INDEPENDENT-AUDIT.md) for exact coverage and limitations.
 
-## Recommended downloads: tested community preview 1.1.0.2
+## Downloads: community preview
 
-Use this connector and template together for new reports. Both have qualified Desktop acceptance under the [documented coverage limits](docs/MERGE-HANDOFF.md).
+| File | Status |
+|---|---|
+| [`LE-PBI-Connector.mez` 1.2.0.0](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | Current connector. Adds the native `Load Test Overview` table (additive; existing items unchanged). Real-engine tests pass; **Power BI Desktop has not yet loaded 1.2.0.0**. |
+| [`Login Enterprise 1.1.0.2-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) | **Desktop-accepted template** (accepted with the 1.1.0.2 connector). The 1.2.0.0 connector is additive, so it should work with it, but that pairing has not been run in Desktop. |
+| [`Login Enterprise 1.2.0.0-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.0.0-candidate.pbit) | Adds native EUX measures and cards. Statically checked only; not yet opened in Desktop. Needs connector 1.2.0.0. |
+| [`LE-PBI-Connector.mez` 1.1.0.2](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.1.0.2/LE-PBI-Connector.mez) | The previously accepted connector, kept for rollback. |
 
-| File | Download | Purpose |
-|---|---|---|
-| `LE-PBI-Connector.mez` | [Download connector](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | Canonical connector, version 1.1.0.2. Install this file in your per-user Custom Connectors folder. |
-| `Login Enterprise 1.1.0.2-candidate.pbit` | [Download tested template](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) | Recommended template, rebuilt from the tested native Desktop PBIR export. The `candidate` filename is retained for continuity. Open it after installing the connector. |
+For the pair that has qualified Desktop acceptance today, use the 1.1.0.2 connector and 1.1.0.2 template. To try native EUX scores, use the 1.2.0.0 pair on a copy and send feedback. What the native scores are and how they differ from the aggregate averages: [docs/NATIVE-EUX.md](docs/NATIVE-EUX.md). Backlog and status: [docs/BACKLOG.md](docs/BACKLOG.md).
 
-Verify downloads against [SHA256SUMS.txt](docs/SHA256SUMS.txt). Repository paths are `bin/AnyCPU/Debug/LE-PBI-Connector.mez` and `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit`. The [original template](template/Login%20Enterprise.pbit) is preserved for compatibility/history. The pinned file in `template/base/` is a build input. Neither is the recommended starting template.
+The qualified 1.1.0.2 Desktop acceptance is described under [documented coverage limits](docs/MERGE-HANDOFF.md).
+Verify downloads against [SHA256SUMS.txt](docs/SHA256SUMS.txt). Install only the connector file in your per-user Custom Connectors folder. The [original template](template/Login%20Enterprise.pbit) is a compatibility reference.
 
 Legacy and Key Load/Refresh, fixed-window model/source parity, nine-page rendering, selected Logon interactions, Key visual-edit persistence and legacy rollback passed the recorded checks. The final template completed a native Desktop export and reproducible rebaseline. See [acceptance evidence](docs/DESKTOP-ACCEPTANCE.md) and [changelog](docs/CHANGELOG.md). Unobserved or unavailable cases remain explicit; gateway and Service acceptance are deferred.
 
@@ -163,7 +166,7 @@ Understanding how the Login Enterprise tables relate to each other is key to bui
 
 ## On-Premise Data Gateway
 
-**Not needed for Power BI Desktop.** Only if you publish the report to the Power BI Service and want scheduled refresh do you need an [on-premise data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem), because this is a custom (non-certified) connector the Service cannot run by itself. That is a separate, administrator-level setup (install the gateway, enable custom connectors in its settings, place the `.mez` in the gateway's connector folder, add the data source and credentials) with its own acceptance test. **This project has not demonstrated gateway or Service refresh.** The connector now defines `TestConnection` in the documented `dataSourcePath` form and the test performs a real small API request, but that is not evidence that a gateway works.
+**Not needed for Power BI Desktop.** Scheduled refresh in the Power BI service needs Microsoft's standard [on-premises data gateway](https://learn.microsoft.com/en-us/power-bi/connect-data/service-gateway-onprem), because this is a custom (non-certified) connector. That is a separate administrator-level operation; use the Key credential entry. The connector side (TestConnection, Key scope) is prepared and the runbook, preflight script and recovery table are in [docs/GATEWAY.md](docs/GATEWAY.md). **Gateway and Service refresh have not been run by this project**; scheduled Import refresh is not real-time and refreshing fixed historical data shows no new collection.
 
 You can find step-by-step instructions for downloading, installing, and configuring the on-premises data gateway [HERE](https://learn.microsoft.com/en-us/data-integration/gateway/service-gateway-install).
 
@@ -300,6 +303,7 @@ Point observations use this UTC-day policy; run/session tables have interval sem
 - Paged lists are read through an empty terminator, including capped pages without totals (`count`/`offset` added exactly once; offsets and totals cross-checked). Previously measurements were truncated at 1000 rows per run per day, applications sent duplicate paging parameters, and environments read one page.
 - A failed request is an error with context (HTTP status, route, hint) instead of an empty table. The token is never included in error text. Transient statuses (408/429/5xx) get at most three attempts with 1/2-second retry delays. Requests have 30-second timeouts and paged reads stop at 1000 pages. A shared 300-second cooperative request budget is checked before attempts and after bodies; it cannot interrupt an in-flight request or decoding and is not a hard overall refresh deadline. Separate evaluations have separate budgets. See [audit limitations](docs/INDEPENDENT-AUDIT.md). Queried-route 404s fail refresh; absent data must be an empty success response.
 - A `Test Runs In Window` navigation item was added (used by the 1.1.0.2 template so failed runs without data stay visible). Existing navigation items, tables and columns are unchanged.
+- 1.2.0.0 appends a `Load Test Overview` navigation item with the appliance's native whole-run EUX results. Existing items, tables and columns are still unchanged. See [docs/NATIVE-EUX.md](docs/NATIVE-EUX.md).
 
 ## Troubleshooting
 
@@ -327,8 +331,8 @@ To rebuild the package from source (PowerShell 7): `pwsh build/Build-Mez.ps1`; t
 
 ## Template changes in 1.1.0.2
 
-The original `template/Login Enterprise.pbit` is unchanged. A candidate with measure fixes is at `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` and is **not yet opened or validated in Power BI Desktop**. What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
+The original `template/Login Enterprise.pbit` is unchanged. `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` is the Desktop-accepted template; `1.2.0.0-candidate` adds native EUX measures (not yet opened in Desktop). What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
 
 ### First-load snapshot failure
 
-On the acceptance appliance, expanding some older stored run snapshots returns HTTP 500 even for count 1. The candidate now enumerates run metadata without expansion and retrieves snapshots for overlapping Application/Load runs through the verified v7-preview single-run route. This preserves workload steps for the selected window while avoiding expansion of unrelated broken history. Selected-run failures remain errors. See [the failed Desktop attempt and verified workaround](docs/DESKTOP-LOAD-FAILURE.md). Desktop acceptance is still pending a successful retry; there is no accepted full refresh yet.
+On the acceptance appliance, expanding some older stored run snapshots returns HTTP 500 even for count 1. The candidate now enumerates run metadata without expansion and retrieves snapshots for overlapping Application/Load runs through the verified v7-preview single-run route. This preserves workload steps for the selected window while avoiding expansion of unrelated broken history. Selected-run failures remain errors. See [the failed Desktop attempt and verified workaround](docs/DESKTOP-LOAD-FAILURE.md). The retry succeeded and is recorded in [DESKTOP-ACCEPTANCE.md](docs/DESKTOP-ACCEPTANCE.md).

@@ -92,6 +92,9 @@ Fake.Router = (data as record) =>
             Fake.Ok(Fake.Page(Fake.Between(Record.FieldOrDefault(data[measurements], Fake.RunIdOf(route), {}), q), q))
         else if Text.EndsWith(route, "/user-sessions") then
             Fake.Ok(Fake.Page(Record.FieldOrDefault(data[sessions], Fake.RunIdOf(route), {}), q))
+        else if Text.StartsWith(route, "load-test-run-overview/") then
+            let hit = Record.FieldOrDefault(Record.FieldOrDefault(data, "overview", []), Text.AfterDelimiter(route, "/"), null)
+            in if hit = null then Fake.Raw(404, "not found") else Fake.Ok(hit)
         else if Text.EndsWith(route, "/aggregated-eux-results") then
             Fake.Ok(Fake.Between(Record.FieldOrDefault(data[eux], Fake.RunIdOf(route), {}), q))
         else if Text.EndsWith(route, "/aggregated-load-test-user-session-metrics") then
@@ -105,6 +108,12 @@ Fake.Run = (id as text, ty as text, started as nullable text, finished as nullab
     [id = id, testId = "t-" & ty, #"type" = ty, state = "Finished", result = "Successful", started = started, finished = finished,
      created = started, loginCounts = [successCount = 1, totalCount = 1], testRunConfigurationSnapshot = [name = "Snap " & id]];
 
+// Native overview body for one run (shape of GET load-test-run-overview/{id}); metrics = {{resultId, value}...}.
+Fake.Overview = (runId as text, euxState as nullable text, vsiState as nullable text, metrics as list) as record =>
+    [results = {[testRunId = runId, testName = "Test " & runId, counter = 7, isBase = true, state = "completed", testResult = "completed",
+        results = [loginTime = {}, performance = [euxState = euxState, vsiMaxState = vsiState,
+            results = List.Transform(metrics, each [resultId = _{0}, value = _{1}, differenceFromBase = null])]]]}];
+
 Fake.Measurement = (runId as text, n as number, timestamp as text) as record =>
     [measurementId = "total_login_time", appExecutionId = "ae" & Text.From(n), applicationId = "app1", launcherName = "L1",
      accountId = "acc" & Text.From(Number.Mod(n, 3)), testRunId = runId, userSessionId = "us" & Text.From(n), duration = 1000 + n,
@@ -112,7 +121,7 @@ Fake.Measurement = (runId as text, n as number, timestamp as text) as record =>
 
 Fake.EmptyData = [
     tests = {}, runs = {}, applications = {}, environments = {}, measurements = [], events = {}, sessions = [],
-    eux = [], metricsLoad = [], metricsCont = [], platform = {}
+    eux = [], metricsLoad = [], metricsCont = [], platform = {}, overview = []
 ];
 
 // ------------------------------- exports ------------------------------------
@@ -122,10 +131,10 @@ shared LoginEnterprise_PBI.TestExports = [
     GetAllItems = Api.GetAllItems, GetList = Api.GetList, Request = Api.Request, Probe = Api.Probe, WebOptions = Api.WebOptions, GetWorkloadSteps = GetWorkloadSteps, TestRunsToTable = TestRunsToTable,
     GetMeasurements = GetMeasurements, GetTests = GetTests, GetApplications = GetApplications, GetEnvironments = GetEnvironments,
     GetTestRunsRaw = GetTestRunsRaw, GetTestRuns = GetTestRuns, GetUserSessions = GetUserSessions, GetEvents = GetEvents,
-    GetAggregatedEUXResults = GetAggregatedEUXResults, GetUserSessionMetrics = GetUserSessionMetrics,
+    GetAggregatedEUXResults = GetAggregatedEUXResults, GetLoadTestOverview = GetLoadTestOverview, GetUserSessionMetrics = GetUserSessionMetrics,
     GetPlatformMetrics = GetPlatformMetrics, RunsInWindow = Runs.InWindow, TimeTextToUtc19 = Time.TextToUtc19,
     Token = Fake.Token, Ok = Fake.Ok, Raw = Fake.Raw, Page = Fake.Page, FakeCtx = Fake.Ctx, Router = Fake.Router,
-    Run_ = Fake.Run, Measurement = Fake.Measurement, EmptyData = Fake.EmptyData,
+    Run_ = Fake.Run, Overview = Fake.Overview, Measurement = Fake.Measurement, EmptyData = Fake.EmptyData,
     TestConnection = LoginEnterprise_PBI.TestConnection, KeyTestConnection = LoginEnterprise_PBI_Key.TestConnection,
     Impl = LoginEnterpriseImpl, Build = LoginEnterpriseBuild
 ];

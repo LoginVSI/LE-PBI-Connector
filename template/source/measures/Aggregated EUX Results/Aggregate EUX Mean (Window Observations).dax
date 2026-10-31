@@ -1,0 +1,5 @@
+-- table: Aggregated EUX Results
+-- name: Aggregate EUX Mean (Window Observations)
+-- format: 0.00
+-- description: NEW 1.2.0.0. Numeric. Unweighted mean of the hourly aggregate EUX buckets inside the loaded date window for the current selection. This is a trend statistic, not the appliance's whole-run overall EUX score, and it is not count-weighted because bucket count semantics are unproven. See Native EUX Score (Selected Run) for the Login Enterprise value.
+AVERAGE ( 'Aggregated EUX Results'[score] )

@@ -70,7 +70,7 @@ Candidate branch started clean at 6393ce2. Draft PR #4 remains open and draft. T
 - Verified all three artifact hashes against `docs/evidence/artifacts.json`.
 - Confirmed no Desktop process before installation, so no open or unsaved report was closed.
 - Recorded Desktop 2.159.883.0 and UTC offset -07:00.
-- Actual connector folder: `C:\Users\j.kennedy\Documents\Power BI Desktop\Custom Connectors`.
+- Actual connector folder: `C:\Users\<user>\Documents\Power BI Desktop\Custom Connectors`.
 - Backed up installed public connector 1.1.0, SHA256 `E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338`, to `.cache/desktop-acceptance-20261021/backup/LE-PBI-Connector.original.mez`. The backup was verified before installation.
 - Installed only candidate LE-PBI-Connector.mez, version 1.1.0.2, SHA256 `2E40132F078EF8E7D1BD76175D380DEF3AFA0CD1869ACF632858162247F752D7`.
 - ResultsToolkit.mez hash stayed `91DC405A3D94AA072A5BE1C24B81BFEEEC14012EB50FA4CD92D723CCA6AA93E7`. No trust or shared credential settings changed.

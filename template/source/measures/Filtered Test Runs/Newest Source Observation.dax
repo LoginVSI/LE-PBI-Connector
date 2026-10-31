@@ -1,0 +1,9 @@
+-- table: Filtered Test Runs
+-- name: Newest Source Observation
+-- format: yyyy-MM-dd HH:mm
+-- description: NEW 1.2.0.0. Datetime. Newest of: measurement timestamp, aggregate EUX timestamp and run start in the loaded window for the current selection. It is the newest SOURCE observation, not the refresh time and not a freshness guarantee: a scheduled refresh of fixed historical data succeeds without any new observation. Datetimes follow the refreshing machine's local time zone (Power Query converts the appliance's UTC timestamps), so a gateway host's zone applies in the Service.
+VAR NewestMeasurement = MAX ( 'Measurements'[timestamp] )
+VAR NewestEux = MAX ( 'Aggregated EUX Results'[timestamp] )
+VAR NewestRun = MAX ( 'Filtered Test Runs'[started] )
+RETURN
+    MAX ( MAX ( NewestMeasurement, NewestEux ), NewestRun )

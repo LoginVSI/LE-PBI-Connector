@@ -1,0 +1,20 @@
+-- table: Load Test Overview
+-- name: Native VSImax (Display)
+-- format: 
+-- description: NEW 1.2.0.0. Display text for exactly one selected run. When the appliance reports vsiMaxState aboveThreshold the value is shown as a bound with the state, never as an exact capacity. No Data when unavailable; Select one run for zero or several runs. The appliance defines the state; nothing is recomputed.
+VAR NativeValue = IF ( HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1, MAX ( 'Load Test Overview'[vsiMax] ), BLANK () )
+VAR VsiState = [Native VSImax State (Selected Run)]
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ),
+        "Select one run",
+        IF (
+            ISBLANK ( NativeValue ),
+            "No Data",
+            IF (
+                VsiState = "aboveThreshold",
+                FORMAT ( NativeValue, "General Number" ) & " (bound, aboveThreshold)",
+                FORMAT ( NativeValue, "General Number" ) & " (" & COALESCE ( VsiState, "state unknown" ) & ")"
+            )
+        )
+    )

@@ -1,0 +1,9 @@
+-- table: Load Test Overview
+-- name: Native VSImax State (Selected Run)
+-- format: 
+-- description: NEW 1.2.0.0. Text. The appliance's vsiMaxState for exactly one selected run (for example aboveThreshold or disabled); BLANK otherwise. The threshold decision is the appliance's and is not recomputed here.
+IF (
+    HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
+    SELECTEDVALUE ( 'Load Test Overview'[vsiMaxState] ),
+    BLANK ()
+)

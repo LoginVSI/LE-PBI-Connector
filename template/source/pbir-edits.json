@@ -1,0 +1,30 @@
+[
+  {
+    "entry": "Report/definition/pages/59343fa83277349385bc/visuals/b97ce820e63e2a875db9/visual.json",
+    "purpose": "Load Testing single-run EUX Score card shows the native whole-run score",
+    "old": "\"Entity\":\"Aggregated EUX Results\"}},\"Property\":\"Average EUX Score (No Data)\"",
+    "new": "\"Entity\":\"Load Test Overview\"}},\"Property\":\"Native EUX Score (Display)\"",
+    "expected": 2
+  },
+  {
+    "entry": "Report/definition/pages/59343fa83277349385bc/visuals/b97ce820e63e2a875db9/visual.json",
+    "purpose": "query reference of the same card",
+    "old": "\"queryRef\":\"Aggregated EUX Results.Average EUX Score (No Data)\"",
+    "new": "\"queryRef\":\"Load Test Overview.Native EUX Score (Display)\"",
+    "expected": 1
+  },
+  {
+    "entry": "Report/definition/pages/2368916c8d01e9202c31/visuals/b5dd62b02034bb353652/visual.json",
+    "purpose": "EUX Overview gauge is a period statistic of aggregate buckets, label it as such",
+    "old": "'Average EUX Score (Min/Max)'",
+    "new": "'Aggregate EUX Buckets (Avg, Min/Max)'",
+    "expected": 1
+  },
+  {
+    "entry": "Report/definition/pages/2368916c8d01e9202c31/visuals/bcf1692dc980943ce258/visual.json",
+    "purpose": "second EUX Overview gauge",
+    "old": "'Average EUX Score (Min/Max)'",
+    "new": "'Aggregate EUX Buckets (Avg, Min/Max)'",
+    "expected": 1
+  }
+]

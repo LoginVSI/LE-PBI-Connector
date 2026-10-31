@@ -1,0 +1,9 @@
+-- table: Load Test Overview
+-- name: Native EUX Steady State (Selected Run)
+-- format: 0.0
+-- description: NEW 1.2.0.0. Numeric. Whole-run steady-state EUX (overview result eux_steady_state) for exactly one selected run; BLANK otherwise. Same rules as Native EUX Score (Selected Run).
+IF (
+    HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
+    MAX ( 'Load Test Overview'[euxSteadyState] ),
+    BLANK ()
+)

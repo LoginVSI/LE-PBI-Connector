@@ -4,7 +4,7 @@
 
 Preparation history (completed for this host; do not reinstall into an open session):
 1. Confirm the Results Toolkit session has released Power BI Desktop and the shared connector folder.
-2. Print the effective folder (do not assume): `Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Power BI Desktop\Custom Connectors'`. On this workstation it resolved to `C:\Users\j.kennedy\Documents\Power BI Desktop\Custom Connectors` (no redirection) when inspected on 2026-10-20; it currently holds `LE-PBI-Connector.mez` (public 1.1.0, 30 158 bytes, SHA256 recorded below) and `ResultsToolkit.mez` (not ours – do not touch).
+2. Print the effective folder (do not assume): `Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Power BI Desktop\Custom Connectors'`. On this workstation it resolved to `C:\Users\<user>\Documents\Power BI Desktop\Custom Connectors` (no redirection) when inspected on 2026-10-20; it currently holds `LE-PBI-Connector.mez` (public 1.1.0, 30 158 bytes, SHA256 recorded below) and `ResultsToolkit.mez` (not ours – do not touch).
 3. Back up the installed copy: copy `LE-PBI-Connector.mez` to a folder outside `Custom Connectors` (rollback). Record its SHA256.
 4. Copy the candidate `bin/AnyCPU/Debug/LE-PBI-Connector.mez` (SHA256 in `docs/SHA256SUMS.txt`) over it (same file name, so there is exactly one copy). Fully restart Desktop. Do **not** change data-extension security or credentials settings beyond what is already enabled; ask before touching shared trust/credential settings.
 5. Use a bounded scope: a lab appliance, a read-only token, Days Back 7 (then a fixed range), no tests/settings/workloads/results created or changed.
@@ -43,7 +43,27 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - [ ] Data source settings shows the data source as `LoginEnterprise_PBI_Key` with only the FQDN in its path.
 
 ## F. Gateway/Service (separate, admin-level, out of this patch)
-- [ ] Not started. Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
+- [ ] Runtime pending (no authorised gateway/tenant). Code, TestConnection, Key scope, setup and preflight are prepared: [GATEWAY.md](GATEWAY.md). Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
+
+## G. 1.2.0.0 additions (native overview)
+
+### Executed (2026-10-30, no Desktop UI)
+- Installed MEZ full SHA256 equals the built artifact (`fff51b3e...68a9`); the 1.1.0.2 backup (`8b7eac70...d768`) and `ResultsToolkit.mez` (`91dc405a...93e7`) are intact. Desktop was not running.
+- Fixed window 2026-09-18..24 has no Load runs, so it cannot test native EUX. Windows used instead: A = 2025-06-30 (7 Load runs, large native/aggregate gaps) and B = 2025-05-28..29 (8 runs: two `disabled`, one `unavailable`, one null baseline).
+- **Real Power Query engine against the live appliance (read-only, bounded):** the packaged 1.2.0.0 MEZ, `ContentsKey`, both windows. Navigator contains `Load Test Overview`; 7 of 7 and 8 of 8 rows reconcile with separate direct GETs (native values, states, bucket counts and means); no duplicate rows; nulls stay null, no 0 invented. [Evidence](evidence/native-eux-engine-reconciliation.json).
+- Copies prepared in the private acceptance folder: existing-report copy and window-A Key `.pbit` (13 Key calls, static Key-copy check passes).
+
+### NOT executed: Power BI Desktop
+No Desktop controller is available to this session and Desktop was not started. These remain unexecuted and are not claimed: refresh of the existing-report copy with the new connector; opening and refreshing the 1.2.0.0 template and Key copy; one-legacy-and-one-Key navigator check in the Get Data UI; execution of any new DAX measure (`NativeOverviewChecks.dax`); the native card for run counter 77 and the multi-run message; aggregate-gauge titles on screen; window B disabled-run card; save/reopen persistence; rollback with 1.1.0.2. Static template checks and Desktop's offline model-schema reader are not DAX or Desktop validation.
+
+### Finite checklist for the Desktop owner (copies only; one grouped pass)
+
+Helpers (read-only against the open model; they change no file): `tools/Start-AcceptanceFile.ps1` opens one copy, waits for a queryable model and reconciles `NativeOverviewChecks.dax` against the private source expectations with `tools/Reconcile-NativeChecks.ps1` (PASS/FAIL per run, duplicate-row and multi-run guard). Windows: A = `A_2025-06-30`, B = `B_2025-05-28_to_29`. Private copies are in `.cache/desktop-acceptance-20261028/` (not in Git). Use `LE-acceptance-120-key-A-v4.pbit`; v1 to v3 are superseded (v1 to v3 do not open in Desktop; see TEMPLATE-CHANGES.md). The installed connector is already 1.2.0.0 (hash in SHA256SUMS.txt).
+
+1. **Existing report copy.** Open the file (double-click) and click Refresh. Expect the same visuals and counts as the accepted 1.1.0.2 baseline in [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md); no `Load Test Overview` exists in this old report, so the reconcile script is not used here. Save.
+2. **Key candidate, window A.** Open `LE-acceptance-120-key-A-v4.pbit` (window A is pre-set), supply the Key credential in the Desktop dialog (the token is never given to Claude), Load. In Get Data confirm one legacy and one Key entry and `Load Test Overview` in the navigator. Run `pwsh tools/Start-AcceptanceFile.ps1 -File .cache/desktop-acceptance-20261028/LE-acceptance-120-key-A-v4.pbit -Window A_2025-06-30 -NoLaunch` while the model is open: expect `RESULT: all reconciled`. Then look at the page: Load Testing > select counter 77 > EUX Score card reads 3.3; select several runs > the card reads `Select one run`; EUX Overview gauges are titled "Aggregate EUX Buckets (Avg, Min/Max)"; a run with VSImax `aboveThreshold` shows a "(bound, aboveThreshold)" display. Save As a new PBIX (`LE-acceptance-120-key-A-A.pbix`), close, reopen, confirm values persist.
+3. **Window B.** In the same model change the window parameters to 2025-05-28 .. 2025-05-29, refresh, run the script with `-Window B_2025-05-28_to_29 -NoLaunch`: expect all reconciled; the two `disabled` runs show `No Data` (never 0), the `unavailable`/null-baseline run shows BLANK for the missing values and keeps its present score, and the counter-1 abandoned run keeps 8.0. Capture the two screenshots (redact names and FQDN).
+4. **Rollback.** Close Desktop and tell Claude. Claude (or you: `pwsh tools/Swap-Connector.ps1 -To 1.1.0.2`) swaps in the 1.1.0.2 MEZ, you open the existing-report copy and refresh once, close Desktop, tell Claude; restore with `pwsh tools/Swap-Connector.ps1 -To 1.2.0.0`, which verifies the full installed hash (the script refuses to run while Desktop is open, and never touches ResultsToolkit.mez).
 
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.

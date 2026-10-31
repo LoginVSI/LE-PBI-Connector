@@ -1,0 +1,252 @@
+{
+ "engine": "Power Query (PQTest 2.155.2) running the packaged 1.2.0.0 MEZ ContentsKey against the live appliance, read-only",
+ "windows": {
+  "A": {
+   "range": "2025-06-30",
+   "overviewRows": 7,
+   "expectedRows": 7,
+   "duplicateOverviewRows": 0,
+   "mismatches": 0,
+   "runs": [
+    {
+     "counter": 72,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      8.1,
+      8.4,
+      8.2,
+      6
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 8.1,
+     "matchesSource": true
+    },
+    {
+     "counter": 73,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      7.7,
+      8.4,
+      7.7,
+      6
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 7.7,
+     "matchesSource": true
+    },
+    {
+     "counter": 74,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      4.4,
+      8.1,
+      4.1,
+      6
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 5.2,
+     "matchesSource": true
+    },
+    {
+     "counter": 75,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      3.9,
+      8.3,
+      3.6,
+      6
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 6.0,
+     "matchesSource": true
+    },
+    {
+     "counter": 76,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      3.7,
+      8.2,
+      3.6,
+      6
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 6.3,
+     "matchesSource": true
+    },
+    {
+     "counter": 77,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      3.3,
+      7.6,
+      3.1,
+      6
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 4.2,
+     "matchesSource": true
+    },
+    {
+     "counter": 78,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      8.2,
+      8.4,
+      8.3,
+      6
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 8.15,
+     "matchesSource": true
+    }
+   ],
+   "allReconciled": true
+  },
+  "B": {
+   "range": "2025-05-28..2025-05-29",
+   "overviewRows": 8,
+   "expectedRows": 8,
+   "duplicateOverviewRows": 0,
+   "mismatches": 0,
+   "runs": [
+    {
+     "counter": 1,
+     "result": "abandoned",
+     "euxState": "unavailable",
+     "vsiMaxState": "unavailable",
+     "native(score,baseline,steady,vsiMax)": [
+      8,
+      null,
+      null,
+      null
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 8.0,
+     "matchesSource": true
+    },
+    {
+     "counter": 2,
+     "result": "abandoned",
+     "euxState": "disabled",
+     "vsiMaxState": "disabled",
+     "native(score,baseline,steady,vsiMax)": [
+      null,
+      null,
+      null,
+      null
+     ],
+     "aggBucketsInWindow": 0,
+     "aggMeanInWindow": null,
+     "matchesSource": true
+    },
+    {
+     "counter": 3,
+     "result": "aborted",
+     "euxState": "disabled",
+     "vsiMaxState": "disabled",
+     "native(score,baseline,steady,vsiMax)": [
+      null,
+      null,
+      null,
+      null
+     ],
+     "aggBucketsInWindow": 0,
+     "aggMeanInWindow": null,
+     "matchesSource": true
+    },
+    {
+     "counter": 9,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "completed",
+     "native(score,baseline,steady,vsiMax)": [
+      7.3,
+      7.8,
+      7.2,
+      15
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 7.35,
+     "matchesSource": true
+    },
+    {
+     "counter": 10,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      7.2,
+      8,
+      7.1,
+      16
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 7.3,
+     "matchesSource": true
+    },
+    {
+     "counter": 1,
+     "result": "aborted",
+     "euxState": "completed",
+     "vsiMaxState": "aboveThreshold",
+     "native(score,baseline,steady,vsiMax)": [
+      7.6,
+      8.3,
+      7.7,
+      16
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 7.8,
+     "matchesSource": true
+    },
+    {
+     "counter": 2,
+     "result": "aborted",
+     "euxState": "completed",
+     "vsiMaxState": "unavailable",
+     "native(score,baseline,steady,vsiMax)": [
+      8.2,
+      8.4,
+      null,
+      null
+     ],
+     "aggBucketsInWindow": 1,
+     "aggMeanInWindow": 8.3,
+     "matchesSource": true
+    },
+    {
+     "counter": 3,
+     "result": "completed",
+     "euxState": "completed",
+     "vsiMaxState": "completed",
+     "native(score,baseline,steady,vsiMax)": [
+      7.6,
+      8.2,
+      7.7,
+      16
+     ],
+     "aggBucketsInWindow": 2,
+     "aggMeanInWindow": 7.65,
+     "matchesSource": true
+    }
+   ],
+   "allReconciled": true
+  }
+ },
+ "allReconciled": true,
+ "notes": "Runs are identified by counter only. Expectations came from separate read-only GETs of the overview and aggregated-eux-results endpoints. This is connector-engine reconciliation; it is not a Power BI Desktop refresh or a DAX execution. PQTest output caps at 1000 rows, so the full Test Runs catalog was not reconciled here."
+}
