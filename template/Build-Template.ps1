@@ -7,7 +7,7 @@
     * Report/Layout: exact-string renames from source/layout-renames.json (counts asserted)
     * PBIR visuals: exact-string edits from source/pbir-edits.json (counts asserted; no visual is added or removed)
     * UnappliedChanges: M, lineage and help synchronized with DataModelSchema
-  Everything else (relationships, columns, pages, visual layout, resources, SecurityBindings, Settings, ...) is copied byte-for-byte.
+  Everything else (relationships, columns, pages, visual layout, resources, Settings, ...) is copied byte-for-byte. SecurityBindings is dropped when PBIR visuals are edited (the binding covers the report content; Desktop reports an edited package that keeps it as corrupted).
   The Desktop base was loaded/refreshed and exported by Desktop. Source changes still require the affected acceptance checks in docs/ACCEPTANCE.md.
 #>
 [CmdletBinding()]
@@ -204,6 +204,9 @@ $src = [IO.Compression.ZipFile]::OpenRead($Original)
 $dst = [IO.Compression.ZipFile]::Open($Output, [IO.Compression.ZipArchiveMode]::Create)
 try {
     foreach ($e in $src.Entries) {
+        # SecurityBindings binds the original report content; Desktop rejects the package as corrupted when report
+        # files are edited and the binding is kept (observed on Desktop 2.159, 2026-10-30). Drop it only in that case.
+        if ($e.FullName -eq 'SecurityBindings' -and $pbirEdits.Count -gt 0) { continue }
         $ne = $dst.CreateEntry($e.FullName, [IO.Compression.CompressionLevel]::NoCompression)
         $ne.LastWriteTime = $e.LastWriteTime
         $os = $ne.Open()

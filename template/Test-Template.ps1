@@ -20,7 +20,10 @@ function Ok([string]$m) { Write-Host "ok:   $m" }
 $zo = [IO.Compression.ZipFile]::OpenRead($Original); $zc = [IO.Compression.ZipFile]::OpenRead($Candidate)
 $on = @($zo.Entries.FullName); $cn = @($zc.Entries.FullName)
 $zo.Dispose(); $zc.Dispose()
-if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order" } else { Fail 'entry list differs from original' }
+$pbirEditPath0 = Join-Path $PSScriptRoot 'source/pbir-edits.json'
+if ((Test-Path $pbirEditPath0) -and ($on -contains 'SecurityBindings')) { $on = @($on | Where-Object { $_ -ne 'SecurityBindings' }) }  # intentionally dropped when report files are edited
+if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order (SecurityBindings intentionally absent when report files are edited)" } else { Fail 'entry list differs from original (beyond the intentional SecurityBindings removal)' }
+if ($cn -contains 'SecurityBindings' -and (Test-Path $pbirEditPath0)) { Fail 'SecurityBindings must be absent when PBIR visuals are edited' }
 $pbirEditPath = Join-Path $PSScriptRoot 'source/pbir-edits.json'
 $allowedChanged = @('DataModelSchema', 'Report/Layout', 'UnappliedChanges') + @(if (Test-Path $pbirEditPath) { (Get-Content $pbirEditPath -Raw | ConvertFrom-Json).entry | Select-Object -Unique })
 foreach ($e in $on) {

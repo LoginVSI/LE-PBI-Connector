@@ -101,3 +101,6 @@ Verified installed MEZ hash, backup and Toolkit connector. September 2026 has no
 ## Closeout pass, 2026-10-30 (later)
 
 Re-verified PR #6 at `9c7d89b` (CI connector job passing, mergeable), installed MEZ hash, no Desktop process running. No Desktop controller is available, so no Desktop outcome is claimed. Added the checkpoint helpers `tools/Start-AcceptanceFile.ps1` and `tools/Reconcile-NativeChecks.ps1` (reconcile logic exercised only against synthetic rows built from the private expectations) and extended `NativeOverviewChecks.dax` with testName and counter so rows reconcile with source. Section G now holds one grouped owner checklist. The merge gate is unchanged: Desktop acceptance of the new table, card and measures.
+
+## Desktop open failure, 2026-10-30
+The owner's first open of the Key candidate failed ("file is corrupted or ... unrecognized version"). Bisected with Desktop and fixed: the stale `SecurityBindings` part (see TEMPLATE-CHANGES.md). Template rebuilt (468f4dc0…f656), Key copy v4 prepared and static-checked, and opening it in Desktop reaches the parameter dialog. Refresh and DAX checks still need the owner (ACCEPTANCE.md section G, now v4).

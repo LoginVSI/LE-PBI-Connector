@@ -28,8 +28,8 @@
     },
     {
       "path": "template/candidate/Login Enterprise 1.2.0.0-candidate.pbit",
-      "bytes": 4245146,
-      "sha256": "ADA87B37D653F90B14E52FCF92C3F6159E6A3818568F9A75EFBD2E3CF80C9B47",
+      "bytes": 4237268,
+      "sha256": "468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656",
       "version": "1.2.0.0-candidate"
     }
   ],
