@@ -107,3 +107,6 @@ The owner's first open of the Key candidate failed ("file is corrupted or ... un
 
 ## 2026-10-31
 State verified: PR #6 at f287b89, CI connector job passing, installed MEZ is 1.2.0.0 (full hash matches), 1.1.0.2 backup and ResultsToolkit.mez intact. No owner acceptance output exists yet. Added `tools/Swap-Connector.ps1` (hash-verified swap between 1.1.0.2 and 1.2.0.0; tested only as a 1.2.0.0 restore no-op). Opened the existing-report copy normally in Desktop for step 1; Desktop is held by that open window until the owner closes it.
+
+## Checkpoint, 2026-10-31 (paused by owner until Monday)
+Owner has not run the 1.2.0.0 acceptance. Desktop is closed and released. Installed connector is 1.2.0.0 (full hash matches the build). PR #6 is an unmerged draft. Resume at ACCEPTANCE.md section G, step 1 (existing-report copy), then the v4 Key candidate, window B and rollback.
