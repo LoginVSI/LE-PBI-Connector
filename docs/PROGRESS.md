@@ -104,3 +104,6 @@ Re-verified PR #6 at `9c7d89b` (CI connector job passing, mergeable), installed 
 
 ## Desktop open failure, 2026-10-30
 The owner's first open of the Key candidate failed ("file is corrupted or ... unrecognized version"). Bisected with Desktop and fixed: the stale `SecurityBindings` part (see TEMPLATE-CHANGES.md). Template rebuilt (468f4dc0…f656), Key copy v4 prepared and static-checked, and opening it in Desktop reaches the parameter dialog. Refresh and DAX checks still need the owner (ACCEPTANCE.md section G, now v4).
+
+## 2026-10-31
+State verified: PR #6 at f287b89, CI connector job passing, installed MEZ is 1.2.0.0 (full hash matches), 1.1.0.2 backup and ResultsToolkit.mez intact. No owner acceptance output exists yet. Added `tools/Swap-Connector.ps1` (hash-verified swap between 1.1.0.2 and 1.2.0.0; tested only as a 1.2.0.0 restore no-op). Opened the existing-report copy normally in Desktop for step 1; Desktop is held by that open window until the owner closes it.
