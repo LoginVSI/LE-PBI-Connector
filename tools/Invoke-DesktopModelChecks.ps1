@@ -5,7 +5,9 @@ $root=Split-Path -Parent $PSScriptRoot
 if(-not $QueryFile){$QueryFile=Join-Path $root 'template/acceptance/ModelChecks.dax'}
 if(-not $OutputPath){$OutputPath=Join-Path $root '.cache/desktop-acceptance-20261021/modelchecks.raw.json'}
 $allServers=@(Get-CimInstance Win32_Process -Filter "name='msmdsrv.exe'")
-$desktopIds=@(Get-Process PBIDesktop -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -like 'LE-acceptance-*'} | ForEach-Object {$_.Id})
+$allDesktop=@(Get-Process PBIDesktop -ErrorAction SilentlyContinue)
+# An unsaved template opens as "Untitled": accept that title only when it is the sole Desktop process (table guards below still apply).
+$desktopIds=@($allDesktop | Where-Object {$_.MainWindowTitle -like 'LE-acceptance-*' -or ($allDesktop.Count -eq 1 -and $_.MainWindowTitle -like 'Untitled*')} | ForEach-Object {$_.Id})
 $ownedServers=@($allServers | Where-Object {$_.ParentProcessId -in $desktopIds})
 $servers=if($ownedServers.Count){$ownedServers}else{@($allServers | Where-Object {$_.CommandLine -like '*AnalysisServicesWorkspace*'})}
 if($servers.Count -ne 1){Write-Output 'Waiting for exactly one open Desktop model; no query executed.';exit 2}

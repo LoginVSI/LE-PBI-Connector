@@ -12,7 +12,7 @@ if (-not $exp) { throw "Window '$Window' not in expectations." }
 $rows = @($data.resultSets[0] | Where-Object { $_ }); $fail = 0
 function Near($a, $b) { if ($null -eq $a -and $null -eq $b) { return $true }; if ($null -eq $a -or $null -eq $b) { return $false }; [Math]::Abs([double]$a - [double]$b) -lt 0.051 }
 foreach ($e in $exp) {
-    $m = @($rows | Where-Object { $_.'Load Test Overview[testName]' -eq $e.testName -and [int]$_.'Load Test Overview[counter]' -eq $e.counter })
+    $m = @($rows | Where-Object { $_.'[testName]' -eq $e.testName -and [int]$_.'Filtered Test Runs[counter]' -eq $e.counter })
     $why = @()
     if ($m.Count -ne 1) { $why += "rows=$($m.Count) (expected 1)" }
     else {

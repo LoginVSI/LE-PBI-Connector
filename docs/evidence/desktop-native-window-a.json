@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-02",
+  "what": "Key candidate v4 (template 1.2.0.0-candidate, SecurityBindings fix) loaded by the owner in Power BI Desktop with the installed 1.2.0.0 connector; window A 2025-06-30. NativeOverviewChecks.dax executed read-only against the open model with tools/Invoke-DesktopModelChecks.ps1 and reconciled by tools/Reconcile-NativeChecks.ps1 against private source expectations (direct API reads).",
+  "result": "7 of 7 Load runs PASS: native score, baseline, steady state, euxState, vsiMaxState, aggregate mean (window observations); counter 77 native EUX 3.3; VSImax display shows '(bound, aboveThreshold)' for aboveThreshold runs; zero duplicate overview rows; multi-run context returns BLANK native values and the display 'Select one run'.",
+  "executedBy": "owner (open, credential, Load); Claude (model query, reconciliation)",
+  "notYet": "Visual confirmation on the report pages (card, gauge titles), Save As / close / reopen persistence, window B, rollback.",
+  "rawOutput": "private, outside Git"
+}

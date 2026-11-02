@@ -113,3 +113,6 @@ Owner has not run the 1.2.0.0 acceptance. Desktop is closed and released. Instal
 
 ## 2026-11-02: existing-report copy accepted
 The owner refreshed and saved the existing-report copy with the 1.2.0.0 connector without errors; model checks against the open model equal the accepted legacy baseline in all four result sets ([evidence](evidence/desktop-existing-copy-120.json)). Remaining: v4 Key candidate (windows A and B), persistence, rollback.
+
+## 2026-11-02: window A reconciled in Desktop
+v4 Key candidate loaded by the owner; `NativeOverviewChecks.dax` against the open model: 7 of 7 runs reconcile with direct API reads, counter 77 = 3.3, VSImax bound text, no duplicate overview rows, multi-run guard ([evidence](evidence/desktop-native-window-a.json)). Helper defects fixed on the way: an unsaved template is titled "Untitled" (accepted only as the sole Desktop process), and the check query now groups by run and reads the test name through a measure. Page-level visual confirmation, persistence, window B and rollback remain.
