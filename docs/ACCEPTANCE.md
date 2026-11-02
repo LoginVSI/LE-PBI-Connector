@@ -53,13 +53,17 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - **Real Power Query engine against the live appliance (read-only, bounded):** the packaged 1.2.0.0 MEZ, `ContentsKey`, both windows. Navigator contains `Load Test Overview`; 7 of 7 and 8 of 8 rows reconcile with separate direct GETs (native values, states, bucket counts and means); no duplicate rows; nulls stay null, no 0 invented. [Evidence](evidence/native-eux-engine-reconciliation.json).
 - Copies prepared in the private acceptance folder: existing-report copy and window-A Key `.pbit` (13 Key calls, static Key-copy check passes).
 
-### Executed in Desktop (2026-11-02)
-- Existing-report copy opened, refreshed and saved with the 1.2.0.0 connector; model checks identical to the accepted legacy baseline ([evidence](evidence/desktop-existing-copy-120.json)).
+### Executed in Desktop (2026-11-02, owner-operated; Claude queried the open models and reconciled)
+- **Existing-report copy:** opened, refreshed and saved with the 1.2.0.0 connector; model checks identical to the accepted legacy baseline in all four result sets ([evidence](evidence/desktop-existing-copy-120.json)).
+- **First open of the Key candidate failed** (Desktop: file corrupted or unrecognized). Cause found by bisecting in Desktop: the stale `SecurityBindings` part; fixed in `Build-Template.ps1`; candidate rebuilt (v4).
+- **Key candidate v4, window A (2025-06-30):** loaded with the saved Key credential; `NativeOverviewChecks.dax` reconciled 7 of 7 runs with direct API reads; counter 77 reads 3.3 (owner-observed card); no run selected shows the `Select one run` guard (run list is single-select by design; the multi-run DAX check also passes); gauges titled "Aggregate EUX Buckets (Avg, Min/Max)" (owner-observed); VSImax `aboveThreshold` display text contains "(bound, aboveThreshold)" (DAX result); no duplicate overview rows ([evidence](evidence/desktop-native-window-a.json)).
+- **Persistence:** Save As new PBIX, close, reopen: card still 3.3 and 7 of 7 reconcile again.
+- **Window B (2025-05-28..29):** 8 of 8 reconcile; disabled runs blank and `No Data`, unavailable run keeps 8.0, null baseline/steady stay blank ([evidence](evidence/desktop-native-window-b.json)).
+- **Rollback:** 1.1.0.2 installed (full hash verified), the existing-report copy refreshed without errors (owner-reported), 1.2.0.0 restored and its full SHA256 verified equal to the build (`FFF51B3E…68A9`); `ResultsToolkit.mez` unchanged (`91DC405A…`).
 
-### NOT executed: Power BI Desktop (remaining)
-No Desktop controller is available to this session and Desktop was not started. These remain unexecuted and are not claimed: refresh of the existing-report copy with the new connector; opening and refreshing the 1.2.0.0 template and Key copy; one-legacy-and-one-Key navigator check in the Get Data UI; execution of any new DAX measure (`NativeOverviewChecks.dax`); the native card for run counter 77 and the multi-run message; aggregate-gauge titles on screen; window B disabled-run card; save/reopen persistence; rollback with 1.1.0.2. Static template checks and Desktop's offline model-schema reader are not DAX or Desktop validation.
-
-### Finite checklist for the Desktop owner (copies only; one grouped pass)
+### Not executed (not claimed)
+The legacy-credential variant of the 1.2.0.0 template was not opened. The Get Data one-legacy-one-Key entry check was not performed. No screenshots were captured. VSImax bound text was verified from the DAX result, not by eye. No retained native value of 0 exists (valid zero is covered by engine fixtures). The rollback refresh was not followed by a model query. Gateway/Service runtime remains environment-blocked. Static checks and the offline model-schema reader remain separate from Desktop validation.
+### Owner checklist (completed 2026-11-02; retained for repeating on another report)
 
 Helpers (read-only against the open model; they change no file): `tools/Start-AcceptanceFile.ps1` opens one copy, waits for a queryable model and reconciles `NativeOverviewChecks.dax` against the private source expectations with `tools/Reconcile-NativeChecks.ps1` (PASS/FAIL per run, duplicate-row and multi-run guard). Windows: A = `A_2025-06-30`, B = `B_2025-05-28_to_29`. Private copies are in `.cache/desktop-acceptance-20261028/` (not in Git). Use `LE-acceptance-120-key-A-v4.pbit`; v1 to v3 are superseded (v1 to v3 do not open in Desktop; see TEMPLATE-CHANGES.md). The installed connector is already 1.2.0.0 (hash in SHA256SUMS.txt).
 

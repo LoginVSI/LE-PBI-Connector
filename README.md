@@ -21,7 +21,7 @@ This connector helps you transform Login Enterprise performance data into action
 |---|---|
 | [`LE-PBI-Connector.mez` 1.2.0.0](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | Current connector. Adds the native `Load Test Overview` table (additive; existing items unchanged). Real-engine tests pass; **Power BI Desktop has not yet loaded 1.2.0.0**. |
 | [`Login Enterprise 1.1.0.2-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) | **Desktop-accepted template** (accepted with the 1.1.0.2 connector). The 1.2.0.0 connector is additive, so it should work with it, but that pairing has not been run in Desktop. |
-| [`Login Enterprise 1.2.0.0-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.0.0-candidate.pbit) | Adds native EUX measures and cards. Statically checked only; not yet opened in Desktop. Needs connector 1.2.0.0. |
+| [`Login Enterprise 1.2.0.0-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.0.0-candidate.pbit) | Adds native EUX measures and cards. Accepted in Desktop for the Key (FQDN-only) path on two retained windows; the legacy-credential variant of this template was not opened. Needs connector 1.2.0.0. |
 | [`LE-PBI-Connector.mez` 1.1.0.2](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.1.0.2/LE-PBI-Connector.mez) | The previously accepted connector, kept for rollback. |
 
 For the pair that has qualified Desktop acceptance today, use the 1.1.0.2 connector and 1.1.0.2 template. To try native EUX scores, use the 1.2.0.0 pair on a copy and send feedback. What the native scores are and how they differ from the aggregate averages: [docs/NATIVE-EUX.md](docs/NATIVE-EUX.md). Backlog and status: [docs/BACKLOG.md](docs/BACKLOG.md).
@@ -331,7 +331,7 @@ To rebuild the package from source (PowerShell 7): `pwsh build/Build-Mez.ps1`; t
 
 ## Template changes in 1.1.0.2
 
-The original `template/Login Enterprise.pbit` is unchanged. `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` is the Desktop-accepted template; `1.2.0.0-candidate` adds native EUX measures (not yet opened in Desktop). What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
+The original `template/Login Enterprise.pbit` is unchanged. `template/candidate/Login Enterprise 1.1.0.2-candidate.pbit` is the Desktop-accepted template; `1.2.0.0-candidate` adds native EUX measures (Desktop-accepted on the Key path, see docs/ACCEPTANCE.md section G). What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
 
 ### First-load snapshot failure
 

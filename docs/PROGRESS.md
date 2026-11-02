@@ -15,7 +15,7 @@ Current disposition: PR #4 merged as `9eb1ab28097403b478d88d6da88730bb01b69f89` 
 |---|---|---|
 | 1 Evidence/compat | DONE | baseline above; `docs/CHANGE-TEST-MATRIX.md` |
 | 2 Acquisition + time windows | DONE on fixtures (real M engine); **live API not exercised** | tests 01-03; API limits unverified (matrix "Unverified") |
-| 3 Template semantics | DONE as *candidate*; **DAX not executed, Desktop not opened** | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
+| 3 Template semantics | DONE; Desktop-accepted 2026-11-02 on the Key path (see ACCEPTANCE.md G) | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
 | 4 Credentials/TestConnection/setup | PARTIAL | Key entry point + TestConnection done and run in PQTest; Desktop/Service/gateway **not run**; README rewritten |
 | 5 Build/tests/CI/review | DONE except independent review | reproducible MEZ, 6 test files (89 checks), CI workflow; **independent review deferred to a separate Codex session** (`docs/AUDIT-HANDOFF.md`) per session instructions |
 | 6 Acceptance/upgrade/blog prep | DONE (prep only) | `docs/ACCEPTANCE.md`, `docs/CHANGELOG.md`, `docs/blog/OUTLINE.md`, `docs/SHA256SUMS.txt` |
