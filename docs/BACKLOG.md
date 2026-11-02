@@ -20,7 +20,7 @@ Dispositions: **complete**, **implement now** (done in this phase), **assess fea
 | 12 | Requirements, manual examples, onboarding | Usable without AI | README steps, direct examples, migration notes in NATIVE-EUX.md | Screenshots of the new cards not yet captured | **Implement now** (text); screenshots owner action | Capture after Desktop acceptance |
 | 13 | Independent review | Acceptance beyond self-review | Prior independent audit covers 1.1.0.2. [REVIEW-HANDOFF.md](REVIEW-HANDOFF.md) scopes the 1.2.0.0 delta | Self-review is not independent acceptance | **Blocked on owner** | Reviewer runs the handoff |
 | 14 | Blog 4 evidence, customer/partner handoff | Accurate public claims | Private claim notes and customer wording prepared outside Git | Nothing published or sent | **Blocked on owner** | Owner decides |
-| 15 | Licensing | Reuse terms | No LICENSE file | Not a technical blocker | **Deferred** (owner decision) | Owner |
+| 15 | Licensing | Reuse terms | MIT LICENSE added 2026-11-02 at the owner's direction (copyright holder named "Login VSI B.V."; owner to confirm the legal name) | Confirm holder name | **Complete** (pending PR merge) | Owner |
 | 16 | Application-test aggregated session metrics | Per-app CPU/memory | No matching endpoint in the reviewed contract | n/a | **Documented limitation** | New contract |
 | 17 | Grafana / InfluxDB and custom PDF/report generation | Other reporting surfaces | Owned by Results Toolkit | Cross-reference only | **Not here** | Track in LoginEnterprise-ResultsToolkit |
 
