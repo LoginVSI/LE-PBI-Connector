@@ -45,3 +45,8 @@ Power BI incremental refresh partitions an Import table by `RangeStart`/`RangeEn
 ## Journey from older handoffs
 
 Historical boxes about "gateway not started", "Desktop pending", "Key not accepted" and "template not validated" are superseded by the records above: Key and legacy Desktop acceptance are complete for the exercised scope; the 1.2.0.0 additions and all gateway runtime steps are the open items.
+
+## Usability notes from acceptance (2026-11-02, not changed)
+- The Load Testing run list shows test name and start time, truncated, not the per-test run counter; the counter is only visible via hover/other pages. Unchanged from the accepted 1.1.0.2 template; adding it to the label would alter an accepted label. Revisit on request.
+- The Run list slicer is single-select by design; "several runs" is exercised by the no-selection state and the multi-run DAX check.
+- The EUX Score card truncates "Select one run" on a narrow card.
