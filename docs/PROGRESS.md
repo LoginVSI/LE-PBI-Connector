@@ -119,3 +119,6 @@ v4 Key candidate loaded by the owner; `NativeOverviewChecks.dax` against the ope
 
 ## 2026-11-02: window A visuals and persistence
 Owner confirmed the 14:40 run (counter 77) card reads 3.3, the no-selection guard, and the aggregate gauge titles on screen. After Save As, close and reopen, the card still reads 3.3 and the model checks reconcile 7 of 7 again. Remaining: window B and rollback.
+
+## 2026-11-02: window B reconciled in Desktop
+8 of 8 runs reconcile on the open model: disabled runs show No Data, the unavailable run keeps 8.0, null baseline/steady stay blank, no duplicates ([evidence](evidence/desktop-native-window-b.json)). A retained native 0 does not exist, so valid-zero is covered by the engine fixtures only. Remaining: rollback to 1.1.0.2 and restore.
