@@ -53,7 +53,10 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - **Real Power Query engine against the live appliance (read-only, bounded):** the packaged 1.2.0.0 MEZ, `ContentsKey`, both windows. Navigator contains `Load Test Overview`; 7 of 7 and 8 of 8 rows reconcile with separate direct GETs (native values, states, bucket counts and means); no duplicate rows; nulls stay null, no 0 invented. [Evidence](evidence/native-eux-engine-reconciliation.json).
 - Copies prepared in the private acceptance folder: existing-report copy and window-A Key `.pbit` (13 Key calls, static Key-copy check passes).
 
-### NOT executed: Power BI Desktop
+### Executed in Desktop (2026-11-02)
+- Existing-report copy opened, refreshed and saved with the 1.2.0.0 connector; model checks identical to the accepted legacy baseline ([evidence](evidence/desktop-existing-copy-120.json)).
+
+### NOT executed: Power BI Desktop (remaining)
 No Desktop controller is available to this session and Desktop was not started. These remain unexecuted and are not claimed: refresh of the existing-report copy with the new connector; opening and refreshing the 1.2.0.0 template and Key copy; one-legacy-and-one-Key navigator check in the Get Data UI; execution of any new DAX measure (`NativeOverviewChecks.dax`); the native card for run counter 77 and the multi-run message; aggregate-gauge titles on screen; window B disabled-run card; save/reopen persistence; rollback with 1.1.0.2. Static template checks and Desktop's offline model-schema reader are not DAX or Desktop validation.
 
 ### Finite checklist for the Desktop owner (copies only; one grouped pass)

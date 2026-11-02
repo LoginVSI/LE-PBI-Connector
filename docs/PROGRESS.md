@@ -110,3 +110,6 @@ State verified: PR #6 at f287b89, CI connector job passing, installed MEZ is 1.2
 
 ## Checkpoint, 2026-10-31 (paused by owner until Monday)
 Owner has not run the 1.2.0.0 acceptance. Desktop is closed and released. Installed connector is 1.2.0.0 (full hash matches the build). PR #6 is an unmerged draft. Resume at ACCEPTANCE.md section G, step 1 (existing-report copy), then the v4 Key candidate, window B and rollback.
+
+## 2026-11-02: existing-report copy accepted
+The owner refreshed and saved the existing-report copy with the 1.2.0.0 connector without errors; model checks against the open model equal the accepted legacy baseline in all four result sets ([evidence](evidence/desktop-existing-copy-120.json)). Remaining: v4 Key candidate (windows A and B), persistence, rollback.
