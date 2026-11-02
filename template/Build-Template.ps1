@@ -3,17 +3,18 @@
   Builds a reproducible .pbit from the pinned Desktop export and editable template/source.
 .DESCRIPTION
   The original template/Login Enterprise.pbit is preserved as a compatibility reference. The default input is the privacy-checked Desktop PBIR export pinned by source/desktop-base.json. The candidate patches:
-    * DataModelSchema: measure expressions/new measures from source/measures/**.dax M partitions from source/partitions/*.m, and date help from source/parameter-descriptions.json
+    * DataModelSchema: additive tables (source/new-tables.json), measure expressions/new measures from source/measures/**.dax M partitions from source/partitions/*.m, and date help from source/parameter-descriptions.json
     * Report/Layout: exact-string renames from source/layout-renames.json (counts asserted)
+    * PBIR visuals: exact-string edits from source/pbir-edits.json (counts asserted; no visual is added or removed)
     * UnappliedChanges: M, lineage and help synchronized with DataModelSchema
-  Everything else (relationships, columns, pages, visual layout, resources, SecurityBindings, Settings, ...) is copied byte-for-byte.
+  Everything else (relationships, columns, pages, visual layout, resources, Settings, ...) is copied byte-for-byte. SecurityBindings is dropped when PBIR visuals are edited (the binding covers the report content; Desktop reports an edited package that keeps it as corrupted).
   The Desktop base was loaded/refreshed and exported by Desktop. Source changes still require the affected acceptance checks in docs/ACCEPTANCE.md.
 #>
 [CmdletBinding()]
 param(
     [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
     [string]$SourceDir = (Join-Path $PSScriptRoot 'source'),
-    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit'),
+    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.0.0-candidate.pbit'),
     [switch]$Check
 )
 $ErrorActionPreference = 'Stop'
@@ -39,6 +40,49 @@ if ([IO.Path]::GetFullPath($Original) -eq [IO.Path]::GetFullPath((Join-Path $PSS
 $model = Read-PbitModel $Original
 $tables = @{}
 foreach ($t in $model['model']['tables']) { $tables[[string]$t['name']] = $t }
+
+# ---- additive tables (1.2.0.0): new table, M partition placeholder, relationship ------------------------
+$newTables = @()
+$newTablesPath = Join-Path $SourceDir 'new-tables.json'
+if (Test-Path -LiteralPath $newTablesPath) {
+    foreach ($spec in (Get-Content -LiteralPath $newTablesPath -Raw | ConvertFrom-Json).tables) {
+        if ($tables.ContainsKey($spec.name)) { throw "Table already exists in the base: $($spec.name)" }
+        $columns = [System.Text.Json.Nodes.JsonArray]::new()
+        foreach ($c in $spec.columns) {
+            $col = [System.Text.Json.Nodes.JsonObject]::new()
+            Set-JsonProp $col 'name' $c.name; Set-JsonProp $col 'dataType' $c.dataType; Set-JsonProp $col 'sourceColumn' $c.name
+            if ($c.formatString) { Set-JsonProp $col 'formatString' $c.formatString }
+            Set-JsonProp $col 'lineageTag' (New-DeterministicGuid "$($spec.name)|col|$($c.name)")
+            Set-JsonProp $col 'summarizeBy' $c.summarizeBy
+            $a = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $a 'name' 'SummarizationSetBy'; Set-JsonProp $a 'value' 'Automatic'
+            $aa = [System.Text.Json.Nodes.JsonArray]::new(); [void]$aa.Add([JsonNode]$a); Set-JsonProp $col 'annotations' $aa
+            [void]$columns.Add([JsonNode]$col)
+        }
+        $partition = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $partition 'name' $spec.name; Set-JsonProp $partition 'mode' 'import'
+        $source = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $source 'type' 'm'; Set-JsonProp $source 'expression' (Split-ToJsonArray 'let')
+        Set-JsonProp $partition 'source' $source
+        $partitions = [System.Text.Json.Nodes.JsonArray]::new(); [void]$partitions.Add([JsonNode]$partition)
+        $table = [System.Text.Json.Nodes.JsonObject]::new()
+        Set-JsonProp $table 'name' $spec.name
+        if ($spec.description) { Set-JsonProp $table 'description' $spec.description }
+        Set-JsonProp $table 'lineageTag' (New-DeterministicGuid "$($spec.name)|table")
+        Set-JsonProp $table 'columns' $columns; Set-JsonProp $table 'partitions' $partitions
+        Set-JsonProp $table 'measures' ([System.Text.Json.Nodes.JsonArray]::new())
+        [void]$model['model']['tables'].Add([JsonNode]$table); $tables[$spec.name] = $table
+        $rel = [System.Text.Json.Nodes.JsonObject]::new()
+        Set-JsonProp $rel 'name' (New-DeterministicGuid "$($spec.name)|relationship|$($spec.relationship.toTable)")
+        Set-JsonProp $rel 'fromTable' $spec.name; Set-JsonProp $rel 'fromColumn' $spec.relationship.fromColumn
+        Set-JsonProp $rel 'toTable' $spec.relationship.toTable; Set-JsonProp $rel 'toColumn' $spec.relationship.toColumn
+        [void]$model['model']['relationships'].Add([JsonNode]$rel)
+        foreach ($annotation in $model['model']['annotations']) {
+            if ([string]$annotation['name'] -ceq 'PBI_QueryOrder') {
+                $order = @(([string]$annotation['value'] | ConvertFrom-Json)) + $spec.name
+                Set-JsonProp $annotation 'value' (ConvertTo-Json -InputObject $order -Compress)
+            }
+        }
+        $newTables += $spec.name
+    }
+}
 
 # ---- measures -------------------------------------------------------------
 $changed = 0; $added = 0
@@ -100,12 +144,19 @@ if ($ann.Count -eq 0) {
     $node = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $node 'name' 'LE-PBI-Connector.TemplateCandidate'
     [void]$model['model']['annotations'].Add([JsonNode]$node); $ann = @($node)
 }
-Set-JsonProp $ann[0] 'value' '1.1.0.2-candidate (Desktop round-trip base; editable sources applied; see ACCEPTANCE.md)'
+Set-JsonProp $ann[0] 'value' '1.2.0.0-candidate (Desktop round-trip base; editable sources applied; Desktop acceptance of the additions pending; see ACCEPTANCE.md)'
 
 $opts = [System.Text.Json.JsonSerializerOptions]::new(); $opts.WriteIndented = $true
 $opts.Encoder = [System.Text.Encodings.Web.JavaScriptEncoder]::UnsafeRelaxedJsonEscaping
 $modelJson = $model.ToJsonString($opts)
 $persisted = [JsonNode]::Parse((ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Original 'UnappliedChanges')))
+foreach ($name in $newTables) {
+    $prototype = @($persisted['queries'] | Where-Object { [string]$_['name'] -ceq 'Aggregated EUX Results' })
+    if ($prototype.Count -ne 1) { throw 'Persisted-query prototype not found.' }
+    $query = $prototype[0].DeepClone()
+    Set-JsonProp $query 'name' $name; Set-JsonProp $query 'lineageTag' ([string]$tables[$name]['lineageTag'])
+    [void]$persisted['queries'].Add([JsonNode]$query)
+}
 Sync-PersistedQueries $model $persisted
 
 # ---- layout ----------------------------------------------------------------
@@ -120,12 +171,32 @@ if ($legacyLayout) {
     }
 } elseif (-not $pbir) { throw 'Template has neither a legacy layout nor PBIR definitions.' }
 
+# ---- PBIR visual edits (exact strings, counts asserted) -------------------------------------------
+$pbirEdits = @{}
+$pbirEditsPath = Join-Path $SourceDir 'pbir-edits.json'
+if ($pbir -and (Test-Path -LiteralPath $pbirEditsPath)) {
+    foreach ($edit in (Get-Content -LiteralPath $pbirEditsPath -Raw | ConvertFrom-Json)) {
+        if (-not $pbirEdits.ContainsKey($edit.entry)) {
+            $bytes = Read-ZipEntryBytes $Original $edit.entry
+            $pbirEdits[$edit.entry] = @{ bom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF); text = [Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF) }
+        }
+        $text = $pbirEdits[$edit.entry].text
+        $count = ([regex]::Matches($text, [regex]::Escape($edit.old))).Count
+        if ($count -ne $edit.expected) { throw "PBIR edit '$($edit.purpose)' matched $count times, expected $($edit.expected)" }
+        $pbirEdits[$edit.entry].text = $text.Replace($edit.old, $edit.new)
+    }
+}
+
 # ---- write package -----------------------------------------------------------
 $origBytesModel = Read-ZipEntryBytes $Original 'DataModelSchema'
 $hasBom = ($origBytesModel[0] -eq 0xFF -and $origBytesModel[1] -eq 0xFE)
 function To-Utf16([string]$s) { $b = [Text.Encoding]::Unicode.GetBytes($s); if ($hasBom) { return ,([byte[]](0xFF, 0xFE) + $b) } else { return ,$b } }
 $replacements = @{ 'DataModelSchema' = (To-Utf16 $modelJson); 'UnappliedChanges' = (To-Utf16 $persisted.ToJsonString($opts)) }
 if ($legacyLayout) { $replacements['Report/Layout'] = To-Utf16 $layout }
+foreach ($entry in $pbirEdits.Keys) {
+    $b = [Text.Encoding]::UTF8.GetBytes($pbirEdits[$entry].text)
+    $replacements[$entry] = if ($pbirEdits[$entry].bom) { ,([byte[]](0xEF, 0xBB, 0xBF) + $b) } else { ,$b }
+}
 
 New-Item -ItemType Directory -Force (Split-Path -Parent $Output) | Out-Null
 if (Test-Path $Output) { Remove-Item $Output -Force }
@@ -133,6 +204,9 @@ $src = [IO.Compression.ZipFile]::OpenRead($Original)
 $dst = [IO.Compression.ZipFile]::Open($Output, [IO.Compression.ZipArchiveMode]::Create)
 try {
     foreach ($e in $src.Entries) {
+        # SecurityBindings binds the original report content; Desktop rejects the package as corrupted when report
+        # files are edited and the binding is kept (observed on Desktop 2.159, 2026-10-30). Drop it only in that case.
+        if ($e.FullName -eq 'SecurityBindings' -and $pbirEdits.Count -gt 0) { continue }
         $ne = $dst.CreateEntry($e.FullName, [IO.Compression.CompressionLevel]::NoCompression)
         $ne.LastWriteTime = $e.LastWriteTime
         $os = $ne.Open()
@@ -142,5 +216,5 @@ try {
     }
 } finally { $dst.Dispose(); $src.Dispose() }
 Write-Host "Candidate written: $Output"
-Write-Host "  measures changed=$changed added=$added; partitions changed=$partChanged; report format=$(if($legacyLayout){'legacy'}else{'PBIR'})"
+Write-Host "  measures changed=$changed added=$added; new tables=$($newTables.Count); partitions changed=$partChanged; report format=$(if($legacyLayout){'legacy'}else{'PBIR'})"
 Write-Host "  size $((Get-Item $Output).Length) bytes (original $((Get-Item $Original).Length))"

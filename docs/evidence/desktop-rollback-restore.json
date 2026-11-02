@@ -1,0 +1,7 @@
+{
+  "date": "2026-11-02",
+  "what": "Rollback of the connector to 1.1.0.2 and restoration of 1.2.0.0 using tools/Swap-Connector.ps1 (refuses while Desktop runs; verifies the full SHA256 after each copy).",
+  "rollback": "1.1.0.2 installed, full SHA256 8B7EAC70A460A0EF03DEAAE650AF9DCF747849538B70EAA1CEA22E5F5F43D768. Owner opened the existing-report copy, refreshed (no errors, owner-reported), closed with Don't save.",
+  "restore": "1.2.0.0 installed, full SHA256 FFF51B3E8F86FB9980B90F19F825DEBFBADCDD2B76818963C2A5511A8ACB68A9, equal to bin/AnyCPU/Debug/LE-PBI-Connector.mez.",
+  "toolkitConnector": "ResultsToolkit.mez unchanged (SHA256 starts 91DC405A)."
+}

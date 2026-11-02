@@ -1,4 +1,4 @@
-[Version = "1.1.0.2"]
+[Version = "1.2.0.0"]
 section LoginEnterprise_PBI;
 
 // ---------------------------------------------------------------------------
@@ -680,6 +680,7 @@ GetWorkloadSteps = (testRunsTable as table) as table =>
         table;
 
 // Aggregated EUX scores. Applies to Load and Continuous runs only (Application tests have no aggregated EUX endpoint).
+// Aggregate observations (hourly buckets) restricted to the selected window; use for trends. NOT the native overall score.
 GetAggregatedEUXResults = (ctx as record, runsRaw as list, window as record) as table =>
     let
         runs = Runs.InWindow(runsRaw, window, {"loadtest", "continuoustest"}),
@@ -717,6 +718,50 @@ GetAggregatedEUXResults = (ctx as record, runsRaw as list, window as record) as 
                 #table(type table [timestamp = datetime, score = number, count = Int64.Type, testRunId = text], {})
     in
         result;
+
+// Native whole-run overview (additive, 1.2.0.0). One read-only GET per Load run overlapping the window, base run only.
+// Values are the appliance's own whole-run results (the Login Enterprise UI/PDF source). They are NOT recomputed from the
+// aggregate series and are NOT restricted to the selected date window. Missing/disabled results stay null, never 0.
+OverviewColumns = {"testRunId", "testName", "counter", "isBase", "state", "testResult", "euxState", "vsiMaxState", "euxScore", "euxBaseline", "euxSteadyState", "vsiMax"};
+OverviewTypes = {type text, type text, Int64.Type, type logical, type text, type text, type text, type text, type number, type number, type number, type number};
+
+Overview.Metric = (route as text, metrics as list, id as text) as nullable number =>
+    let
+        hits = List.Select(metrics, each _ is record and Record.FieldOrDefault(_, "resultId", null) = id),
+        v = if List.Count(hits) = 0 then null else Record.FieldOrDefault(hits{0}, "value", null)
+    in
+        if List.Count(hits) > 1 then Api.Fail("Duplicate result '" & id & "' in response from " & route & ".", [Route = route])
+        else if v = null or (v is number) then v
+        else Api.Fail("Non-numeric result '" & id & "' in response from " & route & ".", [Route = route]);
+
+Overview.Row = (ctx as record, runId as text) as list =>
+    let
+        route = "load-test-run-overview/" & runId,
+        resp = Api.Request(ctx, route, [], true),
+        entries = if not resp[Found] then {}
+            else if resp[Json] is record and Record.FieldOrDefault(resp[Json], "results", null) is list then
+                List.Select(resp[Json][results], each _ is record and Text.Lower(Text.From(Record.FieldOrDefault(_, "testRunId", ""))) = Text.Lower(runId))
+            else Api.Fail("Unexpected response shape from " & route & ": expected an object with a 'results' array.", [Route = route]),
+        e = if List.Count(entries) = 1 then entries{0} else null,
+        perf0 = if e = null then null else let rs = Record.FieldOrDefault(e, "results", null) in if rs is record then Record.FieldOrDefault(rs, "performance", null) else null,
+        perf = if perf0 = null then [] else if perf0 is record then perf0 else Api.Fail("Invalid performance block from " & route & ".", [Route = route]),
+        metrics = let m = Record.FieldOrDefault(perf, "results", null) in if m = null then {} else if m is list then m else Api.Fail("Invalid performance results from " & route & ".", [Route = route])
+    in
+        if resp[Found] and List.Count(entries) = 0 then Api.Fail("Response from " & route & " did not contain the requested run.", [Route = route])
+        else if List.Count(entries) > 1 then Api.Fail("Response from " & route & " contained the requested run more than once.", [Route = route])
+        else if e = null then {}
+        else {{runId, Record.FieldOrDefault(e, "testName", null), Record.FieldOrDefault(e, "counter", null), Record.FieldOrDefault(e, "isBase", null),
+               Record.FieldOrDefault(e, "state", null), Record.FieldOrDefault(e, "testResult", null),
+               Record.FieldOrDefault(perf, "euxState", null), Record.FieldOrDefault(perf, "vsiMaxState", null),
+               Overview.Metric(route, metrics, "eux_score"), Overview.Metric(route, metrics, "eux_baseline"),
+               Overview.Metric(route, metrics, "eux_steady_state"), Overview.Metric(route, metrics, "vsi_max")}};
+
+GetLoadTestOverview = (ctx as record, runsRaw as list, window as record) as table =>
+    let
+        runs = Runs.InWindow(runsRaw, window, {"loadtest"}),
+        rows = List.Combine(List.Transform(runs, (r) => Overview.Row(ctx, r[id])))
+    in
+        Table.TransformColumnTypes(#table(OverviewColumns, rows), List.Zip({OverviewColumns, OverviewTypes}));
 
 // Applications
 GetApplications = (ctx as record) as table =>
@@ -1198,6 +1243,7 @@ LoginEnterpriseCore = (ctx as record, window as record) as table =>
         platformMetricsTable = GetPlatformMetrics(ctx, environmentsTable, window),
         // Additive (1.1.0.2): ids of runs whose start/finish overlaps the window, even if they produced no fact rows
         // (e.g. failed runs with no measurements). Used by the template to keep such runs in comparisons.
+        overviewTable = GetLoadTestOverview(ctx, testRunsRaw, window),
         testRunsInWindowTable = Table.TransformColumnTypes(
             Table.FromList(List.Transform(Runs.InWindow(testRunsRaw, window, null), each _[id]), Splitter.SplitByNothing(), {"id"}),
             {{"id", type text}}
@@ -1215,7 +1261,8 @@ LoginEnterpriseCore = (ctx as record, window as record) as table =>
             [Name = "Events", Data = allEvents, ItemKind = "Table", ItemName = "Events", IsLeaf = true],
             [Name = "User Sessions", Data = userSessionsTable, ItemKind = "Table", ItemName = "UserSessions", IsLeaf = true],
             [Name = "User Session Metrics", Data = userSessionMetricsTable, ItemKind = "Table", ItemName = "UserSessionMetrics", IsLeaf = true],
-            [Name = "Test Runs In Window", Data = testRunsInWindowTable, ItemKind = "Table", ItemName = "TestRunsInWindow", IsLeaf = true]
+            [Name = "Test Runs In Window", Data = testRunsInWindowTable, ItemKind = "Table", ItemName = "TestRunsInWindow", IsLeaf = true],
+            [Name = "Load Test Overview", Data = overviewTable, ItemKind = "Table", ItemName = "LoadTestOverview", IsLeaf = true]
         },
         navTable = Table.FromRecords(entities),
         finalNav = Table.ToNavigationTable(navTable, {"Name"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
@@ -1304,7 +1351,7 @@ LoginEnterpriseType = type function (
 // ---------------------------------------------------------------------------
 // Entry point 2 (new, additive): Key credential. The token is entered once in the Power BI credential dialog
 // (Extension.CurrentCredential) and is NOT part of the query or data source path.
-// Not yet runtime-accepted in Power BI Desktop/Service; see ACCEPTANCE.md.
+// Desktop-accepted since 1.1.0.2 (Load, Refresh, persistence, rollback); Service/gateway runtime is not yet validated, see docs/GATEWAY.md.
 // ---------------------------------------------------------------------------
 [DataSource.Kind = "LoginEnterprise_PBI_Key", Publish = "LoginEnterprise_PBI_Key.Publish"]
 shared LoginEnterprise_PBI.ContentsKey = Value.ReplaceType(LoginEnterpriseKeyImpl, LoginEnterpriseKeyType);

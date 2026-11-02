@@ -15,7 +15,7 @@ Current disposition: PR #4 merged as `9eb1ab28097403b478d88d6da88730bb01b69f89` 
 |---|---|---|
 | 1 Evidence/compat | DONE | baseline above; `docs/CHANGE-TEST-MATRIX.md` |
 | 2 Acquisition + time windows | DONE on fixtures (real M engine); **live API not exercised** | tests 01-03; API limits unverified (matrix "Unverified") |
-| 3 Template semantics | DONE as *candidate*; **DAX not executed, Desktop not opened** | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
+| 3 Template semantics | DONE; Desktop-accepted 2026-11-02 on the Key path (see ACCEPTANCE.md G) | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
 | 4 Credentials/TestConnection/setup | PARTIAL | Key entry point + TestConnection done and run in PQTest; Desktop/Service/gateway **not run**; README rewritten |
 | 5 Build/tests/CI/review | DONE except independent review | reproducible MEZ, 6 test files (89 checks), CI workflow; **independent review deferred to a separate Codex session** (`docs/AUDIT-HANDOFF.md`) per session instructions |
 | 6 Acceptance/upgrade/blog prep | DONE (prep only) | `docs/ACCEPTANCE.md`, `docs/CHANGELOG.md`, `docs/blog/OUTLINE.md`, `docs/SHA256SUMS.txt` |
@@ -89,3 +89,36 @@ Owner accepted MERGE-HANDOFF.md coverage limits and expressly authorized ready/m
 ## Merge completed
 
 Marked PR #4 ready and merged the exact verified head `5367cca70396c5efa33aa28a9d8047559ec1ec78` using a merge commit. Local main fast-forwarded safely; feature branch preserved locally and remotely. Final repair-head PR/push CI passed. README's direct main downloads match the recorded MEZ/PBIT hashes. Final source/template/privacy regressions pass; all 170 private acceptance files are unchanged. No Desktop or Toolkit operation, credential change, release or package publication occurred. Merged-main CI passed: https://github.com/LoginVSI/LE-PBI-Connector/actions/runs/40051773370. Follow-up documentation-head CI is linked in PR #4 after verification.
+
+## Native EUX and gateway preparation (1.2.0.0), 2026-10-28
+
+Branch `feature/native-eux-overview` from main `06854de`. Live bounded read-only GETs established the native/aggregate distinction ([evidence](evidence/native-eux-overview-live.json)). Connector 1.2.0.0 adds `Load Test Overview`; tests 10 pass on PQTest with synthetic fixtures. Template 1.2.0.0-candidate adds the table, relationship, measures and two visual edits; static checks pass and Desktop's own TMSL deserializer accepts the model offline. Not opened in Desktop; measures not executed. Gateway prepared (runbook, preflight, TestConnection) but no runtime. Backlog reconciled in BACKLOG.md. No release, merge, message or infrastructure action taken.
+
+## Acceptance attempt, 2026-10-30
+
+Verified installed MEZ hash, backup and Toolkit connector. September 2026 has no Load runs; windows 2025-06-30 and 2025-05-28..29 selected. The packaged MEZ ran on the real Power Query engine against the live appliance and reconciled 15 of 15 runs with direct GETs ([evidence](evidence/native-eux-engine-reconciliation.json)). No Desktop controller exists in this session, so Desktop refresh, DAX, UI selection and rollback cases are unexecuted and listed in ACCEPTANCE.md section G. Added Native VSImax (Display), TOOLKIT-CONTRACT.md and the v8 decision. PR #6 stays unmerged.
+
+## Closeout pass, 2026-10-30 (later)
+
+Re-verified PR #6 at `9c7d89b` (CI connector job passing, mergeable), installed MEZ hash, no Desktop process running. No Desktop controller is available, so no Desktop outcome is claimed. Added the checkpoint helpers `tools/Start-AcceptanceFile.ps1` and `tools/Reconcile-NativeChecks.ps1` (reconcile logic exercised only against synthetic rows built from the private expectations) and extended `NativeOverviewChecks.dax` with testName and counter so rows reconcile with source. Section G now holds one grouped owner checklist. The merge gate is unchanged: Desktop acceptance of the new table, card and measures.
+
+## Desktop open failure, 2026-10-30
+The owner's first open of the Key candidate failed ("file is corrupted or ... unrecognized version"). Bisected with Desktop and fixed: the stale `SecurityBindings` part (see TEMPLATE-CHANGES.md). Template rebuilt (468f4dc0…f656), Key copy v4 prepared and static-checked, and opening it in Desktop reaches the parameter dialog. Refresh and DAX checks still need the owner (ACCEPTANCE.md section G, now v4).
+
+## 2026-10-31
+State verified: PR #6 at f287b89, CI connector job passing, installed MEZ is 1.2.0.0 (full hash matches), 1.1.0.2 backup and ResultsToolkit.mez intact. No owner acceptance output exists yet. Added `tools/Swap-Connector.ps1` (hash-verified swap between 1.1.0.2 and 1.2.0.0; tested only as a 1.2.0.0 restore no-op). Opened the existing-report copy normally in Desktop for step 1; Desktop is held by that open window until the owner closes it.
+
+## Checkpoint, 2026-10-31 (paused by owner until Monday)
+Owner has not run the 1.2.0.0 acceptance. Desktop is closed and released. Installed connector is 1.2.0.0 (full hash matches the build). PR #6 is an unmerged draft. Resume at ACCEPTANCE.md section G, step 1 (existing-report copy), then the v4 Key candidate, window B and rollback.
+
+## 2026-11-02: existing-report copy accepted
+The owner refreshed and saved the existing-report copy with the 1.2.0.0 connector without errors; model checks against the open model equal the accepted legacy baseline in all four result sets ([evidence](evidence/desktop-existing-copy-120.json)). Remaining: v4 Key candidate (windows A and B), persistence, rollback.
+
+## 2026-11-02: window A reconciled in Desktop
+v4 Key candidate loaded by the owner; `NativeOverviewChecks.dax` against the open model: 7 of 7 runs reconcile with direct API reads, counter 77 = 3.3, VSImax bound text, no duplicate overview rows, multi-run guard ([evidence](evidence/desktop-native-window-a.json)). Helper defects fixed on the way: an unsaved template is titled "Untitled" (accepted only as the sole Desktop process), and the check query now groups by run and reads the test name through a measure. Page-level visual confirmation, persistence, window B and rollback remain.
+
+## 2026-11-02: window A visuals and persistence
+Owner confirmed the 14:40 run (counter 77) card reads 3.3, the no-selection guard, and the aggregate gauge titles on screen. After Save As, close and reopen, the card still reads 3.3 and the model checks reconcile 7 of 7 again. Remaining: window B and rollback.
+
+## 2026-11-02: window B reconciled in Desktop
+8 of 8 runs reconcile on the open model: disabled runs show No Data, the unavailable run keeps 8.0, null baseline/steady stay blank, no duplicates ([evidence](evidence/desktop-native-window-b.json)). A retained native 0 does not exist, so valid-zero is covered by the engine fixtures only. Remaining: rollback to 1.1.0.2 and restore.

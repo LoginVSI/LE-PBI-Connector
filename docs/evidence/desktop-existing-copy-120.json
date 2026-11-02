@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-02",
+  "what": "Existing-report copy (accepted 1.1.0.2-era legacy report) opened, refreshed and saved by the owner in Power BI Desktop with the 1.2.0.0 connector installed (full hash FFF51B3E...68A9). Model checks then run read-only against the open model with tools/Invoke-DesktopModelChecks.ps1 (template/acceptance/ModelChecks.dax).",
+  "result": "All four result sets (per-run eligibility/success/display measures, per-type rates, per-test show flags, summary row) are identical to the accepted legacy baseline: 50, 3, 71 and 1 rows, eligible total 24 in both.",
+  "executedBy": "owner (open, refresh, save); Claude (model query and comparison)",
+  "notClaimed": "Visual inspection of every page of the existing report by Claude; the refresh outcome is from the owner's report of no errors plus the model comparison.",
+  "rawOutput": "private, outside Git"
+}

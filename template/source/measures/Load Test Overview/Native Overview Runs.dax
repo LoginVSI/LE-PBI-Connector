@@ -1,0 +1,5 @@
+-- table: Load Test Overview
+-- name: Native Overview Runs
+-- format: 0
+-- description: NEW 1.2.0.0. Numeric. Number of Load runs with a native overview row under the current selection. Use it to see whether a native value can exist; 0 is a real count.
+COUNTROWS ( 'Load Test Overview' )

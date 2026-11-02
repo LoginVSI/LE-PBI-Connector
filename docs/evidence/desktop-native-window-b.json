@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-02",
+  "what": "Window B 2025-05-28 to 2025-05-29 loaded by the owner in Desktop (edited date parameters of the reopened v4-based report, refreshed). NativeOverviewChecks.dax run read-only against the open model and reconciled against private source expectations.",
+  "result": "8 of 8 Load runs PASS. The two runs with euxState disabled have blank native values and display 'No Data' (never 0). The run with euxState unavailable keeps its present score (8.0) with blank baseline and steady state. A completed run with a null steady state keeps it blank. Zero duplicate overview rows; multi-run context blank with 'Select one run'.",
+  "notExercised": "A genuine native value of 0 does not occur in the retained data; zero-versus-missing is covered by the real-engine fixture tests (10_native_overview.pq) and earlier Desktop zero/missing checks for other measures, not by a retained 0 here.",
+  "executedBy": "owner (parameter edit, refresh); Claude (model query, reconciliation)",
+  "rawOutput": "private, outside Git"
+}

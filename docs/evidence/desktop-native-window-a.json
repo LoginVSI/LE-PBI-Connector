@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-02",
+  "what": "Key candidate v4 (template 1.2.0.0-candidate, SecurityBindings fix) loaded by the owner in Power BI Desktop with the installed 1.2.0.0 connector; window A 2025-06-30. NativeOverviewChecks.dax executed read-only against the open model with tools/Invoke-DesktopModelChecks.ps1 and reconciled by tools/Reconcile-NativeChecks.ps1 against private source expectations (direct API reads).",
+  "result": "7 of 7 Load runs PASS: native score, baseline, steady state, euxState, vsiMaxState, aggregate mean (window observations); counter 77 native EUX 3.3; VSImax display shows '(bound, aboveThreshold)' for aboveThreshold runs; zero duplicate overview rows; multi-run context returns BLANK native values and the display 'Select one run'.",
+  "executedBy": "owner (open, credential, Load); Claude (model query, reconciliation)",
+  "notYet": "Window B, rollback.",
+  "rawOutput": "private, outside Git",
+  "visualAndPersistence": "Owner confirmed on the report pages: Load Testing run started 14:40 (counter 77) EUX Score card reads 3.3; with no run selected the card shows the Select one run guard (the run list is single-select by design); the two EUX Overview gauges are titled Aggregate EUX Buckets (Avg, Min/Max). Saved as a new PBIX, closed and reopened: the card still reads 3.3 and NativeOverviewChecks.dax against the reopened model reconciled 7 of 7 again with no duplicates."
+}

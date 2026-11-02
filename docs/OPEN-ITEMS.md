@@ -1,5 +1,7 @@
 # Open items and owner actions
 
+Current phase (2026-10-28): backlog matrix in [BACKLOG.md](BACKLOG.md). Open for 1.2.0.0: Desktop acceptance of the native overview additions (ACCEPTANCE.md section G), gateway/Service runtime ([GATEWAY.md](GATEWAY.md)), independent review of the delta ([REVIEW-HANDOFF.md](REVIEW-HANDOFF.md)). Items 1-5 below remain as written.
+
 Independent review and repairs: [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md). The exercised Desktop scope has qualified acceptance; PR #4 is merged as a community preview, with no published release.
 
 1. Revoke/rotate the credential-like literal in public history (`089200f` and earlier). It was not used for this audit. Removing it from the tree does not revoke it; history was not rewritten. The owner must decide separately whether history should be rewritten.

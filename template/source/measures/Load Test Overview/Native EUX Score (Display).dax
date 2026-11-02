@@ -1,0 +1,11 @@
+-- table: Load Test Overview
+-- name: Native EUX Score (Display)
+-- format: 
+-- description: NEW 1.2.0.0. Display text of Native EUX Score (Selected Run). Shows Select one run when zero or several runs are selected, No Data when the run has no native value (not tested, disabled or unavailable), otherwise the value to one decimal.
+VAR NativeValue = [Native EUX Score (Selected Run)]
+RETURN
+    IF (
+        NOT HASONEVALUE ( 'Filtered Test Runs'[id] ),
+        "Select one run",
+        IF ( ISBLANK ( NativeValue ), "No Data", FORMAT ( NativeValue, "0.0" ) )
+    )

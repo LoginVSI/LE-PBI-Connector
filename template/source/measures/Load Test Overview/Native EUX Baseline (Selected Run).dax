@@ -1,0 +1,9 @@
+-- table: Load Test Overview
+-- name: Native EUX Baseline (Selected Run)
+-- format: 0.0
+-- description: NEW 1.2.0.0. Numeric. Whole-run baseline EUX (overview result eux_baseline) for exactly one selected run; BLANK otherwise. Same rules as Native EUX Score (Selected Run).
+IF (
+    HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
+    MAX ( 'Load Test Overview'[euxBaseline] ),
+    BLANK ()
+)

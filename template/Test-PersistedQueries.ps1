@@ -1,6 +1,6 @@
 # Metadata regressions, not Desktop or DAX acceptance.
 [CmdletBinding()]
-param([string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.1.0.2-candidate.pbit'))
+param([string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.0.0-candidate.pbit'))
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
 $model = Read-PbitModel $Candidate

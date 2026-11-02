@@ -1,0 +1,9 @@
+-- table: Load Test Overview
+-- name: Native EUX State (Selected Run)
+-- format: 
+-- description: NEW 1.2.0.0. Text. The appliance's euxState for exactly one selected run (for example completed or disabled); BLANK otherwise.
+IF (
+    HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
+    SELECTEDVALUE ( 'Load Test Overview'[euxState] ),
+    BLANK ()
+)
