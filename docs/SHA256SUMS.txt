@@ -8,4 +8,4 @@ E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338  [installed on 
 
 E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4  template/base/Login Enterprise Desktop 2026-10.pbit
 468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656  template/candidate/Login Enterprise 1.2.0.0-candidate.pbit  [1.2.0.0-candidate, Desktop-accepted 2026-11-02 (Key copy v4); unmodified candidate file also opened, refreshed and reopened by the owner (not reconciled)]
-F0E9061DE508369065AB6849EA1E4AE422BA763CEABBECFD8F3E8293EED30634  template/candidate/Login Enterprise 1.2.1.0-candidate.pbit  [1.2.1.0-candidate, built and statically checked; adds run-number card title and guide captions; Desktop check pending]
+8D8B5656C2C6383CF25401A447F1F9817AE0DC4ECC4AE76858E4BA4DE0E5F653  template/candidate/Login Enterprise 1.2.1.0-candidate.pbit  [1.2.1.0-candidate, built and statically checked; adds run-number card title and guide captions; Desktop check pending]

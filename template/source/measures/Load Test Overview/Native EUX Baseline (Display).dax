@@ -1,11 +1,15 @@
 -- table: Load Test Overview
 -- name: Native EUX Baseline (Display)
 -- format: 
--- description: NEW 1.2.0.0. Display text of Native EUX Baseline (Selected Run). Shows Select one run when zero or several runs are selected, No Data when the appliance reports no value for the run (for example EUX disabled or no overview row); a run whose state is unavailable still shows any value the appliance reports, otherwise the value to one decimal.
+-- description: NEW 1.2.0.0. Display text of Native EUX Baseline (Selected Run). Shows Select one run when zero or several runs are selected, No overview when the appliance returned no overview row for the selected run (Application or Continuous runs, a run whose overview was not found, or an appliance without the route), No Data when a row exists but the appliance reports no value for the run (for example EUX disabled or no overview row); a run whose state is unavailable still shows any value the appliance reports, otherwise the value to one decimal.
 VAR NativeValue = [Native EUX Baseline (Selected Run)]
 RETURN
     IF (
         NOT HASONEVALUE ( 'Filtered Test Runs'[id] ),
         "Select one run",
-        IF ( ISBLANK ( NativeValue ), "No Data", FORMAT ( NativeValue, "0.0" ) )
+        IF (
+            COUNTROWS ( 'Load Test Overview' ) = 0,
+            "No overview",
+            IF ( ISBLANK ( NativeValue ), "No Data", FORMAT ( NativeValue, "0.0" ) )
+        )
     )

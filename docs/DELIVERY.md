@@ -1,12 +1,14 @@
 # Delivering the report: email subscriptions and Teams (bounded exploration)
 
-Unsupported community preview. This page records what Microsoft documents (checked 2026-11-04 on Microsoft Learn) and what was and was not tested here. **Nothing was configured or sent.** No email subscription exists for the test report, and no Teams mechanism was set up. "Eligible on paper" is not the same as "received", and neither was verified in a live subscription.
+Unsupported community preview. This page records what Microsoft documents (checked 2026-11-04 on Microsoft Learn) and what was and was not tested here. **Nothing was configured or sent.** No email subscription exists for the test report, and no Teams mechanism was set up.
+
+**Tested 2026-11-04 (owner-authorised, owner-only):** on the test report in My workspace the Subscribe button is present, but selecting it showed "Upgrade to a paid Power BI license" (Buy now / Try free). The signed-in work account has no Pro or PPU licence, so the test stopped there: no trial was started, nothing was purchased, no subscription was created and no email was sent. Delivery is therefore **blocked by licence, not by the connector or the report**. The Share button was not opened. "Eligible on paper" is not the same as "received", and neither was verified in a live subscription.
 
 ## Native Power BI email subscriptions
 
 | Question | What Microsoft documents | Tested here |
 |---|---|---|
-| Who can subscribe | Access to the report plus a Pro or PPU licence, or a workspace on paid Premium/Fabric capacity. A Fabric admin must enable the tenant setting "Create email subscriptions". | Not tested |
+| Who can subscribe | Access to the report plus a Pro or PPU licence, or a workspace on paid Premium/Fabric capacity. A Fabric admin must enable the tenant setting "Create email subscriptions". | **Blocked:** Subscribe showed an upgrade prompt (no paid licence on this account); tenant setting not checked |
 | My workspace | Not excluded; only the creator can manage subscriptions on content in My workspace. | Not tested |
 | Recipients | Internal recipients work without Premium for a Pro or PPU owner with Contributor, Member or Admin on the content. External/B2B recipients need paid non-PPU capacity. Whether a free-licence recipient receives mail is not stated. | Not tested |
 | Content on Pro (non-Premium) | A preview image of one report page plus a link. | Not tested |

@@ -44,7 +44,8 @@ Application and Continuous runs get **no** `Load Test Overview` row. A 404 for a
 | You see | Meaning |
 |---|---|
 | `Select one run` | No run or several runs are selected; native values are not defined for a group. |
-| `No Data` | The appliance reports no value for the selected run (for example EUX disabled) or there is no overview row. Never a zero. A run whose state is `unavailable` can still carry a value, which is shown as is; check the state measure. |
+| `No overview` | The appliance returned no overview row for the selected run: an Application or Continuous run, a run whose overview was not found (404), or an appliance without the route. This is **not** evidence that EUX collection was disabled. |
+| `No Data` | An overview row exists but the appliance reports no value for the selected run (for example EUX disabled). Never a zero. A run whose state is `unavailable` can still carry a value, which is shown as is; check the state measure. |
 | `0` | A genuine reported zero. Kept as zero. |
 | `(bound, aboveThreshold)` next to VSImax | The appliance's state is `aboveThreshold`: the number is a **lower bound reported by the appliance, not an exact capacity**. |
 | `completed`, `disabled`, `unavailable` | Appliance states for EUX (`euxState`) and VSImax (`vsiMaxState`). Observed values; the connector does not reinterpret them. |
