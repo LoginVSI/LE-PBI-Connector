@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.1.0 (community preview; Desktop check of the new template pending)
+## 1.2.1.0 (community preview; Desktop-checked on the Key path, gateway check pending)
 Connector
 - Fixed: measurement rows are bound to the run they were requested for. A payload that omitted or contradicted `testRunId` could detach rows from `Filtered Test Runs`. Regression test `11_measurement_run_binding.pq`.
 - Version 1.2.1.0. The Desktop-accepted 1.2.0.0 MEZ is preserved at `bin/archive/1.2.0.0/` (rollback and the package the test gateway used).

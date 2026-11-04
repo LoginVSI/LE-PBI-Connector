@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-04 (Pacific)",
+  "build": {
+    "connector": "1.2.1.0 (SHA256 05CAF70F960F6E261B54BA366338BB282F4F3078EB27710E3EABE821DF65FD25), installed in the per-user Custom Connectors folder",
+    "template": "1.2.1.0-candidate Key copy, window A 2025-06-30, UseDateRange True, no token parameter, 13 Key queries"
+  },
+  "realDesktopGui": {
+    "firstLoad": "HTTP 401 from the stale saved credential (route and status in the message, no token); cleared after the owner re-entered the working key locally",
+    "dataPartitionRefreshAfterKey": "15 data partitions stamped 22:19 to 22:21 UTC",
+    "saveReopen": "owner saved as PBIX and reopened; package holds 222 visuals including the 2 new ones and the card title and font edits; Desktop regenerated SecurityBindings",
+    "secondRefreshAfterReopen": "UI Automation click at 14:53 Pacific; 15 data partitions re-stamped 22:54:40 to 22:56:24 UTC; no credential prompt, no error dialog",
+    "render": "Load Testing with run 77 selected: EUX Score card 3.3 at the smaller font; Select one run fits unclipped with no selection; help box and About link render; Started 06/30/25 02:40 PM. Card title text present in the rendered accessibility tree but overlapped by Desktop's Auto recovery bar in the captured frame, so not seen unobstructed. EUX Overview with no run selected: aggregate gauge titles and caption with link render, gauges read Blank"
+  },
+  "engineQueriesNotGuiEvidence": {
+    "reconciliation": "7 of 7 runs match the retained expectations, no duplicate overview rows, multi-run guard, before and after save-reopen and after the second refresh",
+    "measures": "no selection: Select one run in the list / Select one run; run 77: Run #77 | started 2025-06-30 14:40, 3.3, 7.6, 3.1, 6 (bound, aboveThreshold); Continuous run: No overview",
+    "aggregateGauges": "null with no run selected (by design); avg 4.2, min 3.1, max 5.3 for run 77; aggregate mean 4.2 against native 3.3"
+  },
+  "notShown": "Aggregate gauges populated on screen with a run selected; card title unobstructed; connector 1.2.1.0 through the gateway",
+  "privacy": "Screenshots are private; redacted copies only. A first screen-region capture that included other windows was viewed once and deleted, never stored or used; later captures are window-only."
+}

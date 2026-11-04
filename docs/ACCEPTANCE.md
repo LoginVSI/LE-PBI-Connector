@@ -91,6 +91,25 @@ Not executed or not established
 - Why the first scheduled attempts stalled while on-demand runs did not; gateway logs were not collected. A stale key in the connection is an unconfirmed hypothesis.
 - Connector 1.2.1.0 on the gateway (not installed there yet; no runtime proof is inherited from 1.2.0.0).
 - Always-on server hosting, schedules over several days, token-revocation recovery (no real token was revoked). Email subscription: blocked, the account has no paid Power BI licence ([DELIVERY.md](DELIVERY.md)).
+## I. 1.2.1.0 template and connector in Desktop (2026-11-04)
+
+Evidence: [desktop-1210-acceptance.json](evidence/desktop-1210-acceptance.json). Connector 1.2.1.0 (`05CAF70F…FD25`) was installed in the per-user folder and the template candidate `1.2.1.0-candidate` was opened as a Key copy for window A (2025-06-30). The owner entered the working Key credential locally, saved the file as a PBIX and reopened it; Claude drove the parameter dialog and a Refresh click through Windows UI Automation and queried the open model read-only. Real GUI evidence and engine-only queries are separated below.
+
+Real Desktop GUI
+- Parameter dialog filled (FQDN from a private file, dates already 2025-06-30, `UseDateRange` True) and Load clicked; a first load with the old saved credential failed with HTTP 401 (clear route and status in the error; no token shown), consistent with a rotated token; after the owner re-entered the key, all 15 data partitions loaded (refresh stamps 22:19 to 22:21 UTC).
+- Save as PBIX, close, reopen by the owner: the saved package holds all 222 visuals including the two new ones, the card's run-label title and smaller font, and Desktop regenerated its own `SecurityBindings`.
+- Second GUI refresh after reopening (UI Automation click, 14:53 Pacific): all 15 data partitions re-stamped between 22:54:40 and 22:56:24 UTC with no credential prompt and no error dialog.
+- Rendered page, run 77 selected (Load Testing, window capture): EUX Score card shows 3.3 at the smaller font, `Select one run` fits without clipping when nothing is selected, the "How to read this page" box and "About these metrics" link render, Started 06/30/25 02:40 PM. The card title text `Run #77 | started 2025-06-30 14:40` is present in the rendered accessibility tree, but in the captured frame it is overlapped by Desktop's "Auto recovery" bar, so it was **not seen unobstructed**.
+- EUX Overview (window capture, no run selected): both gauges titled "Aggregate EUX Buckets (Avg, Min/Max)" and the aggregate caption with its link render; the gauges read `(Blank)` because no run is selected.
+
+Engine queries against the open model (not GUI evidence)
+- Parameters, window A: 7 of 7 runs reconcile with the source expectations, no duplicate overview rows, multi-run guard `Select one run`, before and after the save/reopen and after the second refresh.
+- 1.2.1.0 measures: no selection gives `Select one run in the list` and `Select one run`; run 77 gives `Run #77 | started 2025-06-30 14:40`, score 3.3, baseline 7.6, steady 3.1, VSImax `6 (bound, aboveThreshold)`; a Continuous run gives `No overview`.
+- Aggregate gauge measures: null with no run selected (by design), avg 4.2, min 3.1, max 5.3 for run 77, and the aggregate mean for run 77 is 4.2 against native 3.3.
+
+Not yet shown
+- The aggregate gauges populated on screen with a run selected, and the card title unobstructed, both need a Desktop frame without the recovery bar.
+- The 1.2.1.0 connector on the gateway (see GATEWAY.md); evidence from 1.2.0.0 is not carried over.
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.
 
