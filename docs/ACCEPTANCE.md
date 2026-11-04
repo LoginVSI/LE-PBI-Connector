@@ -81,7 +81,7 @@ Executed
 - Private Key-based report (13 Key queries, no token parameter, window 2025-06-30) published to My workspace under a unique name and mapped to the gateway connection.
 - On-demand refreshes 1 and 2: Completed in about 2 minutes each; the second showed six gateway-child containers connecting to the appliance.
 - Service DAX check after the on-demand refreshes: 7 of 7 runs match the source, including native 3.3 against bucket mean 4.2 for one run.
-- Scheduled refresh 2026-11-04 13:01: Completed at 13:18:32 after the first two attempts did not get through.
+- Scheduled refresh 2026-11-04 13:01: Completed at 13:18:32 after the first two attempts did not get through. The Service DAX check was repeated afterwards: 7 of 7 runs match the source again (connector 1.2.0.0).
 - Host and network checks listed in the evidence file; temporary schedules disabled and verified.
 
 Observed failure
@@ -89,8 +89,8 @@ Observed failure
 
 Not executed or not established
 - Why the first scheduled attempts stalled while on-demand runs did not; gateway logs were not collected. A stale key in the connection is an unconfirmed hypothesis.
-- The Service-side source check after the 2026-11-04 scheduled success.
-- Always-on server hosting, schedules over several days, token-revocation recovery (no real token was revoked), email subscription delivery.
+- Connector 1.2.1.0 on the gateway (not installed there yet; no runtime proof is inherited from 1.2.0.0).
+- Always-on server hosting, schedules over several days, token-revocation recovery (no real token was revoked). Email subscription: blocked, the account has no paid Power BI licence ([DELIVERY.md](DELIVERY.md)).
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.
 
