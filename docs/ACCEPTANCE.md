@@ -82,6 +82,7 @@ Executed
 - On-demand refreshes 1 and 2: Completed in about 2 minutes each; the second showed six gateway-child containers connecting to the appliance.
 - Service DAX check after the on-demand refreshes: 7 of 7 runs match the source, including native 3.3 against bucket mean 4.2 for one run.
 - Scheduled refresh 2026-11-04 13:01: Completed at 13:18:32 after the first two attempts did not get through. The Service DAX check was repeated afterwards: 7 of 7 runs match the source again (connector 1.2.0.0).
+- **Connector 1.2.1.0 on the gateway, one on-demand refresh (2026-11-04 15:29 to 15:31 Pacific):** the package was swapped while nothing was running, the service restarted, the key re-entered locally; Completed in 2 minutes; six gateway-child containers connected; 7 of 7 runs reconcile in the Service. This is the only 1.2.1.0 gateway evidence; the earlier on-demand and scheduled successes belong to 1.2.0.0.
 - Host and network checks listed in the evidence file; temporary schedules disabled and verified.
 
 Observed failure
@@ -89,7 +90,7 @@ Observed failure
 
 Not executed or not established
 - Why the first scheduled attempts stalled while on-demand runs did not; gateway logs were not collected. A stale key in the connection is an unconfirmed hypothesis.
-- Connector 1.2.1.0 on the gateway (not installed there yet; no runtime proof is inherited from 1.2.0.0).
+- A scheduled refresh with connector 1.2.1.0 (only one on-demand refresh was run with it); fresh source observations (see BACKLOG.md for the continuous-observation attempt).
 - Always-on server hosting, schedules over several days, token-revocation recovery (no real token was revoked). Email subscription: blocked, the account has no paid Power BI licence ([DELIVERY.md](DELIVERY.md)).
 ## I. 1.2.1.0 template and connector in Desktop (2026-11-04)
 

@@ -4,6 +4,8 @@ Unsupported community preview. This page records what Microsoft documents (check
 
 **Tested 2026-11-04 (owner-authorised, owner-only):** on the test report in My workspace the Subscribe button is present, but selecting it showed "Upgrade to a paid Power BI license" (Buy now / Try free). The signed-in work account has no Pro or PPU licence, so the test stopped there: no trial was started, nothing was purchased, no subscription was created and no email was sent. Delivery is therefore **blocked by licence, not by the connector or the report**. The Share button was not opened. "Eligible on paper" is not the same as "received", and neither was verified in a live subscription.
 
+**Status: licence-blocked.** Report subscriptions need a paid Power BI licence (Pro or PPU) or paid capacity; this account has neither, so no subscription test was run. Teams report delivery is unconfigured and unverified; no built-in scheduled path was found in Microsoft's documentation. **Refresh-failure notifications are a different feature:** in the model's refresh settings the Service offers "Send refresh failure and critical warning notifications to" the semantic model owner (it was ticked by default on the test model) and optional contacts. That setting is not a report subscription, was not exercised as a delivery test, and sends nothing about report content.
+
 ## Native Power BI email subscriptions
 
 | Question | What Microsoft documents | Tested here |

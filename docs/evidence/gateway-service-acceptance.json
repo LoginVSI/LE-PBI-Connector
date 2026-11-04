@@ -23,6 +23,7 @@
   "hostChecks": "Clock skew 0.9 s; no proxy; DNS resolves; gateway held 15 outbound HTTPS connections; idle sleep disabled; machine-context TLS chain valid and trusted in the LocalMachine root store (no certificate change needed)",
   "tokenCheck": "A token pasted into tools/Test-ApplianceToken.ps1 returned HTTP 200; the Toolkit's stored token returned 401 (rotated); which token the Service connection holds could not be read (write-only)",
   "notEstablished": "Why the first two scheduled attempts on 2026-11-04 (and, by the same rhythm, on 2026-11-02) did not get through while the gateway was online. Gateway logs were not collected.",
+  "gateway1210OnDemand": "2026-11-04 15:29:35 to 15:31:37 Pacific, Completed, connector 1.2.1.0 (05CAF70F960F6E261B54BA366338BB282F4F3078EB27710E3EABE821DF65FD25) in the gateway folder after an owner-approved service restart and a local re-entry of the key; six gateway-child containers connected 15:29:46 to 15:29:48; Service DAX query: 7 of 7 runs match (native 8.1, 7.7, 4.4, 3.9, 3.7, 3.3, 8.2; baselines 8.4, 8.4, 8.1, 8.3, 8.2, 7.6, 8.4; steady 8.2, 7.7, 4.1, 3.6, 3.6, 3.1, 8.3; aggregate means 8.1, 7.7, 5.2, 6.0, 6.3, 4.2, 8.15; states completed). Values are identical to the 1.2.0.0 runs because the data is a fixed June 2025 window",
   "delivery": "Subscribe on the report showed an upgrade-to-paid-licence prompt; no trial, purchase, subscription or email (see docs/DELIVERY.md)",
   "cleanup": "Temporary schedules disabled and verified after both scheduled tests; gateway left installed; ResultsToolkit.mez untouched"
 }
