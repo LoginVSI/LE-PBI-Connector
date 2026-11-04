@@ -99,8 +99,8 @@ Real Desktop GUI
 - Parameter dialog filled (FQDN from a private file, dates already 2025-06-30, `UseDateRange` True) and Load clicked; a first load with the old saved credential failed with HTTP 401 (clear route and status in the error; no token shown), consistent with a rotated token; after the owner re-entered the key, all 15 data partitions loaded (refresh stamps 22:19 to 22:21 UTC).
 - Save as PBIX, close, reopen by the owner: the saved package holds all 222 visuals including the two new ones, the card's run-label title and smaller font, and Desktop regenerated its own `SecurityBindings`.
 - Second GUI refresh after reopening (UI Automation click, 14:53 Pacific): all 15 data partitions re-stamped between 22:54:40 and 22:56:24 UTC with no credential prompt and no error dialog.
-- Rendered page, run 77 selected (Load Testing, window capture): EUX Score card shows 3.3 at the smaller font, `Select one run` fits without clipping when nothing is selected, the "How to read this page" box and "About these metrics" link render, Started 06/30/25 02:40 PM. The card title text `Run #77 | started 2025-06-30 14:40` is present in the rendered accessibility tree, but in the captured frame it is overlapped by Desktop's "Auto recovery" bar, so it was **not seen unobstructed**.
-- EUX Overview (window capture, no run selected): both gauges titled "Aggregate EUX Buckets (Avg, Min/Max)" and the aggregate caption with its link render; the gauges read `(Blank)` because no run is selected.
+- Rendered page, run 77 selected (Load Testing, window capture): EUX Score card shows 3.3 at the smaller font, `Select one run` fits without clipping when nothing is selected, the "How to read this page" box and "About these metrics" link render, Started 06/30/25 02:40 PM. After dismissing Desktop's "Auto recovery" bar (keeping the recovered files), a window-only capture shows the card title `Run #77 | started 2025-06-30 14:40` above the 3.3, the other cards, gauges and tables populated for the run, and the help box with its link.
+- EUX Overview, no run selected: both gauges titled "Aggregate EUX Buckets (Avg, Min/Max)" and the aggregate caption with its link render; the gauges read `(Blank)`. With Test (A) set to the 14:40 run the left gauge shows avg 4.20, min 3.10, max 5.30 and the left line chart populates; the right side stays `(Blank)` because Test (B) is still All. The blanks were therefore a filter context (the page compares A with B and each side needs a selection), not a defect.
 
 Engine queries against the open model (not GUI evidence)
 - Parameters, window A: 7 of 7 runs reconcile with the source expectations, no duplicate overview rows, multi-run guard `Select one run`, before and after the save/reopen and after the second refresh.
@@ -108,7 +108,7 @@ Engine queries against the open model (not GUI evidence)
 - Aggregate gauge measures: null with no run selected (by design), avg 4.2, min 3.1, max 5.3 for run 77, and the aggregate mean for run 77 is 4.2 against native 3.3.
 
 Not yet shown
-- The aggregate gauges populated on screen with a run selected, and the card title unobstructed, both need a Desktop frame without the recovery bar.
+- The no-selection frame with the card title unobstructed (the guard text fit was seen earlier, partly under the recovery bar).
 - The 1.2.1.0 connector on the gateway (see GATEWAY.md); evidence from 1.2.0.0 is not carried over.
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.
