@@ -1,7 +1,7 @@
 # Prepare a separate credential-free Key copy; never modifies an existing report.
 [CmdletBinding()]
 param(
-    [string]$Candidate = (Join-Path $PSScriptRoot '../candidate/Login Enterprise 1.2.0.0-candidate.pbit'),
+    [string]$Candidate = (Join-Path $PSScriptRoot '../candidate/Login Enterprise 1.2.1.0-candidate.pbit'),
     [Parameter(Mandatory)][string]$Output,
     [string]$StartDate,
     [string]$EndDate

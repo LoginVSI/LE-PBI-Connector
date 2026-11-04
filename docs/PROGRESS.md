@@ -122,3 +122,6 @@ Owner confirmed the 14:40 run (counter 77) card reads 3.3, the no-selection guar
 
 ## 2026-11-02: window B reconciled in Desktop
 8 of 8 runs reconcile on the open model: disabled runs show No Data, the unavailable run keeps 8.0, null baseline/steady stay blank, no duplicates ([evidence](evidence/desktop-native-window-b.json)). A retained native 0 does not exist, so valid-zero is covered by the engine fixtures only. Remaining: rollback to 1.1.0.2 and restore.
+
+## 2026-11-04 closeout
+Re-verified state (PR #8 merged; the machine had rebooted; Desktop not running). Scheduled-refresh evidence: the 2026-11-02 run failed with `DM_GWPipeline_Client_GatewayUnreachable` after the gateway host shut down mid-run, and a 2026-11-04 retry completed after the first two attempts did not get through; cause of the stalled attempts not established. One finite self-review bug hunt: no high-severity defect; fixed measurement run binding (new regression test). Added the metrics guide, delivery exploration (nothing sent), the 1.2.1.0 connector and template candidate (Desktop check pending Toolkit's release of Desktop), the connector rollback package for 1.2.0.0, and moved the private blog outline out of the public tree. See [GATEWAY.md](GATEWAY.md), [BACKLOG.md](BACKLOG.md) and [CHANGELOG.md](CHANGELOG.md).

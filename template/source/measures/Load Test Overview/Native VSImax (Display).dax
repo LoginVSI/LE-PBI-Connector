@@ -9,12 +9,16 @@ RETURN
         NOT HASONEVALUE ( 'Filtered Test Runs'[id] ),
         "Select one run",
         IF (
-            ISBLANK ( NativeValue ),
-            "No Data",
+            COUNTROWS ( 'Load Test Overview' ) = 0,
+            "No overview",
             IF (
-                VsiState = "aboveThreshold",
-                FORMAT ( NativeValue, "General Number" ) & " (bound, aboveThreshold)",
-                FORMAT ( NativeValue, "General Number" ) & " (" & COALESCE ( VsiState, "state unknown" ) & ")"
+                ISBLANK ( NativeValue ),
+                "No Data",
+                IF (
+                    VsiState = "aboveThreshold",
+                    FORMAT ( NativeValue, "General Number" ) & " (bound, aboveThreshold)",
+                    FORMAT ( NativeValue, "General Number" ) & " (" & COALESCE ( VsiState, "state unknown" ) & ")"
+                )
             )
         )
     )
