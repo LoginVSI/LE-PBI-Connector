@@ -1,0 +1,27 @@
+{
+  "dates": "2026-11-02 to 2026-11-04 (Pacific time)",
+  "scope": "Local evaluation of Microsoft's standard on-premises data gateway on one Windows 11 laptop, one private Key-based report in the owner's My workspace, retained June 2025 Load runs (window 2025-06-30). Not production. Hostname, account identities, workspace and request IDs are deliberately omitted.",
+  "gateway": {
+    "product": "On-premises data gateway (standard mode)",
+    "version": "3000.338.2",
+    "installerSignature": "Authenticode valid, Microsoft Corporation",
+    "service": "NT SERVICE\\PBIEgwService",
+    "connectorFolder": "outside the user profile, only the 1.2.0.0 MEZ, inheritance removed, service account Read and Execute"
+  },
+  "model": {
+    "keyQueries": 13,
+    "tokenParameter": false,
+    "dataSourcesInService": "one, kind LoginEnterprise_PBI_Key, FQDN-only path"
+  },
+  "runs": [
+    { "type": "On demand", "start": "2026-11-02 17:31:36", "end": "2026-11-02 17:33:37", "status": "Completed" },
+    { "type": "On demand", "start": "2026-11-02 17:36:48", "end": "2026-11-02 17:38:46", "status": "Completed", "routing": "six Microsoft.Mashup.Container children of the gateway service connected to the appliance within seconds (private local process log)" },
+    { "type": "Scheduled", "start": "2026-11-02 18:01:18", "end": "2026-11-02 18:32:35", "status": "Failed", "error": "DM_GWPipeline_Client_GatewayUnreachable", "context": "the gateway host was shut down at 18:18:45 while the run was in progress; gateway containers had connected at 18:01, 18:08 and 18:14" },
+    { "type": "Scheduled", "start": "2026-11-04 13:01:33", "end": "2026-11-04 13:18:32", "status": "Completed", "context": "first two attempts (containers at 13:03 and 13:10) did not get through and the Service showed completed-with-warnings GatewayUnreachable; the third attempt (six containers at 13:16:21) completed" }
+  ],
+  "sourceReconciliation": "After the on-demand refreshes, a DAX query in the Service returned 7 of 7 Load runs matching the Desktop-reconciled source values; the report card for the run with native 3.3 and bucket mean 4.2 read 3.3. NOT repeated after the 2026-11-04 scheduled success (browser pane rendering unreliable at the time).",
+  "hostChecks": "Clock skew 0.9 s; no proxy; DNS resolves; gateway held 15 outbound HTTPS connections; idle sleep disabled; machine-context TLS chain valid and trusted in the LocalMachine root store (no certificate change needed)",
+  "tokenCheck": "A token pasted into tools/Test-ApplianceToken.ps1 returned HTTP 200; the Toolkit's stored token returned 401 (rotated); which token the Service connection holds could not be read (write-only)",
+  "notEstablished": "Why the first two scheduled attempts on 2026-11-04 (and, by the same rhythm, on 2026-11-02) did not get through while the gateway was online. Gateway logs were not collected.",
+  "cleanup": "Temporary schedules disabled and verified after both scheduled tests; gateway left installed; ResultsToolkit.mez untouched"
+}

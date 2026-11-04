@@ -1,7 +1,7 @@
 -- table: Load Test Overview
 -- name: Native EUX Score (Selected Run)
 -- format: 0.0
--- description: NEW 1.2.0.0. Numeric. The appliance's own whole-run overall EUX score (overview result eux_score) for exactly one selected run. BLANK for zero or several runs, a missing overview, or a disabled/unavailable result. Never averaged across runs and never converted to 0; a genuine 0 is kept. Not restricted by the report date window.
+-- description: NEW 1.2.0.0. Numeric. The appliance's own whole-run overall EUX score (overview result eux_score) for exactly one selected run. BLANK for zero or several runs, a missing overview, or when the appliance returns no value for the run (for example EUX disabled). A run whose state is unavailable keeps whatever value the appliance reports; the state is shown separately. Never averaged across runs and never converted to 0; a genuine 0 is kept. Not restricted by the report date window.
 IF (
     HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
     MAX ( 'Load Test Overview'[euxScore] ),

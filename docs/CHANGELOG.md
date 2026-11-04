@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1.0 (community preview; Desktop check of the new template pending)
+Connector
+- Fixed: measurement rows are bound to the run they were requested for. A payload that omitted or contradicted `testRunId` could detach rows from `Filtered Test Runs`. Regression test `11_measurement_run_binding.pq`.
+- Version 1.2.1.0. The Desktop-accepted 1.2.0.0 MEZ is preserved at `bin/archive/1.2.0.0/` (rollback and the package the test gateway used).
+Template (`Login Enterprise 1.2.1.0-candidate.pbit`)
+- The EUX Score card title names the selected run (`Run #<counter> | started ...`) and shows `Select one run in the list` otherwise; smaller value font so the guard text is not clipped; short guide captions on Load Testing and EUX Overview with a link to [METRICS-GUIDE.md](METRICS-GUIDE.md); native-measure descriptions corrected for `unavailable` runs. Two documented visuals added (222 total). `SecurityBindings` is dropped because report files are edited (Desktop rejects the package otherwise).
+- The 1.2.0.0 candidate is unchanged and remains the Desktop-accepted file.
+Docs and tooling
+- [GATEWAY.md](GATEWAY.md) now records the local gateway evaluation (including one failed and one completed scheduled run); [DELIVERY.md](DELIVERY.md) records the email-subscription and Teams exploration (nothing sent); `tools/Swap-Connector.ps1`, `tools/Test-ApplianceToken.ps1`, `tools/Open-TemplateInDesktop.ps1`, `tools/Reconcile-NativeChecks.ps1`.
 ## 1.2.0.0 (community preview, additive; Desktop acceptance of the additions pending)
 Connector
 - Added: `Load Test Overview` navigation item (appended last; no existing item, key, table or column changed). Native whole-run `euxScore`, `euxBaseline`, `euxSteadyState`, `vsiMax`, `euxState`, `vsiMaxState` and run identity from `GET load-test-run-overview/{id}`, one request per Load run overlapping the window. Missing or disabled results stay null. See [NATIVE-EUX.md](NATIVE-EUX.md).

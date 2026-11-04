@@ -1,7 +1,7 @@
 -- table: Load Test Overview
 -- name: Native EUX Baseline (Display)
 -- format: 
--- description: NEW 1.2.0.0. Display text of Native EUX Baseline (Selected Run). Shows Select one run when zero or several runs are selected, No Data when the run has no native value (not tested, disabled or unavailable), otherwise the value to one decimal.
+-- description: NEW 1.2.0.0. Display text of Native EUX Baseline (Selected Run). Shows Select one run when zero or several runs are selected, No Data when the appliance reports no value for the run (for example EUX disabled or no overview row); a run whose state is unavailable still shows any value the appliance reports, otherwise the value to one decimal.
 VAR NativeValue = [Native EUX Baseline (Selected Run)]
 RETURN
     IF (

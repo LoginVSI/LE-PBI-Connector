@@ -1,0 +1,9 @@
+-- table: Load Test Overview
+-- name: Native Selected Run Label
+-- format: 
+-- description: NEW 1.2.1.0. Text for card titles: for exactly one selected run with one overview row, "Run #<counter> | started <yyyy-MM-dd HH:mm>" so the run number and start are visible next to the native score; otherwise "Select one run in the list". The counter is the per-test run number Login Enterprise assigns; the start follows the refreshing machine's time zone.
+IF (
+    HASONEVALUE ( 'Filtered Test Runs'[id] ) && COUNTROWS ( 'Load Test Overview' ) = 1,
+    "Run #" & MAX ( 'Load Test Overview'[counter] ) & " | started " & FORMAT ( MAX ( 'Filtered Test Runs'[started] ), "yyyy-MM-dd HH:mm" ),
+    "Select one run in the list"
+)

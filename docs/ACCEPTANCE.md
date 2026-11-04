@@ -42,9 +42,8 @@ Preparation history (completed for this host; do not reinstall into an open sess
 - [x] Migrate a copy of a report per README ("Choosing how the token is supplied"); credential dialog offers **Key**; token is not in the query or a parameter; refresh twice; rollback to the original works.
 - [ ] Data source settings shows the data source as `LoginEnterprise_PBI_Key` with only the FQDN in its path.
 
-## F. Gateway/Service (separate, admin-level, out of this patch)
-- [ ] Runtime pending (no authorised gateway/tenant). Code, TestConnection, Key scope, setup and preflight are prepared: [GATEWAY.md](GATEWAY.md). Requires gateway admin, custom-connector enablement on the gateway, `.mez` in the gateway's folder, a data source with the same kind, TestConnection and a scheduled refresh. Record version, build, outcome.
-
+## F. Gateway/Service
+- [x] Local evaluation run 2026-11-02 to 2026-11-04: see section H and [GATEWAY.md](GATEWAY.md). Executed: install, connector folder, Key connection, publish to a private workspace, two on-demand refreshes, one scheduled refresh that completed, Service-side source check (7 of 7 after the on-demand runs). Failed: the first scheduled run (host shut down mid-run). Not established: why the early scheduled attempts stalled; always-on server hosting; multi-day schedules; token-revocation recovery.
 ## G. 1.2.0.0 additions (native overview)
 
 ### Executed (2026-10-30, no Desktop UI)
@@ -73,6 +72,25 @@ Helpers (read-only against the open model; they change no file): `tools/Start-Ac
 3. **Window B.** In the same model change the window parameters to 2025-05-28 .. 2025-05-29, refresh, run the script with `-Window B_2025-05-28_to_29 -NoLaunch`: expect all reconciled; the two `disabled` runs show `No Data` (never 0), the `unavailable`/null-baseline run shows BLANK for the missing values and keeps its present score, and the counter-1 abandoned run keeps 8.0. Capture the two screenshots (redact names and FQDN).
 4. **Rollback.** Close Desktop and tell Claude. Claude (or you: `pwsh tools/Swap-Connector.ps1 -To 1.1.0.2`) swaps in the 1.1.0.2 MEZ, you open the existing-report copy and refresh once, close Desktop, tell Claude; restore with `pwsh tools/Swap-Connector.ps1 -To 1.2.0.0`, which verifies the full installed hash (the script refuses to run while Desktop is open, and never touches ResultsToolkit.mez).
 
+## H. Gateway / Service local evaluation (2026-11-02 to 2026-11-04)
+
+Evidence: [gateway-service-acceptance.json](evidence/gateway-service-acceptance.json). Owner-operated where a UAC prompt, sign-in or credential was needed; Claude read refresh history and ran the read-only checks in the owner's signed-in browser pane.
+
+Executed
+- Standard gateway installed from Microsoft's signed installer; test gateway registered; connector folder outside the profile with only the 1.2.0.0 MEZ and a hardened ACL; service account given Read and Execute; Key-kind connection Online.
+- Private Key-based report (13 Key queries, no token parameter, window 2025-06-30) published to My workspace under a unique name and mapped to the gateway connection.
+- On-demand refreshes 1 and 2: Completed in about 2 minutes each; the second showed six gateway-child containers connecting to the appliance.
+- Service DAX check after the on-demand refreshes: 7 of 7 runs match the source, including native 3.3 against bucket mean 4.2 for one run.
+- Scheduled refresh 2026-11-04 13:01: Completed at 13:18:32 after the first two attempts did not get through.
+- Host and network checks listed in the evidence file; temporary schedules disabled and verified.
+
+Observed failure
+- Scheduled refresh 2026-11-02 18:01 failed after 31 minutes with `DM_GWPipeline_Client_GatewayUnreachable`; the gateway host shut down at 18:18:45 mid-run. The refresh was in a retry rhythm of about 6.5 minutes between gateway attempts.
+
+Not executed or not established
+- Why the first scheduled attempts stalled while on-demand runs did not; gateway logs were not collected. A stale key in the connection is an unconfirmed hypothesis.
+- The Service-side source check after the 2026-11-04 scheduled success.
+- Always-on server hosting, schedules over several days, token-revocation recovery (no real token was revoked), email subscription delivery.
 ## Rollback
 Close Desktop → delete the candidate `.mez` → copy the backed-up copy back (same name) → restart Desktop → refresh an old `.pbix`.
 

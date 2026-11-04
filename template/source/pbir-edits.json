@@ -26,5 +26,12 @@
     "old": "'Average EUX Score (Min/Max)'",
     "new": "'Aggregate EUX Buckets (Avg, Min/Max)'",
     "expected": 1
+  },
+  {
+    "entry": "Report/definition/pages/59343fa83277349385bc/visuals/b97ce820e63e2a875db9/visual.json",
+    "purpose": "EUX Score card: smaller value font so the Select one run guard is not clipped, and a measure-driven title naming the selected run number and start",
+    "old": "\"sortDefinition\":{\"isDefaultSort\":true}},\"visualContainerObjects\":{\"dropShadow\":",
+    "new": "\"sortDefinition\":{\"isDefaultSort\":true}},\"objects\":{\"labels\":[{\"properties\":{\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"20D\"}}}}}]},\"visualContainerObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Entity\":\"Load Test Overview\"}},\"Property\":\"Native Selected Run Label\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"10D\"}}}}}],\"dropShadow\":",
+    "expected": 1
   }
 ]

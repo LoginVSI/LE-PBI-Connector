@@ -1,4 +1,4 @@
-[Version = "1.2.0.0"]
+[Version = "1.2.1.0"]
 section LoginEnterprise_PBI;
 
 // ---------------------------------------------------------------------------
@@ -812,7 +812,11 @@ GetMeasurements = (ctx as record, runsRaw as list, window as record) as table =>
                     false
                 )
             in
-                List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], dw[From19], dw[To19])),
+                // Bind each row to the run it was requested for; a payload that omits or contradicts testRunId must not detach rows from their run.
+                List.Transform(
+                    List.Select(items, (i) => Time.InRange(Time.RequirePoint(i, "observations")[timestamp], dw[From19], dw[To19])),
+                    (i) => i & [testRunId = runId]
+                ),
         perRun = List.Transform(
             runs,
             (r) =>

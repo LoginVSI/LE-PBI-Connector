@@ -1,5 +1,6 @@
 8B7EAC70A460A0EF03DEAAE650AF9DCF747849538B70EAA1CEA22E5F5F43D768  bin/archive/1.1.0.2/LE-PBI-Connector.mez  [1.1.0.2, Desktop-accepted]
-FFF51B3E8F86FB9980B90F19F825DEBFBADCDD2B76818963C2A5511A8ACB68A9  bin/AnyCPU/Debug/LE-PBI-Connector.mez  [1.2.0.0, current; Desktop-accepted 2026-11-02 on the Key path; rollback to 1.1.0.2 and restore verified]
+05CAF70F960F6E261B54BA366338BB282F4F3078EB27710E3EABE821DF65FD25  bin/AnyCPU/Debug/LE-PBI-Connector.mez  [1.2.1.0, current; adds run-id binding fix for measurements; Desktop re-check pending Toolkit release of Desktop]
+FFF51B3E8F86FB9980B90F19F825DEBFBADCDD2B76818963C2A5511A8ACB68A9  bin/archive/1.2.0.0/LE-PBI-Connector.mez  [1.2.0.0, Desktop-accepted 2026-11-02 on the Key path; rollback and gateway-tested package]
 0E22BF675BE20D7084B34908B12C0C2CF966FEA68C20DE549402B4D394B74ADD  template/candidate/Login Enterprise 1.1.0.2-candidate.pbit
 4529178FFBE8AB5021FE4188F1683945012C362C82E4658CD8F1B554FD5B0D12  template/Login Enterprise.pbit
 5CFDF446C2A7F8F3E65D2C9EFB87D64A0DB44ED64B545A879C22D790D9E06E55  [rollback reference] 1.1.0.1 MEZ as shipped at 089200f
@@ -7,3 +8,4 @@ E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338  [installed on 
 
 E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4  template/base/Login Enterprise Desktop 2026-10.pbit
 468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656  template/candidate/Login Enterprise 1.2.0.0-candidate.pbit  [1.2.0.0-candidate, Desktop-accepted 2026-11-02 (Key copy v4); unmodified candidate file also opened, refreshed and reopened by the owner (not reconciled)]
+F0E9061DE508369065AB6849EA1E4AE422BA763CEABBECFD8F3E8293EED30634  template/candidate/Login Enterprise 1.2.1.0-candidate.pbit  [1.2.1.0-candidate, built and statically checked; adds run-number card title and guide captions; Desktop check pending]
