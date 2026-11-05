@@ -74,3 +74,6 @@ The one missing choice: **a launcher machine that is registered with the applian
 
 ## Update 2026-11-04 (night): dummy Continuous lab scenario ran
 Once a launcher was registered, the authorised dummy scenario ran and reconciled through two gateway-backed on-demand refreshes (see ACCEPTANCE.md section H). Only failure/session/event records were produced, so no timing, resource or EUX arrival is claimed. Open items: why the temporary test was found enabled again after it had been disabled; scheduled refresh and a Continuous source that produces measurements remain untested.
+
+## Update 2026-11-05: lab closeout
+The temporary Continuous test is disabled and was read back as off; seven sessions were launched in total and no more since 04:07 UTC (see ACCEPTANCE.md section H). The scheduled refresh of 2026-11-04 21:03:07 Pacific was in progress at last observation and its final outcome is unresolved (not readable by the assistant); the owner reported the schedule off. Still untested: a completed scheduled refresh on 1.2.1.0 and a Continuous source that produces measurements.
