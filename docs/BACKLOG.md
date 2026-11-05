@@ -1,6 +1,16 @@
-# Backlog reconciliation (2026-10-28, after PR #4)
+# Backlog reconciliation
 
-Historical unchecked boxes in older handoffs are not automatically open work; this matrix is the current view, built from the code, [ACCEPTANCE.md](ACCEPTANCE.md), [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md), [MERGE-HANDOFF.md](MERGE-HANDOFF.md), [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md) and the evidence folder. Everything here is an unsupported community preview. "Owner" is this repository unless stated.
+## Current closeout (5 November 2026)
+
+Engineering for the agreed community-preview scope is complete. The 1.2.1.0 Key template passed Desktop checks; retained Load values reconciled through the gateway; and dummy Continuous session/failure/event records arrived through on-demand and one scheduled refresh. The final scheduled run completed in about 13.5 minutes, with seven sessions and four timeout events matching appliance counts. The schedule and temporary test were verified off. No Continuous timing/resource/EUX measurements, multi-day scheduling or always-on hosting were verified. The seven-session launch overrun, unexplained re-enablement and slow scheduled duration remain findings, not requests to repeat testing. See ACCEPTANCE.md sections H and I and GATEWAY.md.
+
+Remaining owner work is publication and optional administrative housekeeping, not another acceptance phase. The current recommended pair is connector/template 1.2.1.0. Historical token revocation remains conditional; current-token rotation was owner-confirmed. The MIT licence was owner-approved as recorded below; its legal holder spelling was not independently verified.
+
+## Historical reconciliation and updates
+
+The table and dated updates below preserve earlier checkpoints. Their completed-later Desktop, screenshot and gateway gaps are superseded by the current closeout above.
+
+Historical unchecked boxes in older handoffs are not automatically open work; this historical matrix was built from the code, [ACCEPTANCE.md](ACCEPTANCE.md), [DESKTOP-ACCEPTANCE.md](DESKTOP-ACCEPTANCE.md), [MERGE-HANDOFF.md](MERGE-HANDOFF.md), [INDEPENDENT-AUDIT.md](INDEPENDENT-AUDIT.md) and the evidence folder. Everything here is an unsupported community preview. "Owner" is this repository unless stated.
 
 Dispositions: **complete**, **implement now** (done in this phase), **assess feasibility**, **documented limitation**, **blocked** (owner or environment), **deferred** (deliberate).
 
@@ -47,7 +57,7 @@ Power BI incremental refresh partitions an Import table by `RangeStart`/`RangeEn
 
 ## Journey from older handoffs
 
-Historical boxes about "gateway not started", "Desktop pending", "Key not accepted" and "template not validated" are superseded by the records above: Key and legacy Desktop acceptance are complete for the exercised scope; the 1.2.0.0 additions and all gateway runtime steps are the open items.
+Historical boxes about "gateway not started", "Desktop pending", "Key not accepted" and "template not validated" are superseded by the records above: Key and legacy Desktop acceptance are complete for the exercised scope; later 1.2.0.0/1.2.1.0 and gateway outcomes are recorded in the dated updates and current closeout above.
 
 ## Usability notes from acceptance (2026-11-02, not changed)
 - The Load Testing run list shows test name and start time, truncated, not the per-test run counter; the counter is only visible via hover/other pages. Unchanged from the accepted 1.1.0.2 template; adding it to the label would alter an accepted label. Revisit on request.
