@@ -26,7 +26,7 @@ Connector discovery also passes: exactly one legacy and one Key entry were obser
 - A selected window containing a broken historical snapshot can still fail; the verified workaround avoids unrelated broken history and never substitutes empty results for errors.
 - Historical credential revocation remains an owner action. Licence notices are preserved; ownership discussion did not stall technical acceptance.
 
-Gateway, Service scheduling and incremental ingestion remain deferred.
+Incremental ingestion remains deferred. (Historical to this handoff: gateway and Service were later evaluated in a lab; see GATEWAY.md. Production readiness is not established.)
 
 ## Artifacts
 
