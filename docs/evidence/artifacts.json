@@ -21,7 +21,7 @@
       "sha256": "E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4"
     },
     {
-      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "path": "bin/archive/1.2.0.0/LE-PBI-Connector.mez",
       "bytes": 101264,
       "sha256": "FFF51B3E8F86FB9980B90F19F825DEBFBADCDD2B76818963C2A5511A8ACB68A9",
       "version": "1.2.0.0"
@@ -31,9 +31,21 @@
       "bytes": 4237268,
       "sha256": "468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656",
       "version": "1.2.0.0-candidate"
+    },
+    {
+      "path": "bin/AnyCPU/Debug/LE-PBI-Connector.mez",
+      "bytes": 101519,
+      "sha256": "05CAF70F960F6E261B54BA366338BB282F4F3078EB27710E3EABE821DF65FD25",
+      "version": "1.2.1.0"
+    },
+    {
+      "path": "template/candidate/Login Enterprise 1.2.1.0-candidate.pbit",
+      "bytes": 4245805,
+      "sha256": "8D8B5656C2C6383CF25401A447F1F9817AE0DC4ECC4AE76858E4BA4DE0E5F653",
+      "version": "1.2.1.0-candidate"
     }
   ],
-  "connectorVersion": "1.1.0.2",
+  "connectorVersion": "1.2.1.0",
   "templateVersion": "1.1.0.2-candidate (Desktop round-trip PBIR base; reproducible source build)",
   "mezEntries": 11,
   "everyMezEntryEqualsSource": true,

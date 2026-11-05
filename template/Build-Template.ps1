@@ -14,7 +14,7 @@
 param(
     [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
     [string]$SourceDir = (Join-Path $PSScriptRoot 'source'),
-    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.0.0-candidate.pbit'),
+    [string]$Output = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.1.0-candidate.pbit'),
     [switch]$Check
 )
 $ErrorActionPreference = 'Stop'
@@ -144,7 +144,7 @@ if ($ann.Count -eq 0) {
     $node = [System.Text.Json.Nodes.JsonObject]::new(); Set-JsonProp $node 'name' 'LE-PBI-Connector.TemplateCandidate'
     [void]$model['model']['annotations'].Add([JsonNode]$node); $ann = @($node)
 }
-Set-JsonProp $ann[0] 'value' '1.2.0.0-candidate (Desktop round-trip base; editable sources applied; Desktop acceptance of the additions pending; see ACCEPTANCE.md)'
+Set-JsonProp $ann[0] 'value' '1.2.1.0-candidate (Desktop round-trip base; editable sources applied; Desktop acceptance of the additions pending; see ACCEPTANCE.md)'
 
 $opts = [System.Text.Json.JsonSerializerOptions]::new(); $opts.WriteIndented = $true
 $opts.Encoder = [System.Text.Encodings.Web.JavaScriptEncoder]::UnsafeRelaxedJsonEscaping
@@ -187,6 +187,19 @@ if ($pbir -and (Test-Path -LiteralPath $pbirEditsPath)) {
     }
 }
 
+# ---- new visuals (additive entries appended to the package) ------------------------------------------
+$newVisuals = @()
+$newVisualsPath = Join-Path $SourceDir 'new-visuals.json'
+if ($pbir -and (Test-Path -LiteralPath $newVisualsPath)) {
+    $zt = [IO.Compression.ZipFile]::OpenRead($Original); try { $origNames = @($zt.Entries.FullName) } finally { $zt.Dispose() }
+    foreach ($nv in (Get-Content -LiteralPath $newVisualsPath -Raw | ConvertFrom-Json)) {
+        if ($origNames -contains $nv.entry) { throw "new visual entry already exists: $($nv.entry)" }
+        $nvBytes = [IO.File]::ReadAllBytes((Join-Path $SourceDir $nv.file))
+        $null = [Text.Encoding]::UTF8.GetString($nvBytes) | ConvertFrom-Json   # must be valid JSON
+        $newVisuals += @{ entry = $nv.entry; bytes = $nvBytes }
+    }
+}
+
 # ---- write package -----------------------------------------------------------
 $origBytesModel = Read-ZipEntryBytes $Original 'DataModelSchema'
 $hasBom = ($origBytesModel[0] -eq 0xFF -and $origBytesModel[1] -eq 0xFE)
@@ -213,6 +226,11 @@ try {
         if ($replacements.ContainsKey($e.FullName)) { $b = $replacements[$e.FullName]; $os.Write($b, 0, $b.Length) }
         else { $is = $e.Open(); $is.CopyTo($os); $is.Dispose() }
         $os.Dispose()
+    }
+    foreach ($nv in $newVisuals) {
+        $ne = $dst.CreateEntry($nv.entry, [IO.Compression.CompressionLevel]::NoCompression)
+        $ne.LastWriteTime = $src.Entries[0].LastWriteTime   # fixed timestamp keeps the package byte-reproducible
+        $os = $ne.Open(); $os.Write($nv.bytes, 0, $nv.bytes.Length); $os.Dispose()
     }
 } finally { $dst.Dispose(); $src.Dispose() }
 Write-Host "Candidate written: $Output"

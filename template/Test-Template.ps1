@@ -8,7 +8,7 @@
 [CmdletBinding()]
 param(
     [string]$Original = (Join-Path $PSScriptRoot 'base/Login Enterprise Desktop 2026-10.pbit'),
-    [string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.0.0-candidate.pbit')
+    [string]$Candidate = (Join-Path $PSScriptRoot 'candidate/Login Enterprise 1.2.1.0-candidate.pbit')
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'TemplateCommon.ps1')
@@ -22,7 +22,10 @@ $on = @($zo.Entries.FullName); $cn = @($zc.Entries.FullName)
 $zo.Dispose(); $zc.Dispose()
 $pbirEditPath0 = Join-Path $PSScriptRoot 'source/pbir-edits.json'
 if ((Test-Path $pbirEditPath0) -and ($on -contains 'SecurityBindings')) { $on = @($on | Where-Object { $_ -ne 'SecurityBindings' }) }  # intentionally dropped when report files are edited
-if (($on -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) entries in the same order (SecurityBindings intentionally absent when report files are edited)" } else { Fail 'entry list differs from original (beyond the intentional SecurityBindings removal)' }
+$newVisualsPath0 = Join-Path $PSScriptRoot 'source/new-visuals.json'
+$newVisualEntries = @(if (Test-Path $newVisualsPath0) { (Get-Content $newVisualsPath0 -Raw | ConvertFrom-Json).entry })
+$onExpected = @($on) + $newVisualEntries   # additive visuals are appended after the original entries
+if (($onExpected -join '|') -eq ($cn -join '|')) { Ok "same $($on.Count) original entries in the same order plus $($newVisualEntries.Count) documented new visual entries (SecurityBindings intentionally absent when report files are edited)" } else { Fail 'entry list differs from original (beyond the intentional SecurityBindings removal)' }
 if ($cn -contains 'SecurityBindings' -and (Test-Path $pbirEditPath0)) { Fail 'SecurityBindings must be absent when PBIR visuals are edited' }
 $pbirEditPath = Join-Path $PSScriptRoot 'source/pbir-edits.json'
 $allowedChanged = @('DataModelSchema', 'Report/Layout', 'UnappliedChanges') + @(if (Test-Path $pbirEditPath) { (Get-Content $pbirEditPath -Raw | ConvertFrom-Json).entry | Select-Object -Unique })
@@ -152,7 +155,7 @@ if ($hasLegacyLayout) {
     $layout = ConvertFrom-Utf16Bytes (Read-ZipEntryBytes $Candidate 'Report/Layout')
     $props = [regex]::Matches($layout, '\\"Measure\\":\{\\"Expression\\":\{\\"SourceRef\\":\{\\"(?:Source|Entity)\\":\\"[^\\]+\\"\}\},\\"Property\\":\\"([^\\]+)\\"') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique
 } else {
-    if ($pageEntries.Count -ne 9 -or $visualEntries.Count -ne 220) { Fail 'PBIR page/visual inventory changed' } else { Ok 'PBIR contains 9 pages and 220 visuals' }
+    if ($pageEntries.Count -ne 9 -or $visualEntries.Count -ne (220 + $newVisualEntries.Count)) { Fail 'PBIR page/visual inventory changed' } else { Ok "PBIR contains 9 pages and $($visualEntries.Count) visuals (220 original + $($newVisualEntries.Count) documented additions)" }
     function Find-MeasureBindings($node) {
         if ($node -is [System.Text.Json.Nodes.JsonObject]) {
             foreach ($item in $node) {

@@ -50,3 +50,11 @@ Key import, Load and Refresh succeeded. Actual model: no token parameter, 12 Key
 ## Final native Desktop round trip
 
 Final legacy Load/Refresh and ModelChecks match baseline; 12 loaded M partitions and both date descriptions match canonical sources. A genuine Desktop PBIT export resets all six parameter values to null and passes known connection/result-value privacy scans. Re-exported editable sources retain all 83 DAX expressions and 12 M partitions; empty header whitespace is normalized. Pin the native PBIR base and deterministically rebuild the candidate, preserving nine pages/220 visuals and all original identifiers/relationships. Desktop adds one automatic date table/relationship and refines nine Tests field types to the connector's types; no shipped measure or visual query uses those fields. See evidence/desktop-roundtrip.json and template/source/desktop-base.json. Original reports, failed evidence, original template and installed connectors remain preserved.
+
+## Added 2026-11-04 (1.2.1.0)
+
+| Area | Production behavior / checks | Evidence |
+|---|---|---|
+| Measurement run binding | Every measurement row carries the id of the run it was requested for, even when the payload omits or contradicts `testRunId` | M-engine `11_measurement_run_binding.pq` (red before the fix, green after) |
+| Template additions | Documented new visuals appended with a fixed timestamp; byte-reproducible build; entry list, visual count (222) and bindings checked | `template/Build-Template.ps1 -Check`, `Test-Template.ps1` (static only; Desktop check pending) |
+| Gateway and Service | Two on-demand and one scheduled refresh completed through a test gateway; one scheduled run failed when the host shut down | Live local evaluation, [gateway-service-acceptance.json](evidence/gateway-service-acceptance.json); not an automated test |

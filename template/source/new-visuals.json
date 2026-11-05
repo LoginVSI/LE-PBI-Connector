@@ -1,0 +1,4 @@
+[
+  { "entry": "Report/definition/pages/59343fa83277349385bc/visuals/a1c0de01e5f60718293a/visual.json", "file": "new-visuals/guide-load-testing.json", "purpose": "Load Testing: how to read the page (native score, run selection, No Data vs zero, VSImax bound) and a link to the metrics guide" },
+  { "entry": "Report/definition/pages/2368916c8d01e9202c31/visuals/a1c0de02e5f60718293b/visual.json", "file": "new-visuals/guide-eux-overview.json", "purpose": "EUX Overview: caption stating the view is an unweighted aggregate of hourly buckets, not the native score, with a link to the metrics guide" }
+]

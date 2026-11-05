@@ -16,7 +16,7 @@ Current disposition: PR #4 merged as `9eb1ab28097403b478d88d6da88730bb01b69f89` 
 | 1 Evidence/compat | DONE | baseline above; `docs/CHANGE-TEST-MATRIX.md` |
 | 2 Acquisition + time windows | DONE on fixtures (real M engine); **live API not exercised** | tests 01-03; API limits unverified (matrix "Unverified") |
 | 3 Template semantics | DONE; Desktop-accepted 2026-11-02 on the Key path (see ACCEPTANCE.md G) | `docs/TEMPLATE-CHANGES.md`, `template/Test-Template.ps1` |
-| 4 Credentials/TestConnection/setup | PARTIAL | Key entry point + TestConnection done and run in PQTest; Desktop/Service/gateway **not run**; README rewritten |
+| 4 Credentials/TestConnection/setup | PARTIAL | Key entry point + TestConnection done and run in PQTest; Desktop since accepted, and gateway/Service evaluated in a lab (ACCEPTANCE.md G to I, GATEWAY.md); README rewritten |
 | 5 Build/tests/CI/review | DONE except independent review | reproducible MEZ, 6 test files (89 checks), CI workflow; **independent review deferred to a separate Codex session** (`docs/AUDIT-HANDOFF.md`) per session instructions |
 | 6 Acceptance/upgrade/blog prep | DONE (prep only) | `docs/ACCEPTANCE.md`, `docs/CHANGELOG.md`, `docs/blog/OUTLINE.md`, `docs/SHA256SUMS.txt` |
 
@@ -122,3 +122,6 @@ Owner confirmed the 14:40 run (counter 77) card reads 3.3, the no-selection guar
 
 ## 2026-11-02: window B reconciled in Desktop
 8 of 8 runs reconcile on the open model: disabled runs show No Data, the unavailable run keeps 8.0, null baseline/steady stay blank, no duplicates ([evidence](evidence/desktop-native-window-b.json)). A retained native 0 does not exist, so valid-zero is covered by the engine fixtures only. Remaining: rollback to 1.1.0.2 and restore.
+
+## 2026-11-04 closeout
+Re-verified state (PR #8 merged; the machine had rebooted; Desktop not running). Scheduled-refresh evidence: the 2026-11-02 run failed with `DM_GWPipeline_Client_GatewayUnreachable` after the gateway host shut down mid-run, and a 2026-11-04 retry completed after the first two attempts did not get through; cause of the stalled attempts not established. One finite self-review bug hunt: no high-severity defect; fixed measurement run binding (new regression test). Added the metrics guide, delivery exploration (nothing sent), the 1.2.1.0 connector and template candidate (Desktop check pending Toolkit's release of Desktop), the connector rollback package for 1.2.0.0, and moved the private blog outline out of the public tree. See [GATEWAY.md](GATEWAY.md), [BACKLOG.md](BACKLOG.md) and [CHANGELOG.md](CHANGELOG.md).

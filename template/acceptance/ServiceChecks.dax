@@ -1,0 +1,14 @@
+-- Run in the Power BI Service (semantic model > Write DAX queries) or in Desktop after a gateway refresh.
+-- One row per Load run in the loaded window; compare with the Desktop-reconciled values and the appliance's load-test-run-overview.
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Filtered Test Runs'[counter],
+    'Filtered Test Runs'[started],
+    "nativeRows", [Native Overview Runs],
+    "nativeScore", [Native EUX Score (Selected Run)],
+    "nativeBaseline", [Native EUX Baseline (Selected Run)],
+    "nativeSteady", [Native EUX Steady State (Selected Run)],
+    "euxState", [Native EUX State (Selected Run)],
+    "aggregateMean", [Aggregate EUX Mean (Window Observations)]
+)
+ORDER BY 'Filtered Test Runs'[started]
