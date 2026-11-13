@@ -12,6 +12,8 @@ Official guidance used: Microsoft Learn, [Use custom data connectors with the on
 
 ## Administrator checklist (separate from the connector)
 
+Download the [recommended community preview pair](../README.md#downloads-community-preview): connector 1.2.1.0 and [Login Enterprise 1.2.1.0.pbit](../template/Login%20Enterprise%201.2.1.0.pbit). Prepare the report with Key authentication as described in the README before publishing. Only the `.mez` belongs in the gateway connector folder.
+
 1. Preflight (read-only, changes nothing): `pwsh tools/Test-GatewayReadiness.ps1 -Fqdn <appliance> -ConnectorFolder <folder>`. It checks the connector file and hash, folder permissions for the service account, TCP 443 and TLS trust, and the host time zone from the user's own process; it does not prove the gateway service can reach the appliance.
 2. Gateway host: standard (not personal) gateway, installed per Microsoft's instructions by a local administrator. Network: outbound HTTPS 443 from the gateway host to the appliance FQDN. **Microsoft advises against installing a gateway on a laptop or any computer that may be off, asleep or offline.** Use an always-on machine for anything beyond a test.
 3. Connector folder: a folder the **gateway service account** can read (default `NT SERVICE\PBIEgwService`), **outside any user profile**, containing only `LE-PBI-Connector.mez`. Folders created under `C:\` inherit broad permissions (any authenticated user may modify); remove inheritance and grant only Administrators, SYSTEM, the installing owner and Read and Execute to the service account. Verify the SHA256 against [SHA256SUMS.txt](SHA256SUMS.txt).
@@ -69,7 +71,7 @@ A successful refresh of a fixed historical window can retrieve the same records 
 | Scheduled refresh stays "In progress" or shows "completed with warnings" `GatewayUnreachable` | Observed in this test: early attempts did not get through and a later retry succeeded; cause not established | Leave it running; do not restart the gateway mid-run; check Refresh history. If it fails, retry once after confirming the gateway is online and the host stayed on |
 | Run fails with `DM_GWPipeline_Client_GatewayUnreachable` after about 30 minutes | The gateway host went offline mid-run (shutdown, sleep, network) | Keep the host on and awake; re-run; check host power events |
 | Dates differ from Desktop | Different machine zone | Compare in UTC |
-| Roll back the connector | n/a | Put the previous `.mez` (`bin/archive/1.2.0.0` or `1.1.0.2`) in the folder, restart the service when no refresh is running |
+| Roll back the connector | n/a | Use [Rollback downloads](../README.md#rollback-downloads) for the matching pair: connector 1.2.0.0 with `template/Login Enterprise 1.2.0.0.pbit`, or connector 1.1.0.2 with `template/Login Enterprise 1.1.0.2.pbit`. Restore the backed-up report for an existing deployment; only the `.mez` goes in the connector folder. Restart the service when no refresh is running. |
 
 ## Teardown of the local test (not performed; the gateway was left for inspection)
 

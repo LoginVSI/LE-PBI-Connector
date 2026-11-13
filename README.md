@@ -17,16 +17,28 @@ This connector helps you transform Login Enterprise performance data into action
 
 ## Downloads: community preview
 
-| File | Status |
-|---|---|
-| [`LE-PBI-Connector.mez` 1.2.1.0](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | **Current connector.** 1.2.0.0 plus a fix that binds each measurement row to the run it was requested for. Real-engine tests pass. The previous 1.2.0.0 package was accepted in Desktop (Key path) and ran through a test gateway; 1.2.1.0 itself has been exercised in Desktop (ACCEPTANCE.md section I) and through the test gateway with on-demand Load and dummy Continuous refreshes plus one scheduled dummy Continuous refresh (section H). The Continuous check produced session/failure/event records, not timing, resource or EUX measurements. |
-| [`Login Enterprise 1.1.0.2-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.1.0.2-candidate.pbit) | **Desktop-accepted template** (accepted with the 1.1.0.2 connector). The 1.2.0.0 connector is additive, so it should work with it, but that pairing has not been run in Desktop. |
-| [`Login Enterprise 1.2.0.0-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.0.0-candidate.pbit) | Adds native EUX measures and cards. Accepted in Desktop for the Key (FQDN-only) path on two retained windows (reconciled against source); the unmodified candidate file was also opened, refreshed, saved and reopened by the owner without issues (not reconciled). Needs connector 1.2.0.0. |
-| [`Login Enterprise 1.2.1.0-candidate.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.1.0-candidate.pbit) | Newest template: the EUX Score card title names the selected run and its start, a smaller value font so `Select one run` is not clipped, and short guide captions with a link to the metrics guide. Opened, refreshed, saved and reopened in Desktop on the Key path (window 2025-06-30, 7 of 7 runs reconcile); the run title, the 3.3 card and the aggregate gauges (A side populated, B side blank until a test is chosen) were seen on screen. |
-| [`LE-PBI-Connector.mez` 1.2.0.0](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.2.0.0/LE-PBI-Connector.mez) | Previous connector, Desktop-accepted on the Key path and used by the test gateway. Kept for rollback. |
-| [`LE-PBI-Connector.mez` 1.1.0.2](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.1.0.2/LE-PBI-Connector.mez) | The previously accepted connector, kept for rollback. |
+**Recommended for the community preview:** download both 1.2.1.0 files below.
 
-The current recommended pair is the 1.2.1.0 connector with the 1.2.1.0 template (Desktop-checked on the Key path, with lab on-demand and scheduled gateway checks at the scopes recorded in ACCEPTANCE.md sections H and I). Try it on a copy and send feedback. The 1.1.0.2 pair and the 1.2.0.0 pair remain available for rollback, each accepted only for what its own acceptance record states. What the native scores are and how they differ from the aggregate averages: [docs/NATIVE-EUX.md](docs/NATIVE-EUX.md). What every table and measure covers, with grain, run types, states and units: [docs/METRICS-GUIDE.md](docs/METRICS-GUIDE.md). Backlog and status: [docs/BACKLOG.md](docs/BACKLOG.md).
+| Version | Connector download | Template download |
+|---|---|---|
+| **1.2.1.0** | [`LE-PBI-Connector.mez`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/AnyCPU/Debug/LE-PBI-Connector.mez) | [`Login Enterprise 1.2.1.0.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/Login%20Enterprise%201.2.1.0.pbit) |
+
+Connector 1.2.1.0 adds a fix that binds each measurement row to the run it was requested for. Real-engine tests pass. It has been exercised in Desktop ([ACCEPTANCE.md section I](docs/ACCEPTANCE.md#i-1210-template-and-connector-in-desktop-2026-11-04)) and through the test gateway with on-demand Load and dummy Continuous refreshes plus one scheduled dummy Continuous refresh (section H). The Continuous check produced session/failure/event records, not timing, resource or EUX measurements.
+
+The 1.2.1.0 template adds a selected-run title, a smaller EUX Score card font so `Select one run` fits, and guide captions linking to the metrics guide. It was opened, refreshed, saved and reopened in Desktop on the Key path (window 2025-06-30, 7 of 7 runs reconcile). The run title, the 3.3 card and the aggregate gauges were seen on screen, with A populated and B blank until a test is chosen.
+
+### Rollback downloads
+
+Download both files from the same version row when starting a report from an older template.
+
+| Version | Connector download | Template download | Recorded scope |
+|---|---|---|---|
+| 1.2.0.0 | [`LE-PBI-Connector.mez`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.2.0.0/LE-PBI-Connector.mez) | [`Login Enterprise 1.2.0.0.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/Login%20Enterprise%201.2.0.0.pbit) | Native EUX measures and cards. Desktop-accepted on the Key path for two retained windows reconciled against source; the unmodified template was also opened, refreshed, saved and reopened by the owner without issues (not reconciled). Connector used by the test gateway. |
+| 1.1.0.2 | [`LE-PBI-Connector.mez`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/bin/archive/1.1.0.2/LE-PBI-Connector.mez) | [`Login Enterprise 1.1.0.2.pbit`](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/Login%20Enterprise%201.1.0.2.pbit) | Desktop-accepted with the matching 1.1.0.2 connector, within its documented coverage limits. |
+
+Older `-candidate.pbit` links still work at their original paths. Each clean filename is a byte-for-byte copy of the same version's build, with the same SHA-256.
+
+Try the recommended pair on a copy and send feedback. Each version is accepted only for what its own acceptance record states. What the native scores are and how they differ from the aggregate averages: [docs/NATIVE-EUX.md](docs/NATIVE-EUX.md). What every table and measure covers, with grain, run types, states and units: [docs/METRICS-GUIDE.md](docs/METRICS-GUIDE.md). Backlog and status: [docs/BACKLOG.md](docs/BACKLOG.md).
 
 The qualified 1.1.0.2 Desktop acceptance is described under [documented coverage limits](docs/MERGE-HANDOFF.md).
 Verify downloads against [SHA256SUMS.txt](docs/SHA256SUMS.txt). Install only the connector file in your per-user Custom Connectors folder. The [original template](template/Login%20Enterprise.pbit) is a compatibility reference.
@@ -178,7 +190,7 @@ You can find step-by-step instructions for downloading, installing, and configur
 
 ## Login Enterprise Power BI Template
 
-Open the [current template download](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/candidate/Login%20Enterprise%201.2.1.0-candidate.pbit) after installing connector 1.2.1.0. Its repository path is `template/candidate/Login Enterprise 1.2.1.0-candidate.pbit`. The recorded 1.2.1.0 Desktop acceptance used a Key copy; see [Choosing how the token is supplied](#choosing-how-the-token-is-supplied) before sharing reports or publishing through the gateway. The original `template/Login Enterprise.pbit` remains a historical compatibility reference.
+Open the [current template download](https://raw.githubusercontent.com/LoginVSI/LE-PBI-Connector/main/template/Login%20Enterprise%201.2.1.0.pbit) after installing connector 1.2.1.0. Its [repository file](template/Login%20Enterprise%201.2.1.0.pbit) is `template/Login Enterprise 1.2.1.0.pbit`. The recorded 1.2.1.0 Desktop acceptance used a Key copy; see [Choosing how the token is supplied](#choosing-how-the-token-is-supplied) before sharing reports or publishing through the gateway. The original `template/Login Enterprise.pbit` remains a historical compatibility reference.
 
 The template prompts for `FQDN`, `APIToken`, `DaysBack`, `UseDateRange`, `StartDateParam` and `EndDateParam`. This template uses the legacy entry point, so enter the approved appliance and token locally and treat populated reports as containing a secret. The separate [Key migration](#choosing-how-the-token-is-supplied) avoids storing the token in M parameters while preserving the original report.
 
@@ -325,15 +337,19 @@ Point observations use this UTC-day policy; run/session tables have interval sem
 
 ## Upgrade and rollback
 
+For an upgrade, use the recommended 1.2.1.0 pair in [Downloads](#downloads-community-preview): connector 1.2.1.0 and `template/Login Enterprise 1.2.1.0.pbit`. A new template is only needed when starting a new report; keep existing reports backed up.
+
 1. Close Power BI Desktop. 2. Move the old `.mez` out of `Custom Connectors` to a backup folder (keep it for rollback). 3. Copy the new `LE-PBI-Connector.mez` in. 4. Start Desktop, open your report and **Refresh**. 5. Compare row counts for Test Runs, Measurements, User Sessions and Events with the previous refresh (Measurements will increase if you previously hit the 1000-row truncation).
 
 Rollback: close Desktop, delete the new `.mez`, copy the old one back, restart. Reports are unchanged by the connector upgrade (the entry point and table schemas are the same).
+
+If you need to download an older pair, use [Rollback downloads](#rollback-downloads): connector 1.2.0.0 with `template/Login Enterprise 1.2.0.0.pbit`, or connector 1.1.0.2 with `template/Login Enterprise 1.1.0.2.pbit`. Restore your backed-up report when rolling back an existing report.
 
 To rebuild the package from source (PowerShell 7): `pwsh build/Build-Mez.ps1`; the build is byte-reproducible and CI checks `bin/AnyCPU/Debug/LE-PBI-Connector.mez` against the source. Tests: `pwsh tests/Run-Tests.ps1` (downloads the pinned Power Query SDK test tool from NuGet; no Power BI Desktop involved).
 
 ## Template changes in 1.1.0.2
 
-The original `template/Login Enterprise.pbit` is a historical compatibility reference. The current `template/candidate/Login Enterprise 1.2.1.0-candidate.pbit` adds run identification and guidance to the native EUX template and was checked in Desktop on the Key path (ACCEPTANCE.md section I). Older candidate files retain their version-specific acceptance scope. What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
+The original `template/Login Enterprise.pbit` is a historical compatibility reference. The current `template/Login Enterprise 1.2.1.0.pbit` adds run identification and guidance to the native EUX template and was checked in Desktop on the Key path (ACCEPTANCE.md section I). Older templates retain their version-specific acceptance scope. What changed and why: [docs/TEMPLATE-CHANGES.md](docs/TEMPLATE-CHANGES.md). Editable DAX/M sources: `template/source/`.
 
 ### First-load snapshot failure
 
