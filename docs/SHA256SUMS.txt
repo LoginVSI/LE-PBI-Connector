@@ -9,3 +9,7 @@ E5931450DDD625ED1BCEC37556B5BC372BC73BC499B52221752B6102105C2338  [installed on 
 E0E4FEA065DD32E66B0355F35838D40E2B8D41FEFB428B6C0B9A86639A0FB1B4  template/base/Login Enterprise Desktop 2026-10.pbit
 468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656  template/candidate/Login Enterprise 1.2.0.0-candidate.pbit  [1.2.0.0-candidate, Desktop-accepted 2026-11-02 (Key copy v4); unmodified candidate file also opened, refreshed and reopened by the owner (not reconciled)]
 8D8B5656C2C6383CF25401A447F1F9817AE0DC4ECC4AE76858E4BA4DE0E5F653  template/candidate/Login Enterprise 1.2.1.0-candidate.pbit  [1.2.1.0-candidate, opened, refreshed, saved and reopened in Desktop 2026-11-04 (Key copy, window 2025-06-30)]
+
+0E22BF675BE20D7084B34908B12C0C2CF966FEA68C20DE549402B4D394B74ADD  template/Login Enterprise 1.1.0.2.pbit  [clean filename; identical to the preserved 1.1.0.2-candidate build above]
+468F4DC01A9351F9C720F09025A961C2DDAC6BE89F229C6D9329127D022CF656  template/Login Enterprise 1.2.0.0.pbit  [clean filename; identical to the preserved 1.2.0.0-candidate build above]
+8D8B5656C2C6383CF25401A447F1F9817AE0DC4ECC4AE76858E4BA4DE0E5F653  template/Login Enterprise 1.2.1.0.pbit  [clean filename; identical to the preserved 1.2.1.0-candidate build above]

@@ -41,15 +41,15 @@ Visual changes in the template (nothing added or removed; 9 pages, 220 visuals):
 
 ## Optional migration of an existing customer report (copy first)
 
-Installing the 1.2.0.0 connector changes no existing report and no existing DAX. To adopt native scores:
+For new setups, use the [recommended community preview pair](../README.md#downloads-community-preview), connector 1.2.1.0 and [Login Enterprise 1.2.1.0.pbit](../template/Login%20Enterprise%201.2.1.0.pbit). The steps below describe migration with the older 1.2.0.0 pair, retained under [Rollback downloads](../README.md#rollback-downloads). Installing the connector changes no existing report and no existing DAX. To adopt native scores:
 
 1. Close Desktop; back up your `.mez` and your `.pbix`. Work on a **copy** of the report.
 2. Install the 1.2.0.0 connector. Open the copy and refresh once; confirm existing visuals are unchanged.
-3. Either start from the 1.2.0.0 template and copy your visuals across, or in the copy add the table: Get Data, Login Enterprise, same parameters, select `Load Test Overview`; relate `Load Test Overview[testRunId]` to `Filtered Test Runs[id]` (many to one, single); set numeric columns to "Don't summarize"; add the measures from `template/source/measures/Load Test Overview/*.dax`.
+3. Either start from [Login Enterprise 1.2.0.0.pbit](../template/Login%20Enterprise%201.2.0.0.pbit) and copy your visuals across, or in the copy add the table: Get Data, Login Enterprise, same parameters, select `Load Test Overview`; relate `Load Test Overview[testRunId]` to `Filtered Test Runs[id]` (many to one, single); set numeric columns to "Don't summarize"; add the measures from `template/source/measures/Load Test Overview/*.dax`.
 4. Bind single-run cards to the native display measures. Keep the aggregate measures for trends.
 5. Check with `template/acceptance/NativeOverviewChecks.dax` against the appliance values.
 
-Rollback: delete the added table, relationship and measures (or discard the copy), and reinstall the 1.1.0.2 connector from `bin/archive/1.1.0.2/`. The original report is never modified.
+Rollback: delete the added table, relationship and measures (or discard the copy), and reinstall the 1.1.0.2 connector from `bin/archive/1.1.0.2/`. To start a report with that version, use the matching [Login Enterprise 1.1.0.2.pbit](../template/Login%20Enterprise%201.1.0.2.pbit) from [Rollback downloads](../README.md#rollback-downloads). The original report is never modified.
 
 ## Status
 
